@@ -23,16 +23,13 @@ public class BTreeNode<T extends Comparable<T>> {
 		return keys;
 	}
 
-	public BTreeNode<T> add(BTreeKey<T> k) {
+	private BTreeNode<T> add(BTreeKey<T> k) {
 		boolean added = false;
 		BTreeKey<T> previousKey = null;
 		for (int i = 0; i < keys.size(); i++) {
 			BTreeKey<T> key = keys.get(i);
 			if (k.value().compareTo(key.value()) < 0) {
 				keys.add(i, k);
-				if (previousKey != null)
-					k.setLeft(previousKey.getRight());
-				k.setRight(key.getLeft());
 				added = true;
 			}
 			previousKey = key;
@@ -40,8 +37,7 @@ public class BTreeNode<T extends Comparable<T>> {
 		if (!added) {
 			keys.add(k);
 			if (previousKey != null) {
-				k.setLeft(previousKey.getRight());
-				k.setRight(k.getLeft());
+				// ?
 			}
 		}
 

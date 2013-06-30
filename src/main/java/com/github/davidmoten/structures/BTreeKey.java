@@ -1,10 +1,15 @@
 package com.github.davidmoten.structures;
 
-public class BTreeKey<T extends Comparable<T>> {
+public class BTreeKey<T extends Comparable<T>> implements
+		Comparable<BTreeKey<T>> {
+
+	public static <R extends Comparable<R>> BTreeKey<R> max(Class<R> cls) {
+		return new BTreeKey<R>(null);
+	}
+
 	private final T t;
 
-	private BTreeNode<T> left;
-	private BTreeNode<T> right;
+	private BTreeNode<T> before;
 
 	public BTreeKey(T t) {
 		this.t = t;
@@ -14,19 +19,24 @@ public class BTreeKey<T extends Comparable<T>> {
 		return t;
 	}
 
-	public BTreeNode<T> getLeft() {
-		return left;
+	public BTreeNode<T> getBefore() {
+		return before;
 	}
 
 	public void setLeft(BTreeNode<T> left) {
-		this.left = left;
+		this.before = left;
 	}
 
-	public BTreeNode<T> getRight() {
-		return right;
+	@Override
+	public int compareTo(BTreeKey<T> o) {
+		if (isMax(o))
+			return -1;
+		else
+			return this.value().compareTo(o.value());
 	}
 
-	public void setRight(BTreeNode<T> right) {
-		this.right = right;
+	private boolean isMax(BTreeKey<T> o) {
+		return o.value() == null;
 	}
+
 }
