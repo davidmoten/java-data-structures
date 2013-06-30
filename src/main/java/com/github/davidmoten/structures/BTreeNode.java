@@ -45,39 +45,55 @@ public class BTreeNode<T extends Comparable<T>> {
 			}
 		}
 
+		final BTreeNode<T> result;
 		if (keys.size() == degree) {
 			// split
 			if (parent == null) {
 				parent = new BTreeNode<T>(degree, null);
-			}
-			int medianIndex;
-			if (keys.size() % 2 == 1)
-				medianIndex = keys.size() / 2;
-			else
-				medianIndex = (keys.size() - 1) / 2;
+				result = parent;
+			} else
+				result = this;
+
+			int medianIndex = getMedianKeyIndex();
+
 			BTreeKey<T> medianKey = keys.get(medianIndex);
-			parent.keys.add(medianKey);
 
-			BTreeNode<T> child1 = new BTreeNode<T>(degree, parent);
-			for (int i = 0; i < medianIndex; i++) {
-				child1.keys.add(keys.get(i));
-				if (i == medianIndex - 1)
-					keys.get(i).setRight(null);
-			}
-			BTreeNode<T> child2 = new BTreeNode<T>(degree, parent);
-			for (int i = medianIndex + 1; i < keys.size(); i++) {
-				child2.keys.add(keys.get(i));
-				if (i == medianIndex + 1)
-					keys.get(i).setLeft(null);
-			}
+			parent.add(medianKey);
 
-			medianKey.setLeft(child1);
-			medianKey.setRight(child2);
-			return parent;
-
+			splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(medianIndex,
+					medianKey);
 		} else
-			return this;
+			result = this;
+		return result;
 
+	}
+
+	private void splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+			int medianIndex, BTreeKey<T> medianKey) {
+		BTreeNode<T> child1 = new BTreeNode<T>(degree, parent);
+		for (int i = 0; i < medianIndex; i++) {
+			child1.keys.add(keys.get(i));
+			if (i == medianIndex - 1)
+				keys.get(i).setRight(null);
+		}
+		medianKey.setLeft(child1);
+
+		BTreeNode<T> child2 = new BTreeNode<T>(degree, parent);
+		for (int i = medianIndex + 1; i < keys.size(); i++) {
+			child2.keys.add(keys.get(i));
+			if (i == medianIndex + 1)
+				keys.get(i).setLeft(null);
+		}
+		medianKey.setRight(child2);
+	}
+
+	private int getMedianKeyIndex() {
+		int medianIndex;
+		if (keys.size() % 2 == 1)
+			medianIndex = keys.size() / 2;
+		else
+			medianIndex = (keys.size() - 1) / 2;
+		return medianIndex;
 	}
 
 	public BTreeNode<T> add(T t) {
