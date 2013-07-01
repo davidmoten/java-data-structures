@@ -296,6 +296,26 @@ public class BTreeTest {
 		assertEquals(Optional.absent(), t.find(7.5));
 	}
 
+	/**
+	 * <p>
+	 * Given a empty BTree<String> of degree 3
+	 * </p>
+	 * 
+	 * <p>
+	 * When I find 1
+	 * </p>
+	 * 
+	 * <p>
+	 * Then returns absent
+	 * </p>
+	 * 
+	 */
+	@Test
+	public void test10() {
+		BTree<Double> t = new BTree<Double>(3);
+		assertEquals(Optional.absent(), t.find(1.0));
+	}
+
 	private static void assertKeyValuesAre(List<Double> expected,
 			List<? extends Key<Double>> keys) {
 		String msg = "expected " + expected + " but was " + keys;
