@@ -40,8 +40,8 @@ public class Node<T extends Comparable<T>> {
         for (int i = 0; i < keys.size(); i++) {
             Key<T> key = keys.get(i);
             if (t.compareTo(key.value()) < 0) {
-                if (key.getLeft() == null)
-                    key.setLeft(new Node<T>(degree, parent));
+                // don't need to check that left is non-null because of
+                // properties of b-tree
                 result = key.getLeft().add(t);
                 added = true;
                 break;
@@ -49,8 +49,8 @@ public class Node<T extends Comparable<T>> {
         }
         if (!added) {
             Key<T> last = keys.get(keys.size() - 1);
-            if (last.getRight() == null)
-                last.setRight(new Node<T>(degree, parent));
+            // don't need to check that left is non-null because of properties
+            // of b-tree
             result = last.getRight().add(t);
         }
         return result;
@@ -58,14 +58,14 @@ public class Node<T extends Comparable<T>> {
 
     /**
      * Returns true if and only this node is a leaf node (has no children).
+     * Because of the properties of a b-tree only have to check if the first key
+     * has a child.
      * 
      * @return
      */
     private boolean isLeafNode() {
-        for (Key<T> key : keys)
-            if (key.hasChild())
-                return false;
-        return true;
+
+        return getKeys().size() == 0 || !getKeys().get(0).hasChild();
     }
 
     /**
