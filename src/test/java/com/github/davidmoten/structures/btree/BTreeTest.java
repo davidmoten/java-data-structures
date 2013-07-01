@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.github.davidmoten.structures.btree.BTree;
-import com.github.davidmoten.structures.btree.Key;
 import com.google.common.collect.Lists;
 
 public class BTreeTest {
@@ -149,6 +147,60 @@ public class BTreeTest {
                 .getLeft().getKeys());
         assertKeyValuesAre(Lists.newArrayList(1.0), t.getKeys().get(0)
                 .getRight().getKeys());
+    }
+
+    /**
+     * <p>
+     * Given an empty BTree<String> of degree 3
+     * </p>
+     * 
+     * <p>
+     * When I insert 1,2,3,4,5,6,7
+     * </p>
+     * 
+     * <p>
+     * Then returns this tree:
+     * </p>
+     * 
+     * <pre>
+     *     4
+     *    /  \
+     *   2     6
+     *  / \   / \
+     * 1  3  5   7
+     * </pre>
+     * 
+     * <p>
+     * This is worked example from wikipedia <a
+     * href="http://en.wikipedia.org/wiki/B-tree">article</a>.
+     * </p>
+     * 
+     */
+    @Test
+    public void test7() {
+        BTree<Double> t = new BTree<Double>(3);
+        t.add(1.0);
+        t.add(2.0);
+        t.add(3.0);
+        t.add(4.0);
+        t.add(5.0);
+        t.add(6.0);
+        t.add(7.0);
+        System.out.println(t);
+        assertKeyValuesAre(Lists.newArrayList(4.0), t.getKeys());
+        assertKeyValuesAre(Lists.newArrayList(2.0), t.getKeys().get(0)
+                .getLeft().getKeys());
+        assertKeyValuesAre(Lists.newArrayList(6.0), t.getKeys().get(0)
+                .getRight().getKeys());
+        assertKeyValuesAre(Lists.newArrayList(1.0), t.getKeys().get(0)
+                .getLeft().getKeys().get(0).getLeft().getKeys());
+        assertKeyValuesAre(Lists.newArrayList(3.0), t.getKeys().get(0)
+                .getLeft().getKeys().get(0).getRight().getKeys());
+        assertKeyValuesAre(Lists.newArrayList(5.0), t.getKeys().get(0)
+                .getRight().getKeys().get(0).getLeft().getKeys());
+        assertKeyValuesAre(Lists.newArrayList(7.0), t.getKeys().get(0)
+                .getRight().getKeys().get(0).getRight().getKeys());
+
     }
 
     private static void assertKeyValuesAre(List<Double> expected,
