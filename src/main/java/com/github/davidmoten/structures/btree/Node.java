@@ -57,7 +57,7 @@ public class Node<T extends Comparable<T>> {
             key = key.get().next();
         }
 
-        if (!added && first.isPresent()) {
+        if (!added) {
             // don't need to check that left is non-null because of properties
             // of b-tree
             result = last.get().getRight().add(t);

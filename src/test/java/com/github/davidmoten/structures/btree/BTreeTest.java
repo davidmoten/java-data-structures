@@ -15,6 +15,19 @@ public class BTreeTest {
     private static final double PRECISION = 0.0001;
 
     /**
+     * Given nothing
+     * 
+     * When I create a BTree of degree 1
+     * 
+     * Then an exception is thrown
+     * 
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testInstantiatingBTreeOfDegree1ThrowsException() {
+        new BTree<Integer>(1);
+    }
+
+    /**
      * Given an empty BTree<String> of degree 3
      * 
      * When I insert string "1"
