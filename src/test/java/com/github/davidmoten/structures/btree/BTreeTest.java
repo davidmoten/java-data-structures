@@ -1,5 +1,6 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -202,6 +203,26 @@ public class BTreeTest {
                 .getRight().getKeys().get(0).getRight().getKeys());
     }
 
+    /**
+     * <p>
+     * Given an empty BTree<String> of EVEN degree 4
+     * </p>
+     * 
+     * <p>
+     * When 1,2,3,4 are inserted in order
+     * </p>
+     * 
+     * <p>
+     * Then b-tree looks like:
+     * </p>
+     * 
+     * <pre>
+     *   2
+     *  / \
+     * 1   3,4
+     * </pre>
+     * 
+     */
     @Test
     public void testSplitWhenDegreeIsEven() {
         BTree<Double> t = new BTree<Double>(4);
@@ -209,10 +230,10 @@ public class BTreeTest {
         t.add(2.0);
         t.add(3.0);
         t.add(4.0);
-        assertKeyValuesAre(Lists.newArrayList(2.0), t.getKeys());
-        assertKeyValuesAre(Lists.newArrayList(1.0), t.getKeys().get(0)
-                .getLeft().getKeys());
-        assertKeyValuesAre(Lists.newArrayList(3.0, 4.0), t.getKeys().get(0)
+        assertKeyValuesAre(newArrayList(2.0), t.getKeys());
+        assertKeyValuesAre(newArrayList(1.0), t.getKeys().get(0).getLeft()
+                .getKeys());
+        assertKeyValuesAre(newArrayList(3.0, 4.0), t.getKeys().get(0)
                 .getRight().getKeys());
     }
 
