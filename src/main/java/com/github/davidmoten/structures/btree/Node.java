@@ -265,8 +265,10 @@ public class Node<T extends Comparable<T>> {
                     return 0;
                 else
                     return key.get().getLeft().delete(t);
-            } else if (compare == 0 && !key.get().isDeleted())
+            } else if (compare == 0 && !key.get().isDeleted()) {
                 count++;
+                key.get().setDeleted(true);
+            }
             last = key;
             key = key.get().next();
         }
