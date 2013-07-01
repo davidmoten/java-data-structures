@@ -1,7 +1,6 @@
 package com.github.davidmoten.structures.btree;
 
-public class Key<T extends Comparable<T>> implements
-        Comparable<Key<T>> {
+public class Key<T extends Comparable<T>> {
 
     private final T t;
     private Node<T> left;
@@ -21,11 +20,6 @@ public class Key<T extends Comparable<T>> implements
 
     public void setLeft(Node<T> left) {
         this.left = left;
-    }
-
-    @Override
-    public int compareTo(Key<T> o) {
-        return t.compareTo(o.value());
     }
 
     public Node<T> getRight() {

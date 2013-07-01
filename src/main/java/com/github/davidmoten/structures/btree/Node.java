@@ -3,6 +3,8 @@ package com.github.davidmoten.structures.btree;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class Node<T extends Comparable<T>> {
 
     private final List<Key<T>> keys;
@@ -82,7 +84,7 @@ public class Node<T extends Comparable<T>> {
 
         for (int i = 0; i < keys.size(); i++) {
             Key<T> k = keys.get(i);
-            if (key.compareTo(k) < 0) {
+            if (key.value().compareTo(k.value()) < 0) {
                 keys.add(i, key);
                 addedAtIndex = i;
                 break;
@@ -179,8 +181,17 @@ public class Node<T extends Comparable<T>> {
         return medianIndex;
     }
 
-    public List<? extends Key<T>> getKeys() {
+    public Node<T> getParent() {
+        return parent;
+    }
+
+    @VisibleForTesting
+    List<? extends Key<T>> getKeys() {
         return keys;
+    }
+
+    Key<T> getKey(int index) {
+        return keys.get(index);
     }
 
     @Override
