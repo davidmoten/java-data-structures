@@ -38,14 +38,14 @@ public class BTree<T extends Comparable<T>> {
         return builder.toString();
     }
 
-    private static enum Side {
-        LEFT, RIGHT;
-    }
-
     @VisibleForTesting
     List<? extends Key<T>> getKeys() {
         return root.getKeys();
     }
+
+    // private static enum Side {
+    // LEFT, RIGHT;
+    // }
 
     // private final static class NodeIndex<R extends Comparable<R>> {
     // public NodeIndex(Node<R> node, int index, Side side) {

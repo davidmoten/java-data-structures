@@ -216,11 +216,6 @@ public class Node<T extends Comparable<T>> {
 
     }
 
-    @VisibleForTesting
-    Optional<Key<T>> getFirst() {
-        return first;
-    }
-
     public Optional<T> find(T t) {
         boolean isLeaf = isLeafNode();
         Optional<Key<T>> key = first;
@@ -237,7 +232,7 @@ public class Node<T extends Comparable<T>> {
             last = key;
             key = key.get().next();
         }
-        if (!isLeaf && last.isPresent()) {
+        if (!isLeaf) {
             Node<T> right = last.get().getRight();
             if (right != null)
                 return right.find(t);
