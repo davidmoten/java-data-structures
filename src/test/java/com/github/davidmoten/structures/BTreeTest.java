@@ -130,7 +130,7 @@ public class BTreeTest {
      * 
      * When I insert 0.5
      * 
-     * Then the node.left=0.5,node.left.left=0, node.left.right=1
+     * Then the root=0.5,2.0, node.left=0, node.right=1
      * 
      */
     @Test
@@ -142,15 +142,18 @@ public class BTreeTest {
         t.add(0.0);
         t.add(0.5);
         System.out.println(t);
-        BTreeKey<Double> top = t.getKeys().get(0);
-        assertEquals(0.5, top.getLeft().getKeys().get(0).value(), PRECISION);
-        assertEquals(1.0, top.getLeft().getKeys().get(1).value(), PRECISION);
+        assertKeyValuesAre(Lists.newArrayList(0.5, 2.0), t.getKeys());
+        assertKeyValuesAre(Lists.newArrayList(0.0), t.getKeys().get(0)
+                .getLeft().getKeys());
+        assertKeyValuesAre(Lists.newArrayList(1.0), t.getKeys().get(0)
+                .getRight().getKeys());
     }
 
     private static void assertKeyValuesAre(List<Double> expected,
             List<? extends BTreeKey<Double>> keys) {
-        assertEquals(expected.size(), keys.size());
+        String msg = "expected " + expected + " but was " + keys;
+        assertEquals(msg, expected.size(), keys.size());
         for (int i = 0; i < expected.size(); i++)
-            assertEquals(expected.get(i), keys.get(i).value(), PRECISION);
+            assertEquals(msg, expected.get(i), keys.get(i).value(), PRECISION);
     }
 }

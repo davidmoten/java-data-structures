@@ -44,6 +44,7 @@ public class BTreeNode<T extends Comparable<T>> {
                     key.setLeft(new BTreeNode<T>(degree, parent));
                 result = key.getLeft().add(t);
                 added = true;
+                break;
             }
         }
         if (!added) {
@@ -76,6 +77,7 @@ public class BTreeNode<T extends Comparable<T>> {
      * @param key
      */
     private void add(List<BTreeKey<T>> keys, BTreeKey<T> key) {
+        System.out.println("adding " + key + " to " + keys);
         Integer addedAtIndex = null;
 
         for (int i = 0; i < keys.size(); i++) {
@@ -127,6 +129,8 @@ public class BTreeNode<T extends Comparable<T>> {
 
             splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(medianIndex);
 
+            keys.remove(medianIndex);
+
             BTreeNode<T> result2 = parent.add(medianKey);
 
             if (result2 != null)
@@ -155,18 +159,15 @@ public class BTreeNode<T extends Comparable<T>> {
         BTreeNode<T> child1 = new BTreeNode<T>(degree, parent);
         for (int i = 0; i < medianIndex; i++) {
             child1.keys.add(keys.get(i));
-            if (i == medianIndex - 1)
-                keys.get(i).setRight(null);
         }
         medianKey.setLeft(child1);
 
         BTreeNode<T> child2 = new BTreeNode<T>(degree, parent);
         for (int i = medianIndex + 1; i < keys.size(); i++) {
             child2.keys.add(keys.get(i));
-            if (i == medianIndex + 1)
-                keys.get(i).setLeft(null);
         }
         medianKey.setRight(child2);
+
     }
 
     private int getMedianKeyIndex() {
