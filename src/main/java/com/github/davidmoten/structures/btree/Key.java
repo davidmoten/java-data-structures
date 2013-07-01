@@ -1,11 +1,22 @@
 package com.github.davidmoten.structures.btree;
 
+import com.google.common.base.Optional;
+
 public class Key<T extends Comparable<T>> {
 
 	private final T t;
 	private Node<T> left;
 	private Node<T> right;
 	private boolean deleted;
+	private Optional<Key<T>> next;
+
+	public Optional<Key<T>> next() {
+		return next;
+	}
+
+	public void setNext(Optional<Key<T>> next) {
+		this.next = next;
+	}
 
 	public Key(T t) {
 		this.t = t;

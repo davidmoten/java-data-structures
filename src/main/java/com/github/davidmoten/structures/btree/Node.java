@@ -2,7 +2,6 @@ package com.github.davidmoten.structures.btree;
 
 import static com.google.common.base.Optional.absent;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -10,18 +9,18 @@ import com.google.common.base.Optional;
 
 public class Node<T extends Comparable<T>> {
 
-	private final List<Key<T>> keys;
 	private final int degree;
-	private Node<T> parent;
+	private Optional<Node<T>> parent;
+	private final Optional<Key<T>> first;
 
-	public Node(int degree, Node<T> parent) {
+	public Node(int degree, Optional<Node<T>> parent) {
 		this.degree = degree;
 		this.parent = parent;
-		keys = new ArrayList<Key<T>>();
+		this.first = Optional.absent();
 	}
 
 	public Node(int degree) {
-		this(degree, null);
+		this(degree, Optional.<Node<T>> absent());
 	}
 
 	/**
@@ -42,21 +41,23 @@ public class Node<T extends Comparable<T>> {
 	private Node<T> addToNonLeafNode(T t) {
 		Node<T> result = null;
 		boolean added = false;
-		for (int i = 0; i < keys.size(); i++) {
-			Key<T> key = keys.get(i);
-			if (t.compareTo(key.value()) < 0) {
+		Optional<Key<T>> key = first;
+		Optional<Key<T>> last = absent();
+		while (key.isPresent()) {
+			if (t.compareTo(key.get().value()) < 0) {
 				// don't need to check that left is non-null because of
 				// properties of b-tree
-				result = key.getLeft().add(t);
+				result = key.get().getLeft().add(t);
 				added = true;
 				break;
 			}
+			key = key.get().next();
 		}
-		if (!added) {
-			Key<T> last = keys.get(keys.size() - 1);
+
+		if (!added && first.isPresent()) {
 			// don't need to check that left is non-null because of properties
 			// of b-tree
-			result = last.getRight().add(t);
+			result = last.get().getRight().add(t);
 		}
 		return result;
 	}
@@ -78,34 +79,56 @@ public class Node<T extends Comparable<T>> {
 	 * priority in terms of its children become the children of its neighbours
 	 * in the list of keys.
 	 * 
-	 * @param keys
+	 * @param first
 	 * @param key
 	 */
-	private void add(List<Key<T>> keys, Key<T> key) {
-		System.out.println("adding " + key + " to " + keys);
+	private Key<T> add(Optional<Key<T>> first, Key<T> key) {
+		System.out.println("adding " + key + " to " + first);
 		Integer addedAtIndex = null;
 
-		for (int i = 0; i < keys.size(); i++) {
-			Key<T> k = keys.get(i);
-			if (key.value().compareTo(k.value()) < 0) {
-				keys.add(i, key);
-				addedAtIndex = i;
+		Optional<Key<T>> k = first;
+		Optional<Key<T>> previous = absent();
+		Optional<Key<T>> next = absent();
+		while (k.isPresent()) {
+			if (key.value().compareTo(k.get().value()) < 0) {
+				if (previous.isPresent())
+					previous.get().setNext(Optional.of(key));
+				key.setNext(k);
+				next = k;
 				break;
 			}
+			previous = k;
+			k = k.get().next();
 		}
 
-		if (addedAtIndex == null) {
-			keys.add(key);
-			addedAtIndex = keys.size() - 1;
+		if (!next.isPresent() && previous.isPresent()) {
+			previous.get().setNext(Optional.of(key));
 		}
+
+		Key<T> result;
+		if (!previous.isPresent())
+			result = key;
+		else
+			result = first.get();
 
 		// update previous and following keys to the newly added one
-		if (addedAtIndex > 0) {
-			keys.get(addedAtIndex - 1).setRight(key.getLeft());
+		if (previous.isPresent()) {
+			previous.get().setRight(key.getLeft());
 		}
-		if (addedAtIndex < keys.size() - 1) {
-			keys.get(addedAtIndex + 1).setLeft(key.getRight());
+		if (next.isPresent()) {
+			next.get().setLeft(key.getRight());
 		}
+		return result;
+	}
+
+	private int countKeys() {
+		int count = 0;
+		Optional<Key<T>> k = first;
+		while (k.isPresent()) {
+			count++;
+			k = k.get().next();
+		}
+		return count;
 	}
 
 	/**
@@ -117,15 +140,16 @@ public class Node<T extends Comparable<T>> {
 	 */
 	private Node<T> add(Key<T> key) {
 
-		add(keys, key);
+		add(first, key);
 
 		Node<T> result = null;
-		if (keys.size() == degree) {
+		int keyCount = countKeys();
+		if (keyCount == degree) {
 			// split
 			if (isRoot()) {
 				// creating new root
-				parent = new Node<T>(degree);
-				result = parent;
+				parent = Optional.of(new Node<T>(degree));
+				result = parent.get();
 			}
 
 			int medianIndex = getMedianKeyIndex();
@@ -136,7 +160,7 @@ public class Node<T extends Comparable<T>> {
 
 			keys.remove(medianIndex);
 
-			Node<T> result2 = parent.add(medianKey);
+			Node<T> result2 = parent.get().add(medianKey);
 
 			if (result2 != null)
 				result = result2;
@@ -155,7 +179,7 @@ public class Node<T extends Comparable<T>> {
 	 * @return
 	 */
 	private boolean isRoot() {
-		return parent == null;
+		return !parent.isPresent();
 	}
 
 	private void splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
@@ -182,10 +206,6 @@ public class Node<T extends Comparable<T>> {
 		else
 			medianIndex = (keys.size() - 1) / 2;
 		return medianIndex;
-	}
-
-	public Node<T> getParent() {
-		return parent;
 	}
 
 	@VisibleForTesting
