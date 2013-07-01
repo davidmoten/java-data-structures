@@ -29,25 +29,30 @@ public class BTreeNode<T extends Comparable<T>> {
     public BTreeNode<T> add(T t) {
 
         if (!isLeafNode()) {
-            BTreeNode<T> result = null;
-            boolean added = false;
-            for (BTreeKey<T> key : keys) {
-                if (t.compareTo(key.value()) < 0) {
-                    if (key.getLeft() == null)
-                        key.setLeft(new BTreeNode<T>(degree, parent));
-                    result = key.getLeft().add(t);
-                    added = true;
-                }
-            }
-            if (!added) {
-                BTreeKey<T> last = keys.get(keys.size() - 1);
-                if (last.getRight() == null)
-                    last.setRight(new BTreeNode<T>(degree, parent));
-                result = last.getRight().add(t);
-            }
-            return result;
+            return addToNonLeafNode(t);
         } else
             return add(new BTreeKey<T>(t));
+    }
+
+    private BTreeNode<T> addToNonLeafNode(T t) {
+        BTreeNode<T> result = null;
+        boolean added = false;
+        for (int i = 0; i < keys.size(); i++) {
+            BTreeKey<T> key = keys.get(i);
+            if (t.compareTo(key.value()) < 0) {
+                if (key.getLeft() == null)
+                    key.setLeft(new BTreeNode<T>(degree, parent));
+                result = key.getLeft().add(t);
+                added = true;
+            }
+        }
+        if (!added) {
+            BTreeKey<T> last = keys.get(keys.size() - 1);
+            if (last.getRight() == null)
+                last.setRight(new BTreeNode<T>(degree, parent));
+            result = last.getRight().add(t);
+        }
+        return result;
     }
 
     /**
@@ -150,12 +155,16 @@ public class BTreeNode<T extends Comparable<T>> {
         BTreeNode<T> child1 = new BTreeNode<T>(degree, parent);
         for (int i = 0; i < medianIndex; i++) {
             child1.keys.add(keys.get(i));
+            if (i == medianIndex - 1)
+                keys.get(i).setRight(null);
         }
         medianKey.setLeft(child1);
 
         BTreeNode<T> child2 = new BTreeNode<T>(degree, parent);
         for (int i = medianIndex + 1; i < keys.size(); i++) {
             child2.keys.add(keys.get(i));
+            if (i == medianIndex + 1)
+                keys.get(i).setLeft(null);
         }
         medianKey.setRight(child2);
     }

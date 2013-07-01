@@ -2,9 +2,15 @@ package com.github.davidmoten.structures;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
+
 public class BTreeTest {
+
+    private static final double PRECISION = 0.0001;
 
     /**
      * Given an empty BTree<String> of degree 3
@@ -93,5 +99,58 @@ public class BTreeTest {
         System.out.println(t);
         BTreeKey<String> top = t.getKeys().get(0);
         assertEquals("0", top.getLeft().getKeys().get(0).value());
+    }
+
+    /**
+     * Given an empty BTree<String> of degree 3 with inserted values 1,2,3 in
+     * order.
+     * 
+     * When I insert 0
+     * 
+     * Then the node containing 1 has 0 inserted at start.
+     * 
+     */
+    @Test
+    public void test5() {
+        BTree<Double> t = new BTree<Double>(3);
+        t.add(1.0);
+        t.add(2.0);
+        t.add(3.0);
+        t.add(0.0);
+        System.out.println(t);
+        BTreeKey<Double> top = t.getKeys().get(0);
+        assertKeyValuesAre(Lists.newArrayList(0.0, 1.0), top.getLeft()
+                .getKeys());
+        assertKeyValuesAre(Lists.newArrayList(3.0), top.getRight().getKeys());
+    }
+
+    /**
+     * Given an empty BTree<String> of degree 3 with inserted values 1,2,3,0 in
+     * order.
+     * 
+     * When I insert 0.5
+     * 
+     * Then the node.left=0.5,node.left.left=0, node.left.right=1
+     * 
+     */
+    @Test
+    public void test6() {
+        BTree<Double> t = new BTree<Double>(3);
+        t.add(1.0);
+        t.add(2.0);
+        t.add(3.0);
+        t.add(0.0);
+        t.add(0.5);
+        System.out.println(t);
+        BTreeKey<Double> top = t.getKeys().get(0);
+        assertEquals(0.5, top.getLeft().getKeys().get(0).value(), PRECISION);
+        assertEquals(1.0, top.getLeft().getKeys().get(1).value(), PRECISION);
+    }
+
+    private static void assertKeyValuesAre(List<Double> expected,
+            List<? extends BTreeKey<Double>> keys) {
+        assertEquals(expected.size(), keys.size());
+        for (int i = 0; i < expected.size(); i++)
+            assertEquals(expected.get(i), keys.get(i).value(), PRECISION);
     }
 }
