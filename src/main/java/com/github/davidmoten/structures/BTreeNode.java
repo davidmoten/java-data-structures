@@ -34,7 +34,7 @@ public class BTreeNode<T extends Comparable<T>> {
             for (BTreeKey<T> key : keys) {
                 if (t.compareTo(key.value()) < 0) {
                     if (key.getLeft() == null)
-                        key.setLeft(new BTreeNode<T>(degree, this));
+                        key.setLeft(new BTreeNode<T>(degree, parent));
                     result = key.getLeft().add(t);
                     added = true;
                 }
@@ -42,7 +42,7 @@ public class BTreeNode<T extends Comparable<T>> {
             if (!added) {
                 BTreeKey<T> last = keys.get(keys.size() - 1);
                 if (last.getRight() == null)
-                    last.setRight(new BTreeNode<T>(degree, this));
+                    last.setRight(new BTreeNode<T>(degree, parent));
                 result = last.getRight().add(t);
             }
             return result;
@@ -50,6 +50,11 @@ public class BTreeNode<T extends Comparable<T>> {
             return add(new BTreeKey<T>(t));
     }
 
+    /**
+     * Returns true if and only this node is a leaf node (has no children).
+     * 
+     * @return
+     */
     private boolean isLeafNode() {
         for (BTreeKey<T> key : keys)
             if (key.hasChild())
@@ -73,6 +78,7 @@ public class BTreeNode<T extends Comparable<T>> {
             if (key.compareTo(k) < 0) {
                 keys.add(i, key);
                 addedAtIndex = i;
+                break;
             }
         }
 
@@ -117,6 +123,7 @@ public class BTreeNode<T extends Comparable<T>> {
             splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(medianIndex);
 
             BTreeNode<T> result2 = parent.add(medianKey);
+
             if (result2 != null)
                 result = result2;
 
@@ -127,6 +134,12 @@ public class BTreeNode<T extends Comparable<T>> {
 
     }
 
+    /**
+     * Returns true if and only if this is the root node of the BTree (has no
+     * parent).
+     * 
+     * @return
+     */
     private boolean isRoot() {
         return parent == null;
     }

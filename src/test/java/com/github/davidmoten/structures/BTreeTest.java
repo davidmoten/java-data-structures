@@ -67,14 +67,31 @@ public class BTreeTest {
     public void test3() {
         BTree<String> t = new BTree<String>(3);
         t.add("1");
-        System.out.println(t);
         t.add("2");
-        System.out.println(t);
         t.add("3");
-        System.out.println(t);
         t.add("4");
-        System.out.println(t);
         BTreeKey<String> top = t.getKeys().get(0);
         assertEquals("4", top.getRight().getKeys().get(1).value());
+    }
+
+    /**
+     * Given an empty BTree<String> of degree 3 with inserted values 1,2,3 in
+     * order.
+     * 
+     * When I insert 0
+     * 
+     * Then the node containing 1 has 0 inserted at start.
+     * 
+     */
+    @Test
+    public void test4() {
+        BTree<String> t = new BTree<String>(3);
+        t.add("1");
+        t.add("2");
+        t.add("3");
+        t.add("0");
+        System.out.println(t);
+        BTreeKey<String> top = t.getKeys().get(0);
+        assertEquals("0", top.getLeft().getKeys().get(0).value());
     }
 }
