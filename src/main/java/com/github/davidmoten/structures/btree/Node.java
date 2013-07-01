@@ -272,6 +272,8 @@ public class Node<T extends Comparable<T>> {
             last = key;
             key = key.get().next();
         }
+        if (count > 0)
+            return count;
         if (!isLeaf && last.isPresent()) {
             Node<T> right = last.get().getRight();
             if (right != null)
