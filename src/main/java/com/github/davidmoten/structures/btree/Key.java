@@ -68,6 +68,10 @@ public class Key<T extends Comparable<T>> {
 			builder.append(", right=");
 			builder.append(right);
 		}
+		if (next.isPresent()) {
+			builder.append(", next=");
+			builder.append(next.get());
+		}
 		builder.append("]");
 		return builder.toString();
 	}

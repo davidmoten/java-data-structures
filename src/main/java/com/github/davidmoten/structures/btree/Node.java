@@ -2,8 +2,6 @@ package com.github.davidmoten.structures.btree;
 
 import static com.google.common.base.Optional.absent;
 
-import java.util.List;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 
@@ -11,7 +9,7 @@ public class Node<T extends Comparable<T>> {
 
 	private final int degree;
 	private Optional<Node<T>> parent;
-	private final Optional<Key<T>> first;
+	private Optional<Key<T>> first;
 
 	public Node(int degree, Optional<Node<T>> parent) {
 		this.degree = degree;
@@ -71,7 +69,7 @@ public class Node<T extends Comparable<T>> {
 	 */
 	private boolean isLeafNode() {
 
-		return getKeys().size() == 0 || !getKeys().get(0).hasChild();
+		return !first.isPresent() || first.get().hasChild();
 	}
 
 	/**
@@ -152,13 +150,7 @@ public class Node<T extends Comparable<T>> {
 				result = parent.get();
 			}
 
-			int medianIndex = getMedianKeyIndex();
-
-			Key<T> medianKey = keys.get(medianIndex);
-
-			splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(medianIndex);
-
-			keys.remove(medianIndex);
+			Key<T> medianKey = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount);
 
 			Node<T> result2 = parent.get().add(medianKey);
 
@@ -182,56 +174,62 @@ public class Node<T extends Comparable<T>> {
 		return !parent.isPresent();
 	}
 
-	private void splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-			int medianIndex) {
-		Key<T> medianKey = keys.get(medianIndex);
+	private Key<T> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+			int keyCount) {
+		int medianNumber;
+		if (keyCount % 2 == 1)
+			medianNumber = keyCount / 2 + 1;
+		else
+			medianNumber = (keyCount - 1) / 2 + 1;
+
+		// create child1
+		Optional<Key<T>> key = first;
+		int count = 1;
 		Node<T> child1 = new Node<T>(degree, parent);
-		for (int i = 0; i < medianIndex; i++) {
-			child1.keys.add(keys.get(i));
+		child1.first = first;
+		Optional<Key<T>> previous = absent();
+		while (count < medianNumber) {
+			previous = key;
+			key = key.get().next();
+			count++;
 		}
-		medianKey.setLeft(child1);
+		Key<T> medianKey = key.get();
+		previous.get().setNext(Optional.<Key<T>> absent());
 
 		Node<T> child2 = new Node<T>(degree, parent);
-		for (int i = medianIndex + 1; i < keys.size(); i++) {
-			child2.keys.add(keys.get(i));
-		}
+		child2.first = key.get().next();
+
+		medianKey.setNext(Optional.<Key<T>> absent());
+		medianKey.setLeft(child1);
 		medianKey.setRight(child2);
 
-	}
+		return medianKey;
 
-	private int getMedianKeyIndex() {
-		int medianIndex;
-		if (keys.size() % 2 == 1)
-			medianIndex = keys.size() / 2;
-		else
-			medianIndex = (keys.size() - 1) / 2;
-		return medianIndex;
 	}
 
 	@VisibleForTesting
-	List<? extends Key<T>> getKeys() {
-		return keys;
-	}
-
-	Key<T> getKey(int index) {
-		return keys.get(index);
+	Optional<Key<T>> getFirst() {
+		return first;
 	}
 
 	public Optional<T> find(T t) {
 		boolean isLeaf = isLeafNode();
-		for (int i = 0; i < keys.size(); i++) {
-			Key<T> key = keys.get(i);
-			int compare = t.compareTo(keys.get(i).value());
+		Optional<Key<T>> key = first;
+		Optional<Key<T>> last = first;
+		while (key.isPresent()) {
+			int compare = t.compareTo(key.get().value());
 			if (compare < 0) {
 				if (isLeaf)
 					return absent();
 				else
-					return key.getLeft().find(t);
-			} else if (compare == 0 && !key.isDeleted())
-				return Optional.of(key.value());
+					return key.get().getLeft().find(t);
+			} else if (compare == 0 && !key.get().isDeleted())
+				return Optional.of(key.get().value());
+			last = key;
+			key = key.get().next();
 		}
-		if (!isLeaf) {
-			Node<T> right = keys.get(keys.size() - 1).getRight();
+		if (!isLeaf && last.isPresent()) {
+			Node<T> right = last.get().getRight();
 			if (right != null)
 				return right.find(t);
 			else
@@ -247,25 +245,24 @@ public class Node<T extends Comparable<T>> {
 	 * @return
 	 */
 	public long delete(T t) {
-		boolean isLeaf = isLeafNode();
 		int count = 0;
-		for (int i = 0; i < keys.size(); i++) {
-			Key<T> key = keys.get(i);
-			int compare = t.compareTo(keys.get(i).value());
+		boolean isLeaf = isLeafNode();
+		Optional<Key<T>> key = first;
+		Optional<Key<T>> last = first;
+		while (key.isPresent()) {
+			int compare = t.compareTo(key.get().value());
 			if (compare < 0) {
 				if (isLeaf)
 					return 0;
 				else
-					return key.getLeft().delete(t);
-			} else if (compare == 0) {
-				key.setDeleted(true);
+					return key.get().getLeft().delete(t);
+			} else if (compare == 0 && !key.get().isDeleted())
 				count++;
-			}
+			last = key;
+			key = key.get().next();
 		}
-		if (count > 0)
-			return count;
-		else if (!isLeaf) {
-			Node<T> right = keys.get(keys.size() - 1).getRight();
+		if (!isLeaf && last.isPresent()) {
+			Node<T> right = last.get().getRight();
 			if (right != null)
 				return right.delete(t);
 			else
@@ -278,7 +275,7 @@ public class Node<T extends Comparable<T>> {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Node [keys=");
-		builder.append(keys);
+		builder.append(first);
 		builder.append("]");
 		return builder.toString();
 	}
