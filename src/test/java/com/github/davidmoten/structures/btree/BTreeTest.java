@@ -38,8 +38,6 @@ public class BTreeTest {
 		assertEquals("1", t.getKeys().get(0).value());
 		assertEquals("2", t.getKeys().get(1).value());
 	}
-	
-	
 
 	/**
 	 * Given an empty BTree<String> of degree 3
@@ -62,6 +60,24 @@ public class BTreeTest {
 		assertEquals("1", top.getLeft().getKeys().get(0).value());
 		assertEquals(1, top.getRight().getKeys().size());
 		assertEquals("3", top.getRight().getKeys().get(0).value());
+	}
+
+	/**
+	 * Given an empty BTree<Integer> of degree 3
+	 * 
+	 * When I insert 2,1 in order
+	 * 
+	 * Then the top node is 1,2
+	 * 
+	 */
+	@Test
+	public void test2_5() {
+		BTree<Integer> t = new BTree<Integer>(3);
+		t.add(2);
+		t.add(1);
+		assertEquals(2, t.getKeys().size());
+		assertEquals(1, t.getKeys().get(0));
+		assertEquals(2, t.getKeys().get(0));
 	}
 
 	/**
@@ -95,14 +111,14 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test4() {
-		BTree<String> t = new BTree<String>(3);
-		t.add("1");
-		t.add("2");
-		t.add("3");
-		t.add("0");
+		BTree<Integer> t = new BTree<Integer>(3);
+		t.add(1);
+		t.add(2);
+		t.add(3);
+		t.add(0);
 		System.out.println(t);
-		Key<String> top = t.getKeys().get(0);
-		assertEquals("0", top.getLeft().getKeys().get(0).value());
+		Key<Integer> top = t.getKeys().get(0);
+		assertEquals(0, (int) top.getLeft().getKeys().get(0).value());
 	}
 
 	/**

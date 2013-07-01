@@ -26,7 +26,8 @@ public class Node<T extends Comparable<T>> {
 
 	/**
 	 * Adds the element t to the node. If root node of BTree is changed then
-	 * returns new root node otherwise returns null.
+	 * returns new root node otherwise returns null. Does not perform any
+	 * splitting.
 	 * 
 	 * @param t
 	 * @return
@@ -43,7 +44,7 @@ public class Node<T extends Comparable<T>> {
 		Node<T> result = null;
 		boolean added = false;
 		Optional<Key<T>> key = first;
-		Optional<Key<T>> last = absent();
+		Optional<Key<T>> last = first;
 		while (key.isPresent()) {
 			if (t.compareTo(key.get().value()) < 0) {
 				// don't need to check that left is non-null because of
@@ -145,7 +146,7 @@ public class Node<T extends Comparable<T>> {
 			return this;
 		}
 
-		add(first, key);
+		first = Optional.of(add(first, key));
 
 		Node<T> result = null;
 		int keyCount = countKeys();
