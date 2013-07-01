@@ -207,7 +207,7 @@ public class Node<T extends Comparable<T>> {
 					return absent();
 				else
 					return key.getLeft().find(t);
-			} else if (compare == 0)
+			} else if (compare == 0 && !key.isDeleted())
 				return Optional.of(key.value());
 		}
 		if (!isLeaf) {
@@ -218,6 +218,40 @@ public class Node<T extends Comparable<T>> {
 				return absent();
 		} else
 			return absent();
+	}
+
+	/**
+	 * Marks all keys as deleted that equal t.
+	 * 
+	 * @param t
+	 * @return
+	 */
+	public long delete(T t) {
+		boolean isLeaf = isLeafNode();
+		int count = 0;
+		for (int i = 0; i < keys.size(); i++) {
+			Key<T> key = keys.get(i);
+			int compare = t.compareTo(keys.get(i).value());
+			if (compare < 0) {
+				if (isLeaf)
+					return 0;
+				else
+					return key.getLeft().delete(t);
+			} else if (compare == 0) {
+				key.setDeleted(true);
+				count++;
+			}
+		}
+		if (count > 0)
+			return count;
+		else if (!isLeaf) {
+			Node<T> right = keys.get(keys.size() - 1).getRight();
+			if (right != null)
+				return right.delete(t);
+			else
+				return 0;
+		} else
+			return 0;
 	}
 
 	@Override

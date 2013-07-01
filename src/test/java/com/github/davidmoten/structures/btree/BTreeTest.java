@@ -298,11 +298,11 @@ public class BTreeTest {
 
 	/**
 	 * <p>
-	 * Given a empty BTree<String> of degree 3
+	 * Given an empty BTree<String> of degree 3
 	 * </p>
 	 * 
 	 * <p>
-	 * When I find 1
+	 * When I find any value
 	 * </p>
 	 * 
 	 * <p>
@@ -314,6 +314,56 @@ public class BTreeTest {
 	public void test10() {
 		BTree<Double> t = new BTree<Double>(3);
 		assertEquals(Optional.absent(), t.find(1.0));
+	}
+
+	/**
+	 * <p>
+	 * Given a BTree<String> of degree 4 with 1,2,3 inserted
+	 * </p>
+	 * 
+	 * <p>
+	 * When I delete 2
+	 * </p>
+	 * 
+	 * <p>
+	 * Then find 2 returns absent
+	 * </p>
+	 * 
+	 */
+	@Test
+	public void test11() {
+		BTree<Double> t = new BTree<Double>(4);
+		t.add(1.0);
+		t.add(2.0);
+		t.add(3.0);
+		t.delete(2.0);
+		assertEquals(Optional.absent(), t.find(2.0));
+	}
+
+	/**
+	 * <p>
+	 * Given a BTree<String> of degree 4 with 1,2,3 inserted
+	 * </p>
+	 * 
+	 * <p>
+	 * When I delete 1,2,3
+	 * </p>
+	 * 
+	 * <p>
+	 * Then find 2 returns absent
+	 * </p>
+	 * 
+	 */
+	@Test
+	public void test12() {
+		BTree<Double> t = new BTree<Double>(4);
+		t.add(1.0);
+		t.add(2.0);
+		t.add(3.0);
+		t.delete(1.0);
+		t.delete(2.0);
+		t.delete(3.0);
+		assertEquals(Optional.absent(), t.find(2.0));
 	}
 
 	private static void assertKeyValuesAre(List<Double> expected,

@@ -27,6 +27,10 @@ public class BTree<T extends Comparable<T>> implements Iterable<T> {
 		return root.find(key);
 	}
 
+	public long delete(T key) {
+		return root.delete(key);
+	}
+
 	@VisibleForTesting
 	List<? extends Key<T>> getKeys() {
 		return root.getKeys();
