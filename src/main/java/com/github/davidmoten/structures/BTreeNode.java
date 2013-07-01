@@ -21,7 +21,7 @@ public class BTreeNode<T extends Comparable<T>> {
 
     /**
      * Adds the element t to the node. If root node of BTree is changed then
-     * returns new root node otherwise returns this.
+     * returns new root node otherwise returns null.
      * 
      * @param t
      * @return
@@ -30,14 +30,16 @@ public class BTreeNode<T extends Comparable<T>> {
 
         if (!isLeafNode()) {
             BTreeNode<T> result = null;
+            boolean added = false;
             for (BTreeKey<T> key : keys) {
                 if (t.compareTo(key.value()) < 0) {
                     if (key.getLeft() == null)
                         key.setLeft(new BTreeNode<T>(degree, this));
                     result = key.getLeft().add(t);
+                    added = true;
                 }
             }
-            if (result != null) {
+            if (!added) {
                 BTreeKey<T> last = keys.get(keys.size() - 1);
                 if (last.getRight() == null)
                     last.setRight(new BTreeNode<T>(degree, this));
@@ -99,14 +101,14 @@ public class BTreeNode<T extends Comparable<T>> {
 
         add(keys, key);
 
-        final BTreeNode<T> result;
+        BTreeNode<T> result = null;
         if (keys.size() == degree) {
             // split
-            if (parent == null) {
-                parent = new BTreeNode<T>(degree, null);
+            if (isRoot()) {
+                // creating new root
+                parent = new BTreeNode<T>(degree);
                 result = parent;
-            } else
-                result = this;
+            }
 
             int medianIndex = getMedianKeyIndex();
 
@@ -114,13 +116,19 @@ public class BTreeNode<T extends Comparable<T>> {
 
             splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(medianIndex);
 
-            parent.add(medianKey);
+            BTreeNode<T> result2 = parent.add(medianKey);
+            if (result2 != null)
+                result = result2;
 
         } else
-            result = this;
+            result = null;
 
         return result;
 
+    }
+
+    private boolean isRoot() {
+        return parent == null;
     }
 
     private void splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
@@ -150,6 +158,15 @@ public class BTreeNode<T extends Comparable<T>> {
 
     public List<? extends BTreeKey<T>> getKeys() {
         return keys;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Node [keys=");
+        builder.append(keys);
+        builder.append("]");
+        return builder.toString();
     }
 
 }

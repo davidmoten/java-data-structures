@@ -53,4 +53,28 @@ public class BTreeTest {
         assertEquals(1, top.getRight().getKeys().size());
         assertEquals("3", top.getRight().getKeys().get(0).value());
     }
+
+    /**
+     * Given an empty BTree<String> of degree 3 with inserted values 1,2,3 in
+     * order.
+     * 
+     * When I insert 4
+     * 
+     * Then the node containing 3 has 4 added to it.
+     * 
+     */
+    @Test
+    public void test3() {
+        BTree<String> t = new BTree<String>(3);
+        t.add("1");
+        System.out.println(t);
+        t.add("2");
+        System.out.println(t);
+        t.add("3");
+        System.out.println(t);
+        t.add("4");
+        System.out.println(t);
+        BTreeKey<String> top = t.getKeys().get(0);
+        assertEquals("4", top.getRight().getKeys().get(1).value());
+    }
 }

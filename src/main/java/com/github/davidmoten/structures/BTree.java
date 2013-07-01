@@ -11,10 +11,22 @@ public class BTree<T extends Comparable<T>> {
     }
 
     public void add(T key) {
-        root = root.add(key);
+        BTreeNode<T> newRoot = root.add(key);
+        if (newRoot != null)
+            root = newRoot;
     }
 
     public List<? extends BTreeKey<T>> getKeys() {
         return root.getKeys();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("BTree [root=");
+        builder.append(root);
+        builder.append("]");
+        return builder.toString();
+    }
+
 }

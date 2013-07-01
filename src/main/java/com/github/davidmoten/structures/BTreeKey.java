@@ -40,4 +40,21 @@ public class BTreeKey<T extends Comparable<T>> implements
         return left != null || right != null;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Key [t=");
+        builder.append(t);
+        if (left != null) {
+            builder.append(", left=");
+            builder.append(left);
+        }
+        if (right != null) {
+            builder.append(", right=");
+            builder.append(right);
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
 }
