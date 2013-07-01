@@ -2,7 +2,6 @@ package com.github.davidmoten.structures.btree;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import java.util.List;
 
@@ -32,12 +31,15 @@ public class BTreeTest {
 	public void test1() {
 		BTree<String> t = new BTree<String>(3);
 		t.add("1");
-		assertFalse(t.getFirst().get().next().isPresent());
-		assertEquals("1", t.getFirst().get().value());
+		assertEquals(1, t.getKeys().size());
+		assertEquals("1", t.getKeys().get(0).value());
 		t.add("2");
-		assertEquals("1", t.getFirst().get().value());
-		assertEquals("2", t.getFirst().get().next().get().value());
+		assertEquals(2, t.getKeys().size());
+		assertEquals("1", t.getKeys().get(0).value());
+		assertEquals("2", t.getKeys().get(1).value());
 	}
+	
+	
 
 	/**
 	 * Given an empty BTree<String> of degree 3

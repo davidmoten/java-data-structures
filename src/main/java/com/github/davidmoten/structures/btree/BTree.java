@@ -1,13 +1,17 @@
 package com.github.davidmoten.structures.btree;
 
+import java.util.List;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 
 public class BTree<T extends Comparable<T>> {
 
 	private Node<T> root;
 
 	public BTree(int degree) {
+		Preconditions.checkArgument(degree >= 2, "degree must be >=2");
 		root = new Node<T>(degree);
 	}
 
@@ -41,6 +45,11 @@ public class BTree<T extends Comparable<T>> {
 
 	private static enum Side {
 		LEFT, RIGHT;
+	}
+
+	@VisibleForTesting
+	List<? extends Key<T>> getKeys() {
+		return root.getKeys();
 	}
 
 	// private final static class NodeIndex<R extends Comparable<R>> {

@@ -21,6 +21,7 @@ public class Key<T extends Comparable<T>> {
 	public Key(T t) {
 		this.t = t;
 		this.deleted = false;
+		this.next = Optional.absent();
 	}
 
 	public boolean isDeleted() {

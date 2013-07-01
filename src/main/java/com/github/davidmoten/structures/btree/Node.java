@@ -2,8 +2,11 @@ package com.github.davidmoten.structures.btree;
 
 import static com.google.common.base.Optional.absent;
 
+import java.util.List;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 
 public class Node<T extends Comparable<T>> {
 
@@ -30,10 +33,10 @@ public class Node<T extends Comparable<T>> {
 	 */
 	public Node<T> add(T t) {
 
-		if (!isLeafNode()) {
-			return addToNonLeafNode(t);
-		} else
+		if (isLeafNode()) {
 			return add(new Key<T>(t));
+		} else
+			return addToNonLeafNode(t);
 	}
 
 	private Node<T> addToNonLeafNode(T t) {
@@ -69,7 +72,7 @@ public class Node<T extends Comparable<T>> {
 	 */
 	private boolean isLeafNode() {
 
-		return !first.isPresent() || first.get().hasChild();
+		return !first.isPresent() || !first.get().hasChild();
 	}
 
 	/**
@@ -82,7 +85,6 @@ public class Node<T extends Comparable<T>> {
 	 */
 	private Key<T> add(Optional<Key<T>> first, Key<T> key) {
 		System.out.println("adding " + key + " to " + first);
-		Integer addedAtIndex = null;
 
 		Optional<Key<T>> k = first;
 		Optional<Key<T>> previous = absent();
@@ -137,6 +139,11 @@ public class Node<T extends Comparable<T>> {
 	 * @return
 	 */
 	private Node<T> add(Key<T> key) {
+
+		if (!first.isPresent()) {
+			first = Optional.of(key);
+			return this;
+		}
 
 		add(first, key);
 
@@ -278,6 +285,17 @@ public class Node<T extends Comparable<T>> {
 		builder.append(first);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	@VisibleForTesting
+	List<? extends Key<T>> getKeys() {
+		List<Key<T>> list = Lists.newArrayList();
+		Optional<Key<T>> key = first;
+		while (key.isPresent()) {
+			list.add(key.get());
+			key = key.get().next();
+		}
+		return list;
 	}
 
 }
