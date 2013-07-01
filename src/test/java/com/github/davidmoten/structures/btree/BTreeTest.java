@@ -200,7 +200,20 @@ public class BTreeTest {
                 .getRight().getKeys().get(0).getLeft().getKeys());
         assertKeyValuesAre(Lists.newArrayList(7.0), t.getKeys().get(0)
                 .getRight().getKeys().get(0).getRight().getKeys());
+    }
 
+    @Test
+    public void testSplitWhenDegreeIsEven() {
+        BTree<Double> t = new BTree<Double>(4);
+        t.add(1.0);
+        t.add(2.0);
+        t.add(3.0);
+        t.add(4.0);
+        assertKeyValuesAre(Lists.newArrayList(2.0), t.getKeys());
+        assertKeyValuesAre(Lists.newArrayList(1.0), t.getKeys().get(0)
+                .getLeft().getKeys());
+        assertKeyValuesAre(Lists.newArrayList(3.0, 4.0), t.getKeys().get(0)
+                .getRight().getKeys());
     }
 
     private static void assertKeyValuesAre(List<Double> expected,
