@@ -15,8 +15,12 @@ public class KeyTest {
 
         assertFalse(k.hasChild());
         k.setLeft(left);
+        k.setRight(null);
         assertTrue(k.hasChild());
         k.setLeft(null);
+        k.setRight(right);
+        assertTrue(k.hasChild());
+        k.setLeft(left);
         k.setRight(right);
         assertTrue(k.hasChild());
     }
