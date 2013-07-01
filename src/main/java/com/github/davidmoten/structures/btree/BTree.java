@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 
 public class BTree<T extends Comparable<T>> implements Iterable<T> {
 
@@ -20,6 +21,10 @@ public class BTree<T extends Comparable<T>> implements Iterable<T> {
 		Node<T> newRoot = root.add(key);
 		if (newRoot != null)
 			root = newRoot;
+	}
+
+	public Optional<T> find(T key) {
+		return root.find(key);
 	}
 
 	@VisibleForTesting
