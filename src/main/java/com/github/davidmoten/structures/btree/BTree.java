@@ -10,19 +10,50 @@ public class BTree<T extends Comparable<T>> {
 
     private Node<T> root;
 
+    /**
+     * Constructor.
+     * 
+     * @param degree
+     */
     public BTree(int degree) {
         Preconditions.checkArgument(degree >= 2, "degree must be >=2");
         root = new Node<T>(degree);
     }
 
-    public void add(T key) {
-        Optional<Node<T>> newRoot = root.add(key);
+    /**
+     * Adds an element to the b-tree. May replace root.
+     * 
+     * @param t
+     */
+    public void add(T t) {
+        Optional<Node<T>> newRoot = root.add(t);
         if (newRoot.isPresent())
             root = newRoot.get();
     }
 
-    public Optional<T> find(T key) {
-        return root.find(key);
+    /**
+     * Returns the first T found that equals t from this b-tree.
+     * 
+     * @param t
+     * @return
+     */
+    public Optional<T> find(T t) {
+        return root.find(t);
+    }
+
+    /**
+     * Returns the result of a range query.
+     * 
+     * @param t1
+     * @param t2
+     * @param op1
+     * @param op2
+     * @return
+     */
+    public Iterable<Optional<T>> find(T t1, T t2, ComparisonOperator op1,
+            ComparisonOperator op2) {
+        // TODO
+        return null;
     }
 
     public long delete(T key) {
