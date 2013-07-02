@@ -26,13 +26,13 @@ public class Node<T extends Comparable<T>> {
 
     /**
      * Adds the element t to the node. If root node of BTree is changed then
-     * returns new root node otherwise returns null. Does not perform any
-     * splitting.
+     * returns new root node otherwise returns {@link Optional}.absent(). Does
+     * not perform any splitting.
      * 
      * @param t
      * @return
      */
-    public Node<T> add(T t) {
+    public Optional<Node<T>> add(T t) {
 
         if (isLeafNode()) {
             return add(new Key<T>(t));
@@ -40,8 +40,8 @@ public class Node<T extends Comparable<T>> {
             return addToNonLeafNode(t);
     }
 
-    private Node<T> addToNonLeafNode(T t) {
-        Node<T> result = null;
+    private Optional<Node<T>> addToNonLeafNode(T t) {
+        Optional<Node<T>> result = absent();
         boolean added = false;
         Optional<Key<T>> key = first;
         Optional<Key<T>> last = first;
@@ -141,34 +141,34 @@ public class Node<T extends Comparable<T>> {
      * @param key
      * @return
      */
-    private Node<T> add(Key<T> key) {
+    private Optional<Node<T>> add(Key<T> key) {
 
         if (!first.isPresent()) {
             first = Optional.of(key);
-            return this;
+            return Optional.of(this);
         }
 
         first = Optional.of(add(first, key));
 
-        Node<T> result = null;
+        Optional<Node<T>> result = absent();
         int keyCount = countKeys();
         if (keyCount == degree) {
             // split
             if (isRoot()) {
                 // creating new root
                 parent = Optional.of(new Node<T>(degree));
-                result = parent.get();
+                result = Optional.of(parent.get());
             }
 
             Key<T> medianKey = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount);
 
-            Node<T> result2 = parent.get().add(medianKey);
+            Optional<Node<T>> result2 = parent.get().add(medianKey);
 
-            if (result2 != null)
+            if (result2.isPresent())
                 result = result2;
 
         } else
-            result = null;
+            result = absent();
 
         return result;
 

@@ -16,9 +16,9 @@ public class BTree<T extends Comparable<T>> {
     }
 
     public void add(T key) {
-        Node<T> newRoot = root.add(key);
-        if (newRoot != null)
-            root = newRoot;
+        Optional<Node<T>> newRoot = root.add(key);
+        if (newRoot.isPresent())
+            root = newRoot.get();
     }
 
     public Optional<T> find(T key) {
