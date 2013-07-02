@@ -1,12 +1,13 @@
 package com.github.davidmoten.structures.btree;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
-public class BTree<T extends Comparable<T>> {
+public class BTree<T extends Comparable<T>> implements Iterable<T> {
 
     private Node<T> root;
 
@@ -74,10 +75,10 @@ public class BTree<T extends Comparable<T>> {
         return root.getKeys();
     }
 
-    // private static enum Side {
-    // LEFT, RIGHT;
-    // }
-
+    @Override
+    public Iterator<T> iterator() {
+        return root.iterator();
+    }
     // private final static class NodeIndex<R extends Comparable<R>> {
     // public NodeIndex(Node<R> node, int index, Side side) {
     // super();

@@ -1,27 +1,21 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.google.common.base.Optional.absent;
+
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
 public class Key<T extends Comparable<T>> {
 
     private final T t;
-    private Optional<Node<T>> left = Optional.absent();
-    private Optional<Node<T>> right = Optional.absent();
-    private boolean deleted;
-    private Optional<Key<T>> next = Optional.absent();
-
-    public Optional<Key<T>> next() {
-        return next;
-    }
-
-    public void setNext(Optional<Key<T>> next) {
-        this.next = next;
-    }
+    private Optional<Node<T>> left = absent();
+    private Optional<Node<T>> right = absent();
+    private boolean deleted = false;
+    private Optional<Key<T>> next = absent();
+    private Optional<Node<T>> parent = absent();
 
     public Key(T t) {
         this.t = t;
-        this.deleted = false;
     }
 
     public boolean isDeleted() {
@@ -43,6 +37,10 @@ public class Key<T extends Comparable<T>> {
     public void setLeft(Optional<Node<T>> left) {
         Preconditions.checkNotNull(left);
         this.left = left;
+        if (left.isPresent()) {
+            left.get().setParentKeySide(
+                    Optional.of(new KeyAndSide<T>(this, Side.LEFT)));
+        }
     }
 
     public Optional<Node<T>> getRight() {
@@ -52,6 +50,10 @@ public class Key<T extends Comparable<T>> {
     public void setRight(Optional<Node<T>> right) {
         Preconditions.checkNotNull(right);
         this.right = right;
+        if (right.isPresent()) {
+            right.get().setParentKeySide(
+                    Optional.of(new KeyAndSide<T>(this, Side.RIGHT)));
+        }
     }
 
     public boolean hasChild() {
@@ -79,4 +81,19 @@ public class Key<T extends Comparable<T>> {
         return builder.toString();
     }
 
+    public Optional<Node<T>> getParent() {
+        return parent;
+    }
+
+    public void setParent(Optional<Node<T>> parent) {
+        this.parent = parent;
+    }
+
+    public Optional<Key<T>> next() {
+        return next;
+    }
+
+    public void setNext(Optional<Key<T>> next) {
+        this.next = next;
+    }
 }

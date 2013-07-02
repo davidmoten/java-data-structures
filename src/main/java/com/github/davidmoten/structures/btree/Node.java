@@ -1,7 +1,9 @@
 package com.github.davidmoten.structures.btree;
 
 import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -9,11 +11,12 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-public class Node<T extends Comparable<T>> {
+public class Node<T extends Comparable<T>> implements Iterable<T> {
 
     private final int degree;
     private Optional<Node<T>> parent;
-    private Optional<Key<T>> first;
+    private Optional<Key<T>> first = Optional.absent();
+    private Optional<KeyAndSide<T>> parentKeySide = Optional.absent();
 
     /**
      * Constructor.
@@ -25,7 +28,6 @@ public class Node<T extends Comparable<T>> {
         Preconditions.checkNotNull(parent);
         this.degree = degree;
         this.parent = parent;
-        this.first = Optional.absent();
     }
 
     /**
@@ -110,6 +112,8 @@ public class Node<T extends Comparable<T>> {
     private Key<T> add(Optional<Key<T>> first, Key<T> key) {
         System.out.println("adding " + key + " to " + first);
 
+        key.setParent(of(this));
+
         Optional<Key<T>> k = first;
         Optional<Key<T>> previous = absent();
         Optional<Key<T>> next = absent();
@@ -169,12 +173,14 @@ public class Node<T extends Comparable<T>> {
      */
     private Optional<Node<T>> add(Key<T> key) {
 
+        key.setParent(of(this));
+
         if (!first.isPresent()) {
-            first = Optional.of(key);
+            setFirst(Optional.of(key));
             return Optional.of(this);
         }
 
-        first = Optional.of(add(first, key));
+        setFirst(Optional.of(add(first, key)));
 
         Optional<Node<T>> result = absent();
         int keyCount = countKeys();
@@ -225,7 +231,7 @@ public class Node<T extends Comparable<T>> {
         Optional<Key<T>> key = first;
         int count = 1;
         Node<T> child1 = new Node<T>(degree, parent);
-        child1.first = first;
+        child1.setFirst(first);
         Optional<Key<T>> previous = absent();
         while (count < medianNumber) {
             previous = key;
@@ -236,7 +242,7 @@ public class Node<T extends Comparable<T>> {
         previous.get().setNext(Optional.<Key<T>> absent());
 
         Node<T> child2 = new Node<T>(degree, parent);
-        child2.first = key.get().next();
+        child2.setFirst(key.get().next());
 
         medianKey.setNext(Optional.<Key<T>> absent());
         medianKey.setLeft(Optional.of(child1));
@@ -351,4 +357,83 @@ public class Node<T extends Comparable<T>> {
         return list;
     }
 
+    public void setFirst(Optional<Key<T>> first) {
+        this.first = first;
+        Optional<Key<T>> key = first;
+        while (key.isPresent()) {
+            key.get().setParent(of(this));
+            key = key.get().next();
+        }
+    }
+
+    public void setParentKeySide(Optional<KeyAndSide<T>> parentKeySide) {
+        this.parentKeySide = parentKeySide;
+    }
+
+    private Optional<Key<T>> bottomLeft() {
+        if (isLeafNode())
+            return this.first;
+        else
+            return first.get().getLeft().get().bottomLeft();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<T>() {
+
+            private Optional<Key<T>> currentKey = bottomLeft();
+
+            @Override
+            public boolean hasNext() {
+                return currentKey.isPresent();
+            }
+
+            @Override
+            public T next() {
+                Preconditions.checkArgument(currentKey.isPresent(),
+                        "no more elements in iterator");
+                T value = currentKey.get().value();
+                currentKey = next(currentKey, false);
+                return value;
+            }
+
+            private Optional<Key<T>> next(Optional<Key<T>> currentKey,
+                    boolean skipRight) {
+
+                // move to bottom left of right child of current key if exists
+                if (currentKey.get().getRight().isPresent() && !skipRight) {
+                    return currentKey.get().getRight().get().bottomLeft();
+                }
+                // else to bottom left of next key if exists
+                else if (currentKey.get().next().isPresent()) {
+                    Key<T> key = currentKey.get().next().get();
+                    if (key.hasChild())
+                        return key.getLeft().get().bottomLeft();
+                    else
+                        return of(key);
+                }
+                // else to next parent key if exists skipping right child
+                else {
+                    if (!currentKey.get().getParent().get().parentKeySide
+                            .isPresent())
+                        return absent();
+                    else {
+                        KeyAndSide<T> pkSide = currentKey.get().getParent()
+                                .get().parentKeySide.get();
+                        if (pkSide.getSide().equals(Side.RIGHT)) {
+                            return next(of(pkSide.getKey()), true);
+                        } else
+                            return of(pkSide.getKey());
+                    }
+                }
+            }
+
+            @Override
+            public void remove() {
+                // TODO Auto-generated method stub
+
+            }
+
+        };
+    }
 }

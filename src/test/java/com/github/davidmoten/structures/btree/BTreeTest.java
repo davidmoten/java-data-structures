@@ -2,12 +2,15 @@ package com.github.davidmoten.structures.btree;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 public class BTreeTest {
@@ -239,6 +242,7 @@ public class BTreeTest {
                 .getRight().get().getKeys().get(0).getLeft().get().getKeys());
         assertKeyValuesAre(Lists.newArrayList(7.0), t.getKeys().get(0)
                 .getRight().get().getKeys().get(0).getRight().get().getKeys());
+        System.out.println("iterated=" + Iterables.toString(t));
     }
 
     /**
@@ -401,6 +405,49 @@ public class BTreeTest {
         t.delete(2.0);
         t.delete(3.0);
         assertEquals(Optional.absent(), t.find(2.0));
+    }
+
+    /**
+     * <p>
+     * Given an empty BTree<Integer>
+     * </p>
+     * 
+     * <p>
+     * When iterate it
+     * </p>
+     * 
+     * <p>
+     * Then the iterator has no values
+     * </p>
+     * 
+     */
+    @Test
+    public void testIteratorOnEmptyBTree() {
+        BTree<Integer> t = new BTree<Integer>(4);
+        assertFalse(t.iterator().hasNext());
+    }
+
+    /**
+     * <p>
+     * Given an BTree<Integer> with one value
+     * </p>
+     * 
+     * <p>
+     * When iterate it
+     * </p>
+     * 
+     * <p>
+     * Then the iterator returns that value only
+     * </p>
+     * 
+     */
+    @Test
+    public void testIteratorOnBTreeWithOneValue() {
+        BTree<Integer> t = new BTree<Integer>(4);
+        t.add(1);
+        Iterator<Integer> it = t.iterator();
+        assertEquals(1, (int) it.next());
+        assertFalse(it.hasNext());
     }
 
     private static void assertKeyValuesAre(List<Double> expected,
