@@ -404,7 +404,11 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
                 if (currentKey.get().getRight().isPresent() && !skipRight) {
                     return currentKey.get().getRight().get().bottomLeft();
                 } else if (currentKey.get().getRight().isPresent() && skipRight) {
-                    return currentKey.get().next();
+                    if (currentKey.get().next().isPresent())
+                        return currentKey.get().next();
+                    else {
+                        return nextParentKey(currentKey);
+                    }
                 }
                 // else to bottom left of next key if exists
                 else if (currentKey.get().next().isPresent()) {
@@ -416,17 +420,21 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
                 }
                 // else to next parent key if exists skipping right child
                 else {
-                    if (!currentKey.get().getParent().get().parentKeySide
-                            .isPresent())
-                        return absent();
-                    else {
-                        KeyAndSide<T> pkSide = currentKey.get().getParent()
-                                .get().parentKeySide.get();
-                        if (pkSide.getSide().equals(Side.RIGHT)) {
-                            return next(of(pkSide.getKey()), true);
-                        } else
-                            return of(pkSide.getKey());
-                    }
+                    return nextParentKey(currentKey);
+                }
+            }
+
+            private Optional<Key<T>> nextParentKey(Optional<Key<T>> currentKey) {
+                if (!currentKey.get().getParent().get().parentKeySide
+                        .isPresent())
+                    return absent();
+                else {
+                    KeyAndSide<T> pkSide = currentKey.get().getParent().get().parentKeySide
+                            .get();
+                    if (pkSide.getSide().equals(Side.RIGHT)) {
+                        return next(of(pkSide.getKey()), true);
+                    } else
+                        return of(pkSide.getKey());
                 }
             }
 
