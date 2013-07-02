@@ -450,6 +450,66 @@ public class BTreeTest {
         assertFalse(it.hasNext());
     }
 
+    /**
+     * <p>
+     * Given an BTree<Integer> with two values
+     * </p>
+     * 
+     * <p>
+     * When iterate it
+     * </p>
+     * 
+     * <p>
+     * Then the iterator returns those two values only
+     * </p>
+     * 
+     */
+    @Test
+    public void testIteratorOnBTreeWithTwoValue() {
+        BTree<Integer> t = new BTree<Integer>(4);
+        t.add(1);
+        t.add(2);
+        Iterator<Integer> it = t.iterator();
+        assertEquals(1, (int) it.next());
+        assertEquals(2, (int) it.next());
+        assertFalse(it.hasNext());
+    }
+
+    /**
+     * <p>
+     * Given an BTree<Integer> with two values
+     * </p>
+     * 
+     * <p>
+     * When iterate it
+     * </p>
+     * 
+     * <p>
+     * Then the iterator returns that value only
+     * </p>
+     * 
+     */
+    @Test
+    public void testIteratorOnBTreeWithManyValues() {
+        BTree<Integer> t = new BTree<Integer>(3);
+        t.add(1);
+        t.add(2);
+        t.add(3);
+        t.add(4);
+        t.add(5);
+        t.add(6);
+        t.add(7);
+        Iterator<Integer> it = t.iterator();
+        assertEquals(1, (int) it.next());
+        assertEquals(2, (int) it.next());
+        assertEquals(3, (int) it.next());
+        assertEquals(4, (int) it.next());
+        assertEquals(5, (int) it.next());
+        assertEquals(6, (int) it.next());
+        assertEquals(7, (int) it.next());
+        assertFalse(it.hasNext());
+    }
+
     private static void assertKeyValuesAre(List<Double> expected,
             List<? extends Key<Double>> keys) {
         String msg = "expected " + expected + " but was " + keys;
