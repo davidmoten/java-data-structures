@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class Node<T extends Comparable<T>> {
@@ -15,6 +16,7 @@ public class Node<T extends Comparable<T>> {
     private Optional<Key<T>> first;
 
     public Node(int degree, Optional<Node<T>> parent) {
+        Preconditions.checkNotNull(parent);
         this.degree = degree;
         this.parent = parent;
         this.first = Optional.absent();
@@ -49,7 +51,7 @@ public class Node<T extends Comparable<T>> {
             if (t.compareTo(key.get().value()) < 0) {
                 // don't need to check that left is non-null because of
                 // properties of b-tree
-                result = key.get().getLeft().add(t);
+                result = key.get().getLeft().get().add(t);
                 added = true;
                 break;
             }
@@ -60,7 +62,7 @@ public class Node<T extends Comparable<T>> {
         if (!added) {
             // don't need to check that left is non-null because of properties
             // of b-tree
-            result = last.get().getRight().add(t);
+            result = last.get().getRight().get().add(t);
         }
         return result;
     }
@@ -210,8 +212,8 @@ public class Node<T extends Comparable<T>> {
         child2.first = key.get().next();
 
         medianKey.setNext(Optional.<Key<T>> absent());
-        medianKey.setLeft(child1);
-        medianKey.setRight(child2);
+        medianKey.setLeft(Optional.of(child1));
+        medianKey.setRight(Optional.of(child2));
 
         return medianKey;
 
@@ -227,16 +229,16 @@ public class Node<T extends Comparable<T>> {
                 if (isLeaf)
                     return absent();
                 else
-                    return key.get().getLeft().find(t);
+                    return key.get().getLeft().get().find(t);
             } else if (compare == 0 && !key.get().isDeleted())
                 return Optional.of(key.get().value());
             last = key;
             key = key.get().next();
         }
         if (!isLeaf) {
-            Node<T> right = last.get().getRight();
-            if (right != null)
-                return right.find(t);
+            Optional<Node<T>> right = last.get().getRight();
+            if (right.isPresent())
+                return right.get().find(t);
             else
                 return absent();
         } else
@@ -260,7 +262,7 @@ public class Node<T extends Comparable<T>> {
                 if (isLeaf)
                     return 0;
                 else
-                    return key.get().getLeft().delete(t);
+                    return key.get().getLeft().get().delete(t);
             } else if (compare == 0 && !key.get().isDeleted()) {
                 count++;
                 key.get().setDeleted(true);
@@ -271,9 +273,9 @@ public class Node<T extends Comparable<T>> {
         if (count > 0)
             return count;
         if (!isLeaf && last.isPresent()) {
-            Node<T> right = last.get().getRight();
-            if (right != null)
-                return right.delete(t);
+            Optional<Node<T>> right = last.get().getRight();
+            if (right.isPresent())
+                return right.get().delete(t);
             else
                 return 0;
         } else

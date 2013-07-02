@@ -5,23 +5,27 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.google.common.base.Optional;
+
 public class KeyTest {
 
     @Test
     public void testHasChild() {
+        Optional<Node<Double>> absent = Optional.<Node<Double>> absent();
+
         Key<Double> k = new Key<Double>(1.0);
-        Node<Double> left = new Node<Double>(3, null);
-        Node<Double> right = new Node<Double>(3, null);
+        Node<Double> left = new Node<Double>(3, absent);
+        Node<Double> right = new Node<Double>(3, absent);
 
         assertFalse(k.hasChild());
-        k.setLeft(left);
-        k.setRight(null);
+        k.setLeft(Optional.of(left));
+        k.setRight(absent);
         assertTrue(k.hasChild());
-        k.setLeft(null);
-        k.setRight(right);
+        k.setLeft(absent);
+        k.setRight(Optional.of(right));
         assertTrue(k.hasChild());
-        k.setLeft(left);
-        k.setRight(right);
+        k.setLeft(Optional.of(left));
+        k.setRight(Optional.of(right));
         assertTrue(k.hasChild());
     }
 }

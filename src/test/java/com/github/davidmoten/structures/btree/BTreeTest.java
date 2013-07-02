@@ -69,10 +69,10 @@ public class BTreeTest {
         assertEquals(1, t.getKeys().size());
         Key<String> top = t.getKeys().get(0);
         assertEquals("2", top.value());
-        assertEquals(1, top.getLeft().getKeys().size());
-        assertEquals("1", top.getLeft().getKeys().get(0).value());
-        assertEquals(1, top.getRight().getKeys().size());
-        assertEquals("3", top.getRight().getKeys().get(0).value());
+        assertEquals(1, top.getLeft().get().getKeys().size());
+        assertEquals("1", top.getLeft().get().getKeys().get(0).value());
+        assertEquals(1, top.getRight().get().getKeys().size());
+        assertEquals("3", top.getRight().get().getKeys().get(0).value());
     }
 
     /**
@@ -110,7 +110,7 @@ public class BTreeTest {
         t.add("3");
         t.add("4");
         Key<String> top = t.getKeys().get(0);
-        assertEquals("4", top.getRight().getKeys().get(1).value());
+        assertEquals("4", top.getRight().get().getKeys().get(1).value());
     }
 
     /**
@@ -131,7 +131,7 @@ public class BTreeTest {
         t.add(0);
         System.out.println(t);
         Key<Integer> top = t.getKeys().get(0);
-        assertEquals(0, (int) top.getLeft().getKeys().get(0).value());
+        assertEquals(0, (int) top.getLeft().get().getKeys().get(0).value());
     }
 
     /**
@@ -152,9 +152,10 @@ public class BTreeTest {
         t.add(0.0);
         System.out.println(t);
         Key<Double> top = t.getKeys().get(0);
-        assertKeyValuesAre(Lists.newArrayList(0.0, 1.0), top.getLeft()
+        assertKeyValuesAre(Lists.newArrayList(0.0, 1.0), top.getLeft().get()
                 .getKeys());
-        assertKeyValuesAre(Lists.newArrayList(3.0), top.getRight().getKeys());
+        assertKeyValuesAre(Lists.newArrayList(3.0), top.getRight().get()
+                .getKeys());
     }
 
     /**
@@ -177,9 +178,9 @@ public class BTreeTest {
         System.out.println(t);
         assertKeyValuesAre(Lists.newArrayList(0.5, 2.0), t.getKeys());
         assertKeyValuesAre(Lists.newArrayList(0.0), t.getKeys().get(0)
-                .getLeft().getKeys());
+                .getLeft().get().getKeys());
         assertKeyValuesAre(Lists.newArrayList(1.0), t.getKeys().get(0)
-                .getRight().getKeys());
+                .getRight().get().getKeys());
     }
 
     /**
@@ -227,17 +228,17 @@ public class BTreeTest {
         System.out.println(t);
         assertKeyValuesAre(Lists.newArrayList(4.0), t.getKeys());
         assertKeyValuesAre(Lists.newArrayList(2.0), t.getKeys().get(0)
-                .getLeft().getKeys());
+                .getLeft().get().getKeys());
         assertKeyValuesAre(Lists.newArrayList(6.0), t.getKeys().get(0)
-                .getRight().getKeys());
+                .getRight().get().getKeys());
         assertKeyValuesAre(Lists.newArrayList(1.0), t.getKeys().get(0)
-                .getLeft().getKeys().get(0).getLeft().getKeys());
+                .getLeft().get().getKeys().get(0).getLeft().get().getKeys());
         assertKeyValuesAre(Lists.newArrayList(3.0), t.getKeys().get(0)
-                .getLeft().getKeys().get(0).getRight().getKeys());
+                .getLeft().get().getKeys().get(0).getRight().get().getKeys());
         assertKeyValuesAre(Lists.newArrayList(5.0), t.getKeys().get(0)
-                .getRight().getKeys().get(0).getLeft().getKeys());
+                .getRight().get().getKeys().get(0).getLeft().get().getKeys());
         assertKeyValuesAre(Lists.newArrayList(7.0), t.getKeys().get(0)
-                .getRight().getKeys().get(0).getRight().getKeys());
+                .getRight().get().getKeys().get(0).getRight().get().getKeys());
     }
 
     /**
@@ -269,9 +270,9 @@ public class BTreeTest {
         t.add(4.0);
         assertKeyValuesAre(newArrayList(2.0), t.getKeys());
         assertKeyValuesAre(newArrayList(1.0), t.getKeys().get(0).getLeft()
-                .getKeys());
+                .get().getKeys());
         assertKeyValuesAre(newArrayList(3.0, 4.0), t.getKeys().get(0)
-                .getRight().getKeys());
+                .getRight().get().getKeys());
     }
 
     /**
