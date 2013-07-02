@@ -83,6 +83,7 @@ public class Node<T extends Comparable<T>> {
      * in the list of keys.
      * 
      * @param first
+     *            will always have a value
      * @param key
      */
     private Key<T> add(Optional<Key<T>> first, Key<T> key) {
@@ -103,7 +104,7 @@ public class Node<T extends Comparable<T>> {
             k = k.get().next();
         }
 
-        if (!next.isPresent() && previous.isPresent()) {
+        if (!next.isPresent()) {
             previous.get().setNext(Optional.of(key));
         }
 
