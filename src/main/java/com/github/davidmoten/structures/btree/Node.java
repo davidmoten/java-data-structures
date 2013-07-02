@@ -15,6 +15,12 @@ public class Node<T extends Comparable<T>> {
     private Optional<Node<T>> parent;
     private Optional<Key<T>> first;
 
+    /**
+     * Constructor.
+     * 
+     * @param degree
+     * @param parent
+     */
     public Node(int degree, Optional<Node<T>> parent) {
         Preconditions.checkNotNull(parent);
         this.degree = degree;
@@ -22,14 +28,18 @@ public class Node<T extends Comparable<T>> {
         this.first = Optional.absent();
     }
 
+    /**
+     * Constructor. Should be used to create root node only.
+     * 
+     * @param degree
+     */
     public Node(int degree) {
         this(degree, Optional.<Node<T>> absent());
     }
 
     /**
      * Adds the element t to the node. If root node of BTree is changed then
-     * returns new root node otherwise returns {@link Optional}.absent(). Does
-     * not perform any splitting.
+     * returns new root node otherwise returns {@link Optional}.absent().
      * 
      * @param t
      * @return
@@ -42,14 +52,23 @@ public class Node<T extends Comparable<T>> {
             return addToNonLeafNode(t);
     }
 
+    /**
+     * Adds the element to the node. If root node of BTree is changed then
+     * returns new root node otherwise returns {@link Optional}.absent().
+     * 
+     * @param t
+     * @return
+     */
     private Optional<Node<T>> addToNonLeafNode(T t) {
+        // Note that first will be present because if is internal (non-leaf)
+        // node then it must have some keys
         Optional<Node<T>> result = absent();
         boolean added = false;
         Optional<Key<T>> key = first;
         Optional<Key<T>> last = first;
         while (key.isPresent()) {
             if (t.compareTo(key.get().value()) < 0) {
-                // don't need to check that left is non-null because of
+                // don't need to check that left is present because of
                 // properties of b-tree
                 result = key.get().getLeft().get().add(t);
                 added = true;
@@ -60,7 +79,7 @@ public class Node<T extends Comparable<T>> {
         }
 
         if (!added) {
-            // don't need to check that left is non-null because of properties
+            // don't need to check that left is present because of properties
             // of b-tree
             result = last.get().getRight().get().add(t);
         }
@@ -126,6 +145,11 @@ public class Node<T extends Comparable<T>> {
         return result;
     }
 
+    /**
+     * Returns the number of keys in this node.
+     * 
+     * @return
+     */
     private int countKeys() {
         int count = 0;
         Optional<Key<T>> k = first;
@@ -186,13 +210,16 @@ public class Node<T extends Comparable<T>> {
         return !parent.isPresent();
     }
 
+    /**
+     * Returns the median key with the keys before it as left child and keys
+     * after it as right child.
+     * 
+     * @param keyCount
+     * @return
+     */
     private Key<T> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
             int keyCount) {
-        int medianNumber;
-        if (keyCount % 2 == 1)
-            medianNumber = keyCount / 2 + 1;
-        else
-            medianNumber = (keyCount - 1) / 2 + 1;
+        int medianNumber = getMedianNumber(keyCount);
 
         // create child1
         Optional<Key<T>> key = first;
@@ -219,6 +246,28 @@ public class Node<T extends Comparable<T>> {
 
     }
 
+    /**
+     * Returns the median number between 1 and number of keys.
+     * 
+     * @param keyCount
+     * @return
+     */
+    private int getMedianNumber(int keyCount) {
+        int medianNumber;
+        if (keyCount % 2 == 1)
+            medianNumber = keyCount / 2 + 1;
+        else
+            medianNumber = (keyCount - 1) / 2 + 1;
+        return medianNumber;
+    }
+
+    /**
+     * Returns the T matching t from this node or its children. Returns
+     * {@link Optional}.absent() if not found.
+     * 
+     * @param t
+     * @return
+     */
     public Optional<T> find(T t) {
         boolean isLeaf = isLeafNode();
         Optional<Key<T>> key = first;

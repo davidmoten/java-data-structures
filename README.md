@@ -7,7 +7,7 @@ B-Tree
 ---------------
 Aims:
 * use generics
-* use Guava Optional instead of null
+* null not used at all (used Guava Optional)
 * 100% unit test coverage
 * thread-safe with minimal locking
 * persist to disk and load from disk efficiently
