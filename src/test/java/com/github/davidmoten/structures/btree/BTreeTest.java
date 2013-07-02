@@ -477,7 +477,38 @@ public class BTreeTest {
 
     /**
      * <p>
-     * Given an BTree<Integer> with two values
+     * Given an BTree<Integer> with 5 values
+     * </p>
+     * 
+     * <p>
+     * When iterate it
+     * </p>
+     * 
+     * <p>
+     * Then the iterator returns those values only
+     * </p>
+     * 
+     */
+    @Test
+    public void testIteratorOnBTreeWith5Values() {
+        BTree<Integer> t = new BTree<Integer>(3);
+        t.add(1);
+        t.add(2);
+        t.add(3);
+        t.add(4);
+        t.add(5);
+        Iterator<Integer> it = t.iterator();
+        assertEquals(1, (int) it.next());
+        assertEquals(2, (int) it.next());
+        assertEquals(3, (int) it.next());
+        assertEquals(4, (int) it.next());
+        assertEquals(5, (int) it.next());
+        assertFalse(it.hasNext());
+    }
+
+    /**
+     * <p>
+     * Given an BTree<Integer> with 7 values
      * </p>
      * 
      * <p>
@@ -490,7 +521,7 @@ public class BTreeTest {
      * 
      */
     @Test
-    public void testIteratorOnBTreeWithManyValues() {
+    public void testIteratorOnBTreeWith7Values() {
         BTree<Integer> t = new BTree<Integer>(3);
         t.add(1);
         t.add(2);

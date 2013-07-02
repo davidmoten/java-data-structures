@@ -403,6 +403,8 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
                 // move to bottom left of right child of current key if exists
                 if (currentKey.get().getRight().isPresent() && !skipRight) {
                     return currentKey.get().getRight().get().bottomLeft();
+                } else if (currentKey.get().getRight().isPresent() && skipRight) {
+                    return currentKey.get().next();
                 }
                 // else to bottom left of next key if exists
                 else if (currentKey.get().next().isPresent()) {
