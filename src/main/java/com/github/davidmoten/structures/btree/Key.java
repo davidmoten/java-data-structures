@@ -78,11 +78,11 @@ public class Key<T extends Comparable<T>> {
 	public void updateLinks() {
 		if (left.isPresent()) {
 			left.get().setParentKeySide(
-					Optional.of(new KeyAndSide<T>(this, Side.LEFT)));
+					Optional.of(new KeySide<T>(this, Side.LEFT)));
 		}
 		if (right.isPresent()) {
 			right.get().setParentKeySide(
-					Optional.of(new KeyAndSide<T>(this, Side.RIGHT)));
+					Optional.of(new KeySide<T>(this, Side.RIGHT)));
 		}
 	}
 

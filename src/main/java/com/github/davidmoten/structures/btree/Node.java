@@ -16,7 +16,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 	private final int degree;
 	private Optional<Node<T>> parent;
 	private Optional<Key<T>> first = Optional.absent();
-	private Optional<KeyAndSide<T>> parentKeySide = Optional.absent();
+	private Optional<KeySide<T>> parentKeySide = Optional.absent();
 
 	/**
 	 * Constructor.
@@ -254,6 +254,8 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 
 		child1.updateParents();
 		child2.updateParents();
+		child1.setParentKeySide(of(new KeySide<T>(medianKey, Side.LEFT)));
+		child2.setParentKeySide(of(new KeySide<T>(medianKey, Side.RIGHT)));
 		Optional<Node<T>> result = parent.get().add(medianKey);
 		return result;
 	}
@@ -395,7 +397,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 		updateParents();
 	}
 
-	public void setParentKeySide(Optional<KeyAndSide<T>> parentKeySide) {
+	public void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
 		this.parentKeySide = parentKeySide;
 	}
 
@@ -458,7 +460,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 						.isPresent())
 					return absent();
 				else {
-					KeyAndSide<T> pkSide = currentKey.get().getParent().get().parentKeySide
+					KeySide<T> pkSide = currentKey.get().getParent().get().parentKeySide
 							.get();
 					if (pkSide.getSide().equals(Side.RIGHT)) {
 						return next(of(pkSide.getKey()), true);
