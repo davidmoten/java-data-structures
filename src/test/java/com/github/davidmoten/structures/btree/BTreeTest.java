@@ -543,17 +543,16 @@ public class BTreeTest {
 		assertFalse(it.hasNext());
 	}
 
-	// @Test
+	@Test
 	public void testIteratorOnBTreeWithNValues() {
-		BTree<Integer> t = new BTree<Integer>(3);
 		for (int n = 1; n <= 1000; n++) {
+			BTree<Integer> t = new BTree<Integer>(3);
 			for (int i = 1; i <= n; i++)
 				t.add(i);
+			System.out.println(t);
 			Iterator<Integer> it = t.iterator();
 			for (int i = 1; i <= n; i++) {
-				int v = it.next();
-				assertEquals("n=" + n + " expected " + i + " but was " + v, i,
-						v);
+				assertEquals("n=" + n, i, (int) it.next());
 			}
 			assertFalse(it.hasNext());
 		}
