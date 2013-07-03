@@ -56,23 +56,7 @@ public class Key<T extends Comparable<T>> {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Key [t=");
-		builder.append(t);
-		if (left.isPresent()) {
-			builder.append(", left=");
-			builder.append(left.get());
-		}
-		if (right.isPresent()) {
-			builder.append(", right=");
-			builder.append(right.get());
-		}
-		if (next.isPresent()) {
-			builder.append(", next=");
-			builder.append(next.get());
-		}
-		builder.append("]");
-		return builder.toString();
+		return toString("  ");
 	}
 
 	public Optional<Node<T>> getParent() {
@@ -100,5 +84,25 @@ public class Key<T extends Comparable<T>> {
 			right.get().setParentKeySide(
 					Optional.of(new KeyAndSide<T>(this, Side.RIGHT)));
 		}
+	}
+
+	public String toString(String space) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("\n" + space + "Key [t=");
+		builder.append(t);
+		if (left.isPresent()) {
+			builder.append("\n" + space + "  left=");
+			builder.append(left.get().toString(space + "    "));
+		}
+		if (right.isPresent()) {
+			builder.append("\n" + space + "  right=");
+			builder.append(right.get().toString(space + "    "));
+		}
+		if (next.isPresent()) {
+			builder.append("\n" + space + "  next=");
+			builder.append(next.get().toString(space));
+		}
+		builder.append("]");
+		return builder.toString();
 	}
 }

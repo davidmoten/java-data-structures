@@ -364,6 +364,20 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 		return builder.toString();
 	}
 
+	public String toString(String space) {
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("\n" + space + "Node [");
+		if (first.isPresent()) {
+			builder.append("\n" + space + "  first=");
+			builder.append(first.get().toString(space + "    "));
+		}
+		if (parentKeySide.isPresent())
+			builder.append("\n" + space + "  pks=" + parentKeySide.get());
+		builder.append("]");
+		return builder.toString();
+	}
+
 	@VisibleForTesting
 	List<? extends Key<T>> getKeys() {
 		List<Key<T>> list = Lists.newArrayList();
