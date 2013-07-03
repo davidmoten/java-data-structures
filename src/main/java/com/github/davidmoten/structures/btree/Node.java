@@ -260,8 +260,6 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 
         child1.updateParents();
         child2.updateParents();
-        child1.setParentKeySide(of(new KeySide<T>(medianKey, Side.LEFT)));
-        child2.setParentKeySide(of(new KeySide<T>(medianKey, Side.RIGHT)));
         Optional<Node<T>> result = parent.add(medianKey);
         return result;
     }
