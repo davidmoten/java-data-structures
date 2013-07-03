@@ -200,11 +200,12 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
             } else {
                 theParent = parentKeySide.get().getKey().getNode().get();
             }
-            Optional<Node<T>> result2 = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+            // split result is present if root changed by splitting
+            Optional<Node<T>> splitResult = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
                     keyCount, theParent);
 
-            if (result2.isPresent())
-                result = result2;
+            if (splitResult.isPresent())
+                result = splitResult;
 
         } else
             result = absent();
@@ -233,10 +234,12 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
      */
     private Optional<Node<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
             int keyCount, Node<T> parent) {
+
         int medianNumber = getMedianNumber(keyCount);
 
-        Optional<Key<T>> key = first;
+        // get the median key and the preceding key
         int count = 1;
+        Optional<Key<T>> key = first;
         Optional<Key<T>> previous = absent();
         while (count < medianNumber) {
             previous = key;
@@ -245,6 +248,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
         }
         Key<T> medianKey = key.get();
         previous.get().setNext(Optional.<Key<T>> absent());
+
         // create child1 of first ->..->previous
         Node<T> child1 = new Node<T>(degree, of(new KeySide<T>(medianKey,
                 Side.LEFT)));
@@ -255,6 +259,8 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
                 Side.RIGHT)));
         child2.setFirst(key.get().next());
 
+        // set the links on medianKey to the next key in the same node and to
+        // its children
         medianKey.setNext(Optional.<Key<T>> absent());
         medianKey.setLeft(Optional.of(child1));
         medianKey.setRight(Optional.of(child2));
