@@ -14,8 +14,10 @@ public class KeyTest {
         Optional<Node<Double>> absent = Optional.<Node<Double>> absent();
 
         Key<Double> k = new Key<Double>(1.0);
-        Node<Double> left = new Node<Double>(3, absent);
-        Node<Double> right = new Node<Double>(3, absent);
+        Node<Double> left = new Node<Double>(3,
+                Optional.<KeySide<Double>> absent());
+        Node<Double> right = new Node<Double>(3,
+                Optional.<KeySide<Double>> absent());
 
         assertFalse(k.hasChild());
         k.setLeft(Optional.of(left));
