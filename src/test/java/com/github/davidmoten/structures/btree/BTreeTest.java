@@ -543,6 +543,22 @@ public class BTreeTest {
 		assertFalse(it.hasNext());
 	}
 
+	// @Test
+	public void testIteratorOnBTreeWithNValues() {
+		BTree<Integer> t = new BTree<Integer>(3);
+		for (int n = 1; n <= 1000; n++) {
+			for (int i = 1; i <= n; i++)
+				t.add(i);
+			Iterator<Integer> it = t.iterator();
+			for (int i = 1; i <= n; i++) {
+				int v = it.next();
+				assertEquals("n=" + n + " expected " + i + " but was " + v, i,
+						v);
+			}
+			assertFalse(it.hasNext());
+		}
+	}
+
 	private static void assertKeyValuesAre(List<Double> expected,
 			List<? extends Key<Double>> keys) {
 		String msg = "expected " + expected + " but was " + keys;
