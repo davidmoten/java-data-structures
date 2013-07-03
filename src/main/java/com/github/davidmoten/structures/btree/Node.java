@@ -111,7 +111,6 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 	 * @param key
 	 */
 	private Key<T> add(Key<T> first, Key<T> key) {
-		System.out.println("  adding " + key + " to " + first);
 
 		// key is not on the current node
 		key.setNode(of(this));
@@ -152,6 +151,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 			next.get().setLeft(key.getRight());
 			next.get().updateLinks();
 		}
+		key.updateLinks();
 		return result;
 	}
 
@@ -235,6 +235,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 		int count = 1;
 		Node<T> child1 = new Node<T>(degree, parent);
 		child1.setFirst(first);
+
 		Optional<Key<T>> previous = absent();
 		while (count < medianNumber) {
 			previous = key;
@@ -473,5 +474,17 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 			}
 
 		};
+	}
+
+	public String keysAsString() {
+		StringBuilder s = new StringBuilder();
+		Optional<Key<T>> key = first;
+		while (key.isPresent()) {
+			if (s.length() > 0)
+				s.append(",");
+			s.append(key.get().value());
+			key = key.get().next();
+		}
+		return s.toString();
 	}
 }

@@ -526,11 +526,12 @@ public class BTreeTest {
 		t.add(1);
 		t.add(2);
 		t.add(3);
+		System.out.println(t);
 		t.add(4);
 		t.add(5);
 		t.add(6);
 		t.add(7);
-		System.out.println(t);
+		// System.out.println(t);
 		Iterator<Integer> it = t.iterator();
 		assertEquals(1, (int) it.next());
 		assertEquals(2, (int) it.next());

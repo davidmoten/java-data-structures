@@ -90,6 +90,10 @@ public class Key<T extends Comparable<T>> {
 		StringBuilder builder = new StringBuilder();
 		builder.append("\n" + space + "Key [t=");
 		builder.append(t);
+		if (node.isPresent()) {
+			builder.append(", node=");
+			builder.append(node.get().keysAsString());
+		}
 		if (left.isPresent()) {
 			builder.append("\n" + space + "  left=");
 			builder.append(left.get().toString(space + "    "));
