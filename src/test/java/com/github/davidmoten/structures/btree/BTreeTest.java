@@ -218,11 +218,11 @@ public class BTreeTest {
 		BTree<Double> t = new BTree<Double>(3);
 		t.add(1.0);
 		t.add(2.0);
-		System.out.println(t);
+		// System.out.println(t);
 		t.add(3.0);
-		System.out.println(t);
+		// System.out.println(t);
 		t.add(4.0);
-		System.out.println(t);
+		// System.out.println(t);
 		t.add(5.0);
 		System.out.println(t);
 		t.add(6.0);

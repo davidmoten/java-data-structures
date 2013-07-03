@@ -103,24 +103,27 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 	/**
 	 * Inserts key into the list of keys in sorted order. The inserted key has
 	 * priority in terms of its children become the children of its neighbours
-	 * in the list of keys.
+	 * in the list of keys. This method does not do splitting of keys, the key
+	 * is guaranteed to be added against this node.
 	 * 
 	 * @param first
 	 *            will always have a value
 	 * @param key
 	 */
-	private Key<T> add(Optional<Key<T>> first, Key<T> key) {
-		System.out.println("adding " + key + " to " + first);
+	private Key<T> add(Key<T> first, Key<T> key) {
+		System.out.println("  adding " + key + " to " + first);
 
+		// key is not on the current node
 		key.setNode(of(this));
 
-		Optional<Key<T>> k = first;
+		// insert key
+		Optional<Key<T>> k = of(first);
 		Optional<Key<T>> previous = absent();
 		Optional<Key<T>> next = absent();
 		while (k.isPresent()) {
 			if (key.value().compareTo(k.get().value()) < 0) {
 				if (previous.isPresent())
-					previous.get().setNext(Optional.of(key));
+					previous.get().setNext(of(key));
 				key.setNext(k);
 				next = k;
 				break;
@@ -130,21 +133,24 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 		}
 
 		if (!next.isPresent()) {
-			previous.get().setNext(Optional.of(key));
+			previous.get().setNext(of(key));
 		}
 
+		// if key is the first key then return key as the new first
 		Key<T> result;
 		if (!previous.isPresent())
 			result = key;
 		else
-			result = first.get();
+			result = first;
 
 		// update previous and following keys to the newly added one
 		if (previous.isPresent()) {
 			previous.get().setRight(key.getLeft());
+			previous.get().updateLinks();
 		}
 		if (next.isPresent()) {
 			next.get().setLeft(key.getRight());
+			next.get().updateLinks();
 		}
 		return result;
 	}
@@ -180,7 +186,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 			return Optional.of(this);
 		}
 
-		setFirst(Optional.of(add(first, key)));
+		first = of(add(first.get(), key));
 
 		Optional<Node<T>> result = absent();
 		int keyCount = countKeys();
@@ -347,8 +353,11 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Node [first=");
-		builder.append(first);
+		builder.append("Node [");
+		if (first.isPresent()) {
+			builder.append("first=");
+			builder.append(first.get());
+		}
 		if (parentKeySide.isPresent())
 			builder.append(", pks=" + parentKeySide.get());
 		builder.append("]");

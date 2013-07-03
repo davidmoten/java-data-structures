@@ -37,10 +37,7 @@ public class Key<T extends Comparable<T>> {
 	public void setLeft(Optional<Node<T>> left) {
 		Preconditions.checkNotNull(left);
 		this.left = left;
-		if (left.isPresent()) {
-			left.get().setParentKeySide(
-					Optional.of(new KeyAndSide<T>(this, Side.LEFT)));
-		}
+
 	}
 
 	public Optional<Node<T>> getRight() {
@@ -50,10 +47,7 @@ public class Key<T extends Comparable<T>> {
 	public void setRight(Optional<Node<T>> right) {
 		Preconditions.checkNotNull(right);
 		this.right = right;
-		if (right.isPresent()) {
-			right.get().setParentKeySide(
-					Optional.of(new KeyAndSide<T>(this, Side.RIGHT)));
-		}
+
 	}
 
 	public boolean hasChild() {
@@ -95,5 +89,16 @@ public class Key<T extends Comparable<T>> {
 
 	public void setNext(Optional<Key<T>> next) {
 		this.next = next;
+	}
+
+	public void updateLinks() {
+		if (left.isPresent()) {
+			left.get().setParentKeySide(
+					Optional.of(new KeyAndSide<T>(this, Side.LEFT)));
+		}
+		if (right.isPresent()) {
+			right.get().setParentKeySide(
+					Optional.of(new KeyAndSide<T>(this, Side.RIGHT)));
+		}
 	}
 }
