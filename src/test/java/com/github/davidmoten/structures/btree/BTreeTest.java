@@ -552,7 +552,10 @@ public class BTreeTest {
 			System.out.println(t);
 			Iterator<Integer> it = t.iterator();
 			for (int i = 1; i <= n; i++) {
-				assertEquals("n=" + n, i, (int) it.next());
+				int next = it.next();
+				if (i != next)
+					System.out.println(t);
+				assertEquals("n=" + n, i, next);
 			}
 			assertFalse(it.hasNext());
 		}
