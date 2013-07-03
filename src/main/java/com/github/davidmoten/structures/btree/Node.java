@@ -235,7 +235,6 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
             int keyCount, Node<T> parent) {
         int medianNumber = getMedianNumber(keyCount);
 
-        // create child1
         Optional<Key<T>> key = first;
         int count = 1;
         Optional<Key<T>> previous = absent();
@@ -246,10 +245,12 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
         }
         Key<T> medianKey = key.get();
         previous.get().setNext(Optional.<Key<T>> absent());
+        // create child1 of first ->..->previous
         Node<T> child1 = new Node<T>(degree, of(new KeySide<T>(medianKey,
                 Side.LEFT)));
         child1.setFirst(first);
 
+        // create child2 of medianKey.next ->..->last
         Node<T> child2 = new Node<T>(degree, of(new KeySide<T>(medianKey,
                 Side.RIGHT)));
         child2.setFirst(key.get().next());
@@ -258,10 +259,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
         medianKey.setLeft(Optional.of(child1));
         medianKey.setRight(Optional.of(child2));
 
-        child1.updateParents();
-        child2.updateParents();
-        Optional<Node<T>> result = parent.add(medianKey);
-        return result;
+        return parent.add(medianKey);
     }
 
     private void updateParents() {
