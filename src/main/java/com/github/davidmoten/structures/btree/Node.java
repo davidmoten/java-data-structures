@@ -115,19 +115,17 @@ class Node<T extends Comparable<T>> implements Iterable<T> {
         key.setNode(of(this));
 
         // insert key
-        Optional<Key<T>> k = of(first);
         Optional<Key<T>> previous = absent();
         Optional<Key<T>> next = absent();
-        while (k.isPresent()) {
-            if (key.value().compareTo(k.get().value()) < 0) {
+        for (Key<T> k : keys(of(first))) {
+            if (key.value().compareTo(k.value()) < 0) {
                 if (previous.isPresent())
                     previous.get().setNext(of(key));
-                key.setNext(k);
-                next = k;
+                key.setNext(of(k));
+                next = of(k);
                 break;
             }
-            previous = k;
-            k = k.get().next();
+            previous = of(k);
         }
 
         if (!next.isPresent()) {
@@ -335,21 +333,19 @@ class Node<T extends Comparable<T>> implements Iterable<T> {
     long delete(T t) {
         int count = 0;
         boolean isLeaf = isLeafNode();
-        Optional<Key<T>> key = first;
-        Optional<Key<T>> last = first;
-        while (key.isPresent()) {
-            int compare = t.compareTo(key.get().value());
+        Optional<Key<T>> last = Optional.absent();
+        for (Key<T> key : keys()) {
+            int compare = t.compareTo(key.value());
             if (compare < 0) {
                 if (isLeaf)
                     return 0;
                 else
-                    return key.get().getLeft().get().delete(t);
-            } else if (compare == 0 && !key.get().isDeleted()) {
+                    return key.getLeft().get().delete(t);
+            } else if (compare == 0 && !key.isDeleted()) {
                 count++;
-                key.get().setDeleted(true);
+                key.setDeleted(true);
             }
-            last = key;
-            key = key.get().next();
+            last = of(key);
         }
         if (count > 0)
             return count;
@@ -363,42 +359,11 @@ class Node<T extends Comparable<T>> implements Iterable<T> {
             return 0;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Node [");
-        if (first.isPresent()) {
-            builder.append("first=");
-            builder.append(first.get());
-        }
-        if (parentKeySide.isPresent())
-            builder.append(", pks=" + parentKeySide.get());
-        builder.append("]");
-        return builder.toString();
-    }
-
-    String toString(String space) {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("\n" + space + "Node [");
-        if (first.isPresent()) {
-            builder.append("\n" + space + "  first=");
-            builder.append(first.get().toString(space + "    "));
-        }
-        if (parentKeySide.isPresent())
-            builder.append("\n" + space + "  pks=" + parentKeySide.get());
-        builder.append("]");
-        return builder.toString();
-    }
-
     @VisibleForTesting
     List<? extends Key<T>> getKeys() {
         List<Key<T>> list = Lists.newArrayList();
-        Optional<Key<T>> key = first;
-        while (key.isPresent()) {
-            list.add(key.get());
-            key = key.get().next();
-        }
+        for (Key<T> key : keys())
+            list.add(key);
         return list;
     }
 
@@ -409,11 +374,8 @@ class Node<T extends Comparable<T>> implements Iterable<T> {
     }
 
     private void updateKeys() {
-        Optional<Key<T>> key = first;
-        while (key.isPresent()) {
-            key.get().updateLinks();
-            key = key.get().next();
-        }
+        for (Key<T> key : keys())
+            key.updateLinks();
     }
 
     void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
@@ -432,6 +394,41 @@ class Node<T extends Comparable<T>> implements Iterable<T> {
         return new NodeIterator<T>(this);
     }
 
+    private Iterable<Key<T>> keys(final Optional<Key<T>> first) {
+        return new Iterable<Key<T>>() {
+
+            @Override
+            public Iterator<Key<T>> iterator() {
+                return new Iterator<Key<T>>() {
+                    Optional<Key<T>> key = first;
+
+                    @Override
+                    public boolean hasNext() {
+                        return key.isPresent();
+                    }
+
+                    @Override
+                    public Key<T> next() {
+                        Key<T> result = key.get();
+                        key = key.get().next();
+                        return result;
+                    }
+
+                    @Override
+                    public void remove() {
+                        // do nothing
+                    }
+                };
+            }
+
+        };
+
+    }
+
+    private Iterable<Key<T>> keys() {
+        return keys(first);
+    }
+
     String keysAsString() {
         StringBuilder s = new StringBuilder();
         Optional<Key<T>> key = first;
@@ -447,4 +444,33 @@ class Node<T extends Comparable<T>> implements Iterable<T> {
     Optional<KeySide<T>> getParentKeySide() {
         return parentKeySide;
     }
+
+    String toString(String space) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n" + space + "Node [");
+        if (first.isPresent()) {
+            builder.append("\n" + space + "  first=");
+            builder.append(first.get().toString(space + "    "));
+        }
+        if (parentKeySide.isPresent())
+            builder.append("\n" + space + "  pks=" + parentKeySide.get());
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Node [");
+        if (first.isPresent()) {
+            builder.append("first=");
+            builder.append(first.get());
+        }
+        if (parentKeySide.isPresent())
+            builder.append(", pks=" + parentKeySide.get());
+        builder.append("]");
+        return builder.toString();
+    }
+
 }
