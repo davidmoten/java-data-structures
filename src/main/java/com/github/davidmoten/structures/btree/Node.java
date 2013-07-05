@@ -11,7 +11,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-public class Node<T extends Comparable<T>> implements Iterable<T> {
+class Node<T extends Comparable<T>> implements Iterable<T> {
 
     private final int degree;
     private Optional<Key<T>> first = Optional.absent();
@@ -23,7 +23,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
      * @param degree
      * @param parent
      */
-    public Node(int degree, Optional<KeySide<T>> parentKeySide) {
+    Node(int degree, Optional<KeySide<T>> parentKeySide) {
         Preconditions.checkNotNull(parentKeySide);
         this.degree = degree;
         this.parentKeySide = parentKeySide;
@@ -34,7 +34,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
      * 
      * @param degree
      */
-    public Node(int degree) {
+    Node(int degree) {
         this(degree, Optional.<KeySide<T>> absent());
     }
 
@@ -45,7 +45,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
      * @param t
      * @return
      */
-    public Optional<Node<T>> add(T t) {
+    Optional<Node<T>> add(T t) {
 
         if (isLeafNode()) {
             return add(new Key<T>(t));
@@ -300,7 +300,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
      * @param t
      * @return
      */
-    public Optional<T> find(T t) {
+    Optional<T> find(T t) {
         boolean isLeaf = isLeafNode();
         Optional<Key<T>> key = first;
         Optional<Key<T>> last = first;
@@ -332,7 +332,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
      * @param t
      * @return
      */
-    public long delete(T t) {
+    long delete(T t) {
         int count = 0;
         boolean isLeaf = isLeafNode();
         Optional<Key<T>> key = first;
@@ -377,7 +377,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
         return builder.toString();
     }
 
-    public String toString(String space) {
+    String toString(String space) {
         StringBuilder builder = new StringBuilder();
 
         builder.append("\n" + space + "Node [");
@@ -402,7 +402,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
         return list;
     }
 
-    public void setFirst(Optional<Key<T>> first) {
+    void setFirst(Optional<Key<T>> first) {
         this.first = first;
         updateParents();
         updateKeys();
@@ -416,7 +416,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
         }
     }
 
-    public void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
+    void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
         this.parentKeySide = parentKeySide;
     }
 
@@ -432,7 +432,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
         return new NodeIterator<T>(this);
     }
 
-    public String keysAsString() {
+    String keysAsString() {
         StringBuilder s = new StringBuilder();
         Optional<Key<T>> key = first;
         while (key.isPresent()) {
@@ -444,7 +444,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
         return s.toString();
     }
 
-    public Optional<KeySide<T>> getParentKeySide() {
+    Optional<KeySide<T>> getParentKeySide() {
         return parentKeySide;
     }
 }

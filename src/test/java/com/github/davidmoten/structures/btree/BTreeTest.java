@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 
 public class BTreeTest {
 
+    private static final int MANY_VALUES = 1000;
     private static final double PRECISION = 0.0001;
 
     /**
@@ -562,7 +563,7 @@ public class BTreeTest {
 
     @Test
     public void testIteratorOnBTreeWithNValuesAddedInReverseOrder() {
-        for (int n = 1; n <= 1000; n++) {
+        for (int n = 1; n <= MANY_VALUES; n++) {
             BTree<Integer> t = new BTree<Integer>(3);
             for (int i = n; i >= 1; i--) {
                 t.add(i);

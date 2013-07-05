@@ -1,5 +1,5 @@
 package com.github.davidmoten.structures.btree;
 
-public enum Side {
+enum Side {
     LEFT, RIGHT;
 }

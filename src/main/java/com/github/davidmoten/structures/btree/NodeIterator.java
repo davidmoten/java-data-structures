@@ -8,11 +8,11 @@ import java.util.Iterator;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
-public class NodeIterator<T extends Comparable<T>> implements Iterator<T> {
+class NodeIterator<T extends Comparable<T>> implements Iterator<T> {
 
     private Optional<Key<T>> currentKey;
 
-    public NodeIterator(Node<T> node) {
+    NodeIterator(Node<T> node) {
         currentKey = node.bottomLeft();
     }
 

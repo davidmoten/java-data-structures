@@ -5,7 +5,7 @@ import static com.google.common.base.Optional.absent;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
-public class Key<T extends Comparable<T>> {
+class Key<T extends Comparable<T>> {
 
     private final T t;
     private Optional<Node<T>> left = absent();
@@ -14,43 +14,43 @@ public class Key<T extends Comparable<T>> {
     private Optional<Key<T>> next = absent();
     private Optional<Node<T>> node = absent();
 
-    public Key(T t) {
+    Key(T t) {
         this.t = t;
     }
 
-    public boolean isDeleted() {
+    boolean isDeleted() {
         return deleted;
     }
 
-    public void setDeleted(boolean deleted) {
+    void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
 
-    public T value() {
+    T value() {
         return t;
     }
 
-    public Optional<Node<T>> getLeft() {
+    Optional<Node<T>> getLeft() {
         return left;
     }
 
-    public void setLeft(Optional<Node<T>> left) {
+    void setLeft(Optional<Node<T>> left) {
         Preconditions.checkNotNull(left);
         this.left = left;
 
     }
 
-    public Optional<Node<T>> getRight() {
+    Optional<Node<T>> getRight() {
         return right;
     }
 
-    public void setRight(Optional<Node<T>> right) {
+    void setRight(Optional<Node<T>> right) {
         Preconditions.checkNotNull(right);
         this.right = right;
 
     }
 
-    public boolean hasChild() {
+    boolean hasChild() {
         return left.isPresent() || right.isPresent();
     }
 
@@ -59,23 +59,23 @@ public class Key<T extends Comparable<T>> {
         return toString("  ");
     }
 
-    public Optional<Node<T>> getParent() {
+    Optional<Node<T>> getParent() {
         return node;
     }
 
-    public void setNode(Optional<Node<T>> node) {
+    void setNode(Optional<Node<T>> node) {
         this.node = node;
     }
 
-    public Optional<Key<T>> next() {
+    Optional<Key<T>> next() {
         return next;
     }
 
-    public void setNext(Optional<Key<T>> next) {
+    void setNext(Optional<Key<T>> next) {
         this.next = next;
     }
 
-    public void updateLinks() {
+    void updateLinks() {
         if (left.isPresent()) {
             left.get().setParentKeySide(
                     Optional.of(new KeySide<T>(this, Side.LEFT)));
@@ -86,7 +86,7 @@ public class Key<T extends Comparable<T>> {
         }
     }
 
-    public String toString(String space) {
+    String toString(String space) {
         StringBuilder builder = new StringBuilder();
         builder.append("\n" + space + "Key [t=");
         builder.append(t);
@@ -110,7 +110,7 @@ public class Key<T extends Comparable<T>> {
         return builder.toString();
     }
 
-    public Optional<Node<T>> getNode() {
+    Optional<Node<T>> getNode() {
         return node;
     }
 }
