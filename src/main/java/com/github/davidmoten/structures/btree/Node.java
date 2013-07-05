@@ -6,6 +6,8 @@ import com.google.common.base.Optional;
 
 interface Node<T extends Comparable<T>> extends Iterable<T> {
 
+	long position();
+
 	void persist();
 
 	/**
