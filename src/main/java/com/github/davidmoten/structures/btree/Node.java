@@ -425,9 +425,7 @@ class Node<T extends Comparable<T>> implements Iterable<T> {
                     }
                 };
             }
-
         };
-
     }
 
     private Iterable<Key<T>> keys() {
