@@ -560,6 +560,28 @@ public class BTreeTest {
         }
     }
 
+    @Test
+    public void testIteratorOnBTreeWithNValuesAddedInReverseOrder() {
+        for (int n = 1; n <= 1000; n++) {
+            BTree<Integer> t = new BTree<Integer>(3);
+            for (int i = n; i >= 1; i--) {
+                t.add(i);
+            }
+            Iterator<Integer> it = t.iterator();
+            for (int i = 1; i <= n; i++) {
+                try {
+                    int next = it.next();
+                    assertEquals("n=" + n, i, next);
+                } catch (RuntimeException e) {
+                    System.out.println(t);
+                    System.out.println("n=" + n + ",i=" + i);
+                    throw e;
+                }
+            }
+            assertFalse(it.hasNext());
+        }
+    }
+
     private static void assertKeyValuesAre(List<Double> expected,
             List<? extends Key<Double>> keys) {
         String msg = "expected " + expected + " but was " + keys;

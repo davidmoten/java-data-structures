@@ -265,7 +265,9 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
         medianKey.setLeft(Optional.of(child1));
         medianKey.setRight(Optional.of(child2));
 
-        return parent.add(medianKey);
+        Optional<Node<T>> result = parent.add(medianKey);
+        // medianKey.updateLinks();
+        return result;
     }
 
     private void updateParents() {
@@ -403,13 +405,22 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
     public void setFirst(Optional<Key<T>> first) {
         this.first = first;
         updateParents();
+        updateKeys();
+    }
+
+    private void updateKeys() {
+        Optional<Key<T>> key = first;
+        while (key.isPresent()) {
+            key.get().updateLinks();
+            key = key.get().next();
+        }
     }
 
     public void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
         this.parentKeySide = parentKeySide;
     }
 
-    private Optional<Key<T>> bottomLeft() {
+    Optional<Key<T>> bottomLeft() {
         if (isLeafNode())
             return this.first;
         else
@@ -418,72 +429,7 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return new Iterator<T>() {
-
-            private Optional<Key<T>> currentKey = bottomLeft();
-
-            @Override
-            public boolean hasNext() {
-                return currentKey.isPresent();
-            }
-
-            @Override
-            public T next() {
-                Preconditions.checkArgument(currentKey.isPresent(),
-                        "no more elements in iterator");
-                T value = currentKey.get().value();
-                currentKey = next(currentKey, false);
-                return value;
-            }
-
-            private Optional<Key<T>> next(Optional<Key<T>> currentKey,
-                    boolean skipRight) {
-
-                // move to bottom left of right child of current key if exists
-                if (currentKey.get().getRight().isPresent() && !skipRight) {
-                    return currentKey.get().getRight().get().bottomLeft();
-                } else if (currentKey.get().getRight().isPresent() && skipRight) {
-                    if (currentKey.get().next().isPresent())
-                        return currentKey.get().next();
-                    else {
-                        return nextParentKey(currentKey);
-                    }
-                }
-                // else to bottom left of next key if exists
-                else if (currentKey.get().next().isPresent()) {
-                    Key<T> key = currentKey.get().next().get();
-                    if (key.hasChild())
-                        return key.getLeft().get().bottomLeft();
-                    else
-                        return of(key);
-                }
-                // else to next parent key if exists skipping right child
-                else {
-                    return nextParentKey(currentKey);
-                }
-            }
-
-            private Optional<Key<T>> nextParentKey(Optional<Key<T>> currentKey) {
-                if (!currentKey.get().getParent().get().parentKeySide
-                        .isPresent())
-                    return absent();
-                else {
-                    KeySide<T> pkSide = currentKey.get().getParent().get().parentKeySide
-                            .get();
-                    if (pkSide.getSide().equals(Side.RIGHT)) {
-                        return next(of(pkSide.getKey()), true);
-                    } else
-                        return of(pkSide.getKey());
-                }
-            }
-
-            @Override
-            public void remove() {
-                // TODO Auto-generated method stub
-
-            }
-
-        };
+        return new NodeIterator<T>(this);
     }
 
     public String keysAsString() {
@@ -496,5 +442,9 @@ public class Node<T extends Comparable<T>> implements Iterable<T> {
             key = key.get().next();
         }
         return s.toString();
+    }
+
+    public Optional<KeySide<T>> getParentKeySide() {
+        return parentKeySide;
     }
 }
