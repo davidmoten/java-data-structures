@@ -65,18 +65,16 @@ class Node<T extends Comparable<T>> implements Iterable<T> {
         // node then it must have some keys
         Optional<Node<T>> result = absent();
         boolean added = false;
-        Optional<Key<T>> key = first;
         Optional<Key<T>> last = first;
-        while (key.isPresent()) {
-            if (t.compareTo(key.get().value()) < 0) {
+        for (Key<T> key : keys()) {
+            if (t.compareTo(key.value()) < 0) {
                 // don't need to check that left is present because of
                 // properties of b-tree
-                result = key.get().getLeft().get().add(t);
+                result = key.getLeft().get().add(t);
                 added = true;
                 break;
             }
-            last = key;
-            key = key.get().next();
+            last = of(key);
         }
 
         if (!added) {
