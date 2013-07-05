@@ -11,6 +11,13 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+/**
+ * A leaf or non-leaf (internal) node on a B-Tree.
+ * 
+ * @author dxm
+ * 
+ * @param <T>
+ */
 class Node<T extends Comparable<T>> implements Iterable<T> {
 
     private final int degree;
