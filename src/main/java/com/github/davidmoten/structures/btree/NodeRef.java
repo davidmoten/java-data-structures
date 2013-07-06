@@ -9,13 +9,13 @@ import com.google.common.base.Optional;
 
 public class NodeRef<T extends Comparable<T>> implements Node<T> {
 
-	private Optional<Node<T>> node;
+	private Optional<Node<T>> node = Optional.absent();
 	private final BTree<T> btree;
 	private final long position;
 	private final Optional<KeySide<T>> parentKeySide;
 
-	public NodeRef(Optional<KeySide<T>> parentKeySide, BTree<T> btree,
-			long position) {
+	public NodeRef(BTree<T> btree, long position,
+			Optional<KeySide<T>> parentKeySide) {
 		this.parentKeySide = parentKeySide;
 		this.btree = btree;
 		this.position = position;

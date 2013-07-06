@@ -1,5 +1,7 @@
 package com.github.davidmoten.structures.btree;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -9,18 +11,32 @@ import com.google.common.base.Preconditions;
 
 public class BTree<T extends Comparable<T>> implements Iterable<T> {
 
-	private Node<T> root;
 	private final int degree;
+	private Node<T> root;
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param degree
 	 */
-	public BTree(int degree) {
+	public BTree(int degree, File file) {
 		this.degree = degree;
 		Preconditions.checkArgument(degree >= 2, "degree must be >=2");
-		root = new NodeLoaded<T>(this);
+		long startPosition = 0;
+		root = new NodeRef<T>(this, startPosition,
+				Optional.<KeySide<T>> absent());
+	}
+
+	public BTree(int degree) {
+		this(degree, createTempFile());
+	}
+
+	private static File createTempFile() {
+		try {
+			return File.createTempFile("btree", "index");
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public int getDegree() {
