@@ -276,7 +276,7 @@ class NodeLoaded<T extends Comparable<T>> implements Iterable<T>, Node<T> {
 	private void updateParents() {
 		Optional<Key<T>> key = first;
 		while (key.isPresent()) {
-			key.get().setNode(of(this));
+			key.get().setNode(of((Node<T>) this));
 			key = key.get().next();
 		}
 	}
@@ -397,7 +397,7 @@ class NodeLoaded<T extends Comparable<T>> implements Iterable<T>, Node<T> {
 	}
 
 	@Override
-	void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
+	public void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
 		this.parentKeySide = parentKeySide;
 	}
 
