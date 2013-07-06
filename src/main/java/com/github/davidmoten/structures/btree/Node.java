@@ -1,61 +1,479 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
+
+import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
-interface Node<T extends Comparable<T>> extends Iterable<T> {
+/**
+ * A leaf or non-leaf (internal) node on a B-Tree.
+ * 
+ * @author dxm
+ * 
+ * @param <T>
+ */
+class Node<T extends Comparable<T>> implements Iterable<T> {
 
-	long position();
+    private final int degree;
+    private Optional<Key<T>> first = Optional.absent();
+    private Optional<KeySide<T>> parentKeySide = Optional.absent();
 
-	void persist();
+    /**
+     * Constructor.
+     * 
+     * @param degree
+     * @param parent
+     */
+    Node(int degree, Optional<KeySide<T>> parentKeySide) {
+        Preconditions.checkNotNull(parentKeySide);
+        this.degree = degree;
+        this.parentKeySide = parentKeySide;
+    }
 
-	/**
-	 * Adds the element t to the node. If root node of BTree is changed then
-	 * returns new root node otherwise returns {@link Optional}.absent().
-	 * 
-	 * @param t
-	 * @return
-	 */
-	Optional<Node<T>> add(T t);
+    /**
+     * Constructor. Should be used to create root node only.
+     * 
+     * @param degree
+     */
+    Node(int degree) {
+        this(degree, Optional.<KeySide<T>> absent());
+    }
 
-	Optional<Node<T>> add(Key<T> key);
+    /**
+     * Adds the element t to the node. If root node of BTree is changed then
+     * returns new root node otherwise returns {@link Optional}.absent().
+     * 
+     * @param t
+     * @return
+     */
+    Optional<Node<T>> add(T t) {
 
-	/**
-	 * Returns the T matching t from this node or its children. Returns
-	 * {@link Optional}.absent() if not found.
-	 * 
-	 * @param t
-	 * @return
-	 */
-	Optional<T> find(T t);
+        if (isLeafNode()) {
+            return add(new Key<T>(t));
+        } else
+            return addToNonLeafNode(t);
+    }
 
-	/**
-	 * Marks all keys as deleted that equal t.
-	 * 
-	 * @param t
-	 * @return
-	 */
-	long delete(T t);
+    /**
+     * Adds the element to the node. If root node of BTree is changed then
+     * returns new root node otherwise returns {@link Optional}.absent().
+     * 
+     * @param t
+     * @return
+     */
+    private Optional<Node<T>> addToNonLeafNode(T t) {
+        // Note that first will be present because if is internal (non-leaf)
+        // node then it must have some keys
+        Optional<Node<T>> result = absent();
+        boolean added = false;
+        Optional<Key<T>> last = first;
+        for (Key<T> key : keys()) {
+            if (t.compareTo(key.value()) < 0) {
+                // don't need to check that left is present because of
+                // properties of b-tree
+                result = key.getLeft().get().add(t);
+                added = true;
+                break;
+            }
+            last = of(key);
+        }
 
-	void setFirst(Optional<Key<T>> first);
+        if (!added) {
+            // don't need to check that left is present because of properties
+            // of b-tree
+            result = last.get().getRight().get().add(t);
+        }
+        return result;
+    }
 
-	void setParentKeySide(Optional<KeySide<T>> parentKeySide);
+    /**
+     * Returns true if and only this node is a leaf node (has no children).
+     * Because of the properties of a b-tree only have to check if the first key
+     * has a child.
+     * 
+     * @return
+     */
+    private boolean isLeafNode() {
 
-	Optional<Key<T>> bottomLeft();
+        return !first.isPresent() || !first.get().hasChild();
+    }
 
-	String keysAsString();
+    /**
+     * Inserts key into the list of keys in sorted order. The inserted key has
+     * priority in terms of its children become the children of its neighbours
+     * in the list of keys. This method does not do splitting of keys, the key
+     * is guaranteed to be added against this node.
+     * 
+     * @param first
+     *            will always have a value
+     * @param key
+     */
+    private Key<T> add(Key<T> first, Key<T> key) {
 
-	Optional<KeySide<T>> getParentKeySide();
+        // key is not on the current node
+        key.setNode(of(this));
 
-	String toString(String space);
+        // insert key
+        Optional<Key<T>> previous = absent();
+        Optional<Key<T>> next = absent();
+        for (Key<T> k : keys(of(first))) {
+            if (key.value().compareTo(k.value()) < 0) {
+                if (previous.isPresent())
+                    previous.get().setNext(of(key));
+                key.setNext(of(k));
+                next = of(k);
+                break;
+            }
+            previous = of(k);
+        }
 
-	List<? extends Key<T>> getKeys();
+        if (!next.isPresent()) {
+            previous.get().setNext(of(key));
+        }
 
-	void setPosition(long position);
+        // if key is the first key then return key as the new first
+        Key<T> result;
+        if (!previous.isPresent())
+            result = key;
+        else
+            result = first;
 
-	void load();
+        // update previous and following keys to the newly added one
+        if (previous.isPresent()) {
+            previous.get().setRight(key.getLeft());
+            previous.get().updateLinks();
+        }
+        if (next.isPresent()) {
+            next.get().setLeft(key.getRight());
+            next.get().updateLinks();
+        }
+        key.updateLinks();
+        return result;
+    }
 
-	void unload();
+    /**
+     * Returns the number of keys in this node.
+     * 
+     * @return
+     */
+    private int countKeys() {
+        int count = 0;
+        Optional<Key<T>> k = first;
+        while (k.isPresent()) {
+            count++;
+            k = k.get().next();
+        }
+        return count;
+    }
+
+    /**
+     * Adds the key to the node. If root node of BTree is changed then returns
+     * new root node otherwise returns this.
+     * 
+     * @param key
+     * @return
+     */
+    private Optional<Node<T>> add(Key<T> key) {
+
+        key.setNode(of(this));
+
+        if (!first.isPresent()) {
+            setFirst(Optional.of(key));
+            return Optional.of(this);
+        }
+
+        first = of(add(first.get(), key));
+
+        Optional<Node<T>> result = absent();
+        int keyCount = countKeys();
+        if (keyCount == degree) {
+
+            Node<T> theParent;
+            // split
+            if (isRoot()) {
+                // creating new root
+                theParent = new Node<T>(degree);
+                result = of(theParent);
+            } else {
+                theParent = parentKeySide.get().getKey().getNode().get();
+            }
+            // split result is present if root changed by splitting
+            Optional<Node<T>> splitResult = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+                    keyCount, theParent);
+
+            if (splitResult.isPresent())
+                result = splitResult;
+
+        } else
+            result = absent();
+
+        return result;
+
+    }
+
+    /**
+     * Returns true if and only if this is the root node of the BTree (has no
+     * parent).
+     * 
+     * @return
+     */
+    private boolean isRoot() {
+        return !parentKeySide.isPresent();
+    }
+
+    /**
+     * Returns the median key with the keys before it as left child and keys
+     * after it as right child.
+     * 
+     * @param keyCount
+     * @param theParent
+     * @return
+     */
+    private Optional<Node<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+            int keyCount, Node<T> parent) {
+
+        int medianNumber = getMedianNumber(keyCount);
+
+        // get the median key and the preceding key
+        int count = 1;
+        Optional<Key<T>> key = first;
+        Optional<Key<T>> previous = absent();
+        while (count < medianNumber) {
+            previous = key;
+            key = key.get().next();
+            count++;
+        }
+        Key<T> medianKey = key.get();
+        previous.get().setNext(Optional.<Key<T>> absent());
+
+        // create child1 of first ->..->previous
+        Node<T> child1 = new Node<T>(degree, of(new KeySide<T>(medianKey,
+                Side.LEFT)));
+        child1.setFirst(first);
+
+        // create child2 of medianKey.next ->..->last
+        Node<T> child2 = new Node<T>(degree, of(new KeySide<T>(medianKey,
+                Side.RIGHT)));
+        child2.setFirst(key.get().next());
+
+        // set the links on medianKey to the next key in the same node and to
+        // its children
+        medianKey.setNext(Optional.<Key<T>> absent());
+        medianKey.setLeft(Optional.of(child1));
+        medianKey.setRight(Optional.of(child2));
+
+        Optional<Node<T>> result = parent.add(medianKey);
+        // medianKey.updateLinks();
+        return result;
+    }
+
+    private void updateParents() {
+        Optional<Key<T>> key = first;
+        while (key.isPresent()) {
+            key.get().setNode(of(this));
+            key = key.get().next();
+        }
+    }
+
+    /**
+     * Returns the median number between 1 and number of keys.
+     * 
+     * @param keyCount
+     * @return
+     */
+    private int getMedianNumber(int keyCount) {
+        int medianNumber;
+        if (keyCount % 2 == 1)
+            medianNumber = keyCount / 2 + 1;
+        else
+            medianNumber = (keyCount - 1) / 2 + 1;
+        return medianNumber;
+    }
+
+    /**
+     * Returns the T matching t from this node or its children. Returns
+     * {@link Optional}.absent() if not found.
+     * 
+     * @param t
+     * @return
+     */
+    Optional<T> find(T t) {
+        boolean isLeaf = isLeafNode();
+        Optional<Key<T>> key = first;
+        Optional<Key<T>> last = first;
+        while (key.isPresent()) {
+            int compare = t.compareTo(key.get().value());
+            if (compare < 0) {
+                if (isLeaf)
+                    return absent();
+                else
+                    return key.get().getLeft().get().find(t);
+            } else if (compare == 0 && !key.get().isDeleted())
+                return Optional.of(key.get().value());
+            last = key;
+            key = key.get().next();
+        }
+        if (!isLeaf) {
+            Optional<Node<T>> right = last.get().getRight();
+            if (right.isPresent())
+                return right.get().find(t);
+            else
+                return absent();
+        } else
+            return absent();
+    }
+
+    /**
+     * Marks all keys as deleted that equal t.
+     * 
+     * @param t
+     * @return
+     */
+    long delete(T t) {
+        int count = 0;
+        boolean isLeaf = isLeafNode();
+        Optional<Key<T>> last = Optional.absent();
+        for (Key<T> key : keys()) {
+            int compare = t.compareTo(key.value());
+            if (compare < 0) {
+                if (isLeaf)
+                    return 0;
+                else
+                    return key.getLeft().get().delete(t);
+            } else if (compare == 0 && !key.isDeleted()) {
+                count++;
+                key.setDeleted(true);
+            }
+            last = of(key);
+        }
+        if (count > 0)
+            return count;
+        if (!isLeaf && last.isPresent()) {
+            Optional<Node<T>> right = last.get().getRight();
+            if (right.isPresent())
+                return right.get().delete(t);
+            else
+                return 0;
+        } else
+            return 0;
+    }
+
+    @VisibleForTesting
+    List<? extends Key<T>> getKeys() {
+        List<Key<T>> list = Lists.newArrayList();
+        for (Key<T> key : keys())
+            list.add(key);
+        return list;
+    }
+
+    void setFirst(Optional<Key<T>> first) {
+        this.first = first;
+        updateParents();
+        updateKeys();
+    }
+
+    private void updateKeys() {
+        for (Key<T> key : keys())
+            key.updateLinks();
+    }
+
+    void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
+        this.parentKeySide = parentKeySide;
+    }
+
+    Optional<Key<T>> bottomLeft() {
+        if (isLeafNode())
+            return this.first;
+        else
+            return first.get().getLeft().get().bottomLeft();
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new NodeIterator<T>(this);
+    }
+
+    private Iterable<Key<T>> keys(final Optional<Key<T>> first) {
+        return new Iterable<Key<T>>() {
+
+            @Override
+            public Iterator<Key<T>> iterator() {
+                return new Iterator<Key<T>>() {
+                    Optional<Key<T>> key = first;
+
+                    @Override
+                    public boolean hasNext() {
+                        return key.isPresent();
+                    }
+
+                    @Override
+                    public Key<T> next() {
+                        Key<T> result = key.get();
+                        key = key.get().next();
+                        return result;
+                    }
+
+                    @Override
+                    public void remove() {
+                        // do nothing
+                    }
+                };
+            }
+        };
+    }
+
+    private Iterable<Key<T>> keys() {
+        return keys(first);
+    }
+
+    String keysAsString() {
+        StringBuilder s = new StringBuilder();
+        Optional<Key<T>> key = first;
+        while (key.isPresent()) {
+            if (s.length() > 0)
+                s.append(",");
+            s.append(key.get().value());
+            key = key.get().next();
+        }
+        return s.toString();
+    }
+
+    Optional<KeySide<T>> getParentKeySide() {
+        return parentKeySide;
+    }
+
+    String toString(String space) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n" + space + "Node [");
+        if (first.isPresent()) {
+            builder.append("\n" + space + "  first=");
+            builder.append(first.get().toString(space + "    "));
+        }
+        if (parentKeySide.isPresent())
+            builder.append("\n" + space + "  pks=" + parentKeySide.get());
+        builder.append("]");
+        return builder.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Node [");
+        if (first.isPresent()) {
+            builder.append("first=");
+            builder.append(first.get());
+        }
+        if (parentKeySide.isPresent())
+            builder.append(", pks=" + parentKeySide.get());
+        builder.append("]");
+        return builder.toString();
+    }
 
 }

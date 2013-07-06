@@ -7,110 +7,110 @@ import com.google.common.base.Preconditions;
 
 class Key<T extends Comparable<T>> {
 
-	private final T t;
-	private Optional<Node<T>> left = absent();
-	private Optional<Node<T>> right = absent();
-	private boolean deleted = false;
-	private Optional<Key<T>> next = absent();
-	private Optional<Node<T>> node = absent();
+    private final T t;
+    private Optional<Node<T>> left = absent();
+    private Optional<Node<T>> right = absent();
+    private boolean deleted = false;
+    private Optional<Key<T>> next = absent();
+    private Optional<Node<T>> node = absent();
 
-	Key(T t) {
-		this.t = t;
-	}
+    Key(T t) {
+        this.t = t;
+    }
 
-	boolean isDeleted() {
-		return deleted;
-	}
+    boolean isDeleted() {
+        return deleted;
+    }
 
-	void setDeleted(boolean deleted) {
-		this.deleted = deleted;
-	}
+    void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 
-	T value() {
-		return t;
-	}
+    T value() {
+        return t;
+    }
 
-	Optional<Node<T>> getLeft() {
-		return left;
-	}
+    Optional<Node<T>> getLeft() {
+        return left;
+    }
 
-	void setLeft(Optional<Node<T>> left) {
-		Preconditions.checkNotNull(left);
-		this.left = left;
+    void setLeft(Optional<Node<T>> left) {
+        Preconditions.checkNotNull(left);
+        this.left = left;
 
-	}
+    }
 
-	Optional<Node<T>> getRight() {
-		return right;
-	}
+    Optional<Node<T>> getRight() {
+        return right;
+    }
 
-	void setRight(Optional<Node<T>> right) {
-		Preconditions.checkNotNull(right);
-		this.right = right;
+    void setRight(Optional<Node<T>> right) {
+        Preconditions.checkNotNull(right);
+        this.right = right;
 
-	}
+    }
 
-	boolean hasChild() {
-		return left.isPresent() || right.isPresent();
-	}
+    boolean hasChild() {
+        return left.isPresent() || right.isPresent();
+    }
 
-	@Override
-	public String toString() {
-		return toString("  ");
-	}
+    @Override
+    public String toString() {
+        return toString("  ");
+    }
 
-	Optional<Node<T>> getParent() {
-		return node;
-	}
+    Optional<Node<T>> getParent() {
+        return node;
+    }
 
-	void setNode(Optional<Node<T>> node) {
-		this.node = node;
-	}
+    void setNode(Optional<Node<T>> node) {
+        this.node = node;
+    }
 
-	Optional<Key<T>> next() {
-		return next;
-	}
+    Optional<Key<T>> next() {
+        return next;
+    }
 
-	void setNext(Optional<Key<T>> next) {
-		this.next = next;
-	}
+    void setNext(Optional<Key<T>> next) {
+        this.next = next;
+    }
 
-	void updateLinks() {
-		if (left.isPresent()) {
-			left.get().setParentKeySide(
-					Optional.of(new KeySide<T>(this, Side.LEFT)));
-		}
-		if (right.isPresent()) {
-			right.get().setParentKeySide(
-					Optional.of(new KeySide<T>(this, Side.RIGHT)));
-		}
-	}
+    void updateLinks() {
+        if (left.isPresent()) {
+            left.get().setParentKeySide(
+                    Optional.of(new KeySide<T>(this, Side.LEFT)));
+        }
+        if (right.isPresent()) {
+            right.get().setParentKeySide(
+                    Optional.of(new KeySide<T>(this, Side.RIGHT)));
+        }
+    }
 
-	String toString(String space) {
-		StringBuilder builder = new StringBuilder();
-		builder.append("\n" + space + "Key [t=");
-		builder.append(t);
-		if (node.isPresent()) {
-			builder.append(", node=");
-			builder.append(node.get().keysAsString());
-		}
-		if (left.isPresent()) {
-			builder.append("\n" + space + "  left=");
-			builder.append(left.get().toString(space + "    "));
-		}
-		if (right.isPresent()) {
-			builder.append("\n" + space + "  right=");
-			builder.append(right.get().toString(space + "    "));
-		}
-		if (next.isPresent()) {
-			builder.append("\n" + space + "  next=");
-			builder.append(next.get().toString(space));
-		}
-		builder.append("]");
-		return builder.toString();
-	}
+    String toString(String space) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n" + space + "Key [t=");
+        builder.append(t);
+        if (node.isPresent()) {
+            builder.append(", node=");
+            builder.append(node.get().keysAsString());
+        }
+        if (left.isPresent()) {
+            builder.append("\n" + space + "  left=");
+            builder.append(left.get().toString(space + "    "));
+        }
+        if (right.isPresent()) {
+            builder.append("\n" + space + "  right=");
+            builder.append(right.get().toString(space + "    "));
+        }
+        if (next.isPresent()) {
+            builder.append("\n" + space + "  next=");
+            builder.append(next.get().toString(space));
+        }
+        builder.append("]");
+        return builder.toString();
+    }
 
-	Optional<Node<T>> getNode() {
-		return node;
-	}
+    Optional<Node<T>> getNode() {
+        return node;
+    }
 }
