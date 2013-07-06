@@ -3,6 +3,7 @@ package com.github.davidmoten.structures.btree;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,7 +19,8 @@ import com.google.common.collect.Lists;
  * 
  * @param <T>
  */
-class NodeLoaded<T extends Comparable<T>> implements Iterable<T>, Node<T> {
+class NodeLoaded<T extends Serializable & Comparable<T>> implements
+		Iterable<T>, Node<T> {
 
 	private Optional<Key<T>> first = Optional.absent();
 	private Optional<KeySide<T>> parentKeySide = Optional.absent();

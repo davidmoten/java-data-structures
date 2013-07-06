@@ -2,12 +2,13 @@ package com.github.davidmoten.structures.btree;
 
 import static com.google.common.base.Optional.of;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Optional;
 
-public class NodeRef<T extends Comparable<T>> implements Node<T> {
+public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> {
 
 	private Optional<Node<T>> node = Optional.absent();
 	private final BTree<T> btree;
