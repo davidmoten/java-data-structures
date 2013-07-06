@@ -9,7 +9,7 @@ import com.google.common.base.Preconditions;
 
 public class BTree<T extends Comparable<T>> implements Iterable<T> {
 
-    private Node<T> root;
+    private NodeLoaded<T> root;
 
     /**
      * Constructor.
@@ -18,7 +18,7 @@ public class BTree<T extends Comparable<T>> implements Iterable<T> {
      */
     public BTree(int degree) {
         Preconditions.checkArgument(degree >= 2, "degree must be >=2");
-        root = new Node<T>(degree);
+        root = new NodeLoaded<T>(degree);
     }
 
     /**
@@ -27,7 +27,7 @@ public class BTree<T extends Comparable<T>> implements Iterable<T> {
      * @param t
      */
     public void add(T t) {
-        Optional<Node<T>> newRoot = root.add(t);
+        Optional<NodeLoaded<T>> newRoot = root.add(t);
         if (newRoot.isPresent())
             root = newRoot.get();
     }
