@@ -18,7 +18,7 @@ public class BTree<T extends Comparable<T>> implements Iterable<T> {
 	 */
 	public BTree(int degree) {
 		Preconditions.checkArgument(degree >= 2, "degree must be >=2");
-		root = new NodeHydrated<T>(degree);
+		root = new NodeLoaded<T>(degree);
 	}
 
 	/**

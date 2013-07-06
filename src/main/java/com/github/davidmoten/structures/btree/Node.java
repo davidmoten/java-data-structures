@@ -52,4 +52,10 @@ interface Node<T extends Comparable<T>> extends Iterable<T> {
 
 	List<? extends Key<T>> getKeys();
 
+	void setPosition(long position);
+
+	void load();
+
+	void unload();
+
 }
