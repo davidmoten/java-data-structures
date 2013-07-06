@@ -12,3 +12,5 @@ Aims:
 * thread-safe with minimal locking
 * persist to disk and load from disk efficiently
 * minimal memory use (uses disk when required)
+
+Status: in progress
