@@ -202,7 +202,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			// split
 			if (isRoot()) {
 				// creating new root
-				theParent = new NodeActual<T>(btree);
+				theParent = new NodeRef<T>(btree, btree.nextPosition(),
+						Optional.<KeySide<T>> absent());
 				result = of(theParent);
 			} else {
 				theParent = parentKeySide.get().getKey().getNode().get();
@@ -257,13 +258,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		previous.get().setNext(Optional.<Key<T>> absent());
 
 		// create child1 of first ->..->previous
-		Node<T> child1 = new NodeActual<T>(btree, of(new KeySide<T>(medianKey,
-				Side.LEFT)));
+		Node<T> child1 = new NodeRef<T>(btree, btree.nextPosition(),
+				of(new KeySide<T>(medianKey, Side.LEFT)));
 		child1.setFirst(first);
 
 		// create child2 of medianKey.next ->..->last
-		Node<T> child2 = new NodeActual<T>(btree, of(new KeySide<T>(medianKey,
-				Side.RIGHT)));
+		Node<T> child2 = new NodeRef<T>(btree, btree.nextPosition(),
+				of(new KeySide<T>(medianKey, Side.RIGHT)));
 		child2.setFirst(key.get().next());
 
 		// set the links on medianKey to the next key in the same node and to

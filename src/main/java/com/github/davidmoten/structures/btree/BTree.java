@@ -17,6 +17,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 	private final int degree;
 	private Node<T> root;
+
 	private transient File file;
 
 	/**
@@ -106,6 +107,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		builder.append(root);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	public long nextPosition() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }
