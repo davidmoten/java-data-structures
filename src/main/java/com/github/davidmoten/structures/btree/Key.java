@@ -2,10 +2,12 @@ package com.github.davidmoten.structures.btree;
 
 import static com.google.common.base.Optional.absent;
 
+import java.io.Serializable;
+
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
-class Key<T extends Comparable<T>> {
+class Key<T extends Serializable & Comparable<T>> {
 
 	private final T t;
 	private Optional<Node<T>> left = absent();

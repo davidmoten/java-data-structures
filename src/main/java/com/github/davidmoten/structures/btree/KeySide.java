@@ -1,25 +1,27 @@
 package com.github.davidmoten.structures.btree;
 
-class KeySide<T extends Comparable<T>> {
-    private final Key<T> key;
-    private final Side side;
+import java.io.Serializable;
 
-    KeySide(Key<T> key, Side side) {
-        this.key = key;
-        this.side = side;
-    }
+class KeySide<T extends Serializable & Comparable<T>> {
+	private final Key<T> key;
+	private final Side side;
 
-    Key<T> getKey() {
-        return key;
-    }
+	KeySide(Key<T> key, Side side) {
+		this.key = key;
+		this.side = side;
+	}
 
-    Side getSide() {
-        return side;
-    }
+	Key<T> getKey() {
+		return key;
+	}
 
-    @Override
-    public String toString() {
-        return "KeyAndSide [key=" + key.value() + ", side=" + side + "]";
-    }
+	Side getSide() {
+		return side;
+	}
+
+	@Override
+	public String toString() {
+		return "KeyAndSide [key=" + key.value() + ", side=" + side + "]";
+	}
 
 }

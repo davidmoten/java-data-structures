@@ -8,12 +8,16 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 
-public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> {
+public class NodeRef<T extends Serializable & Comparable<T>> implements
+		Node<T>, Serializable {
 
-	private Optional<Node<T>> node = Optional.absent();
-	private final BTree<T> btree;
+	private static final long serialVersionUID = -420236968739933117L;
+
 	private final long position;
-	private final Optional<KeySide<T>> parentKeySide;
+
+	private transient Optional<Node<T>> node = Optional.absent();
+	private final transient BTree<T> btree;
+	private final transient Optional<KeySide<T>> parentKeySide;
 
 	public NodeRef(BTree<T> btree, long position,
 			Optional<KeySide<T>> parentKeySide) {
@@ -24,7 +28,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 
 	private synchronized Node<T> node() {
 		if (!node.isPresent()) {
-			node = of((Node<T>) new NodeLoaded<T>(btree, parentKeySide));
+			node = of((Node<T>) new NodeActual<T>(btree, parentKeySide));
 		}
 		return node.get();
 	}

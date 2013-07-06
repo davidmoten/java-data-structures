@@ -19,8 +19,10 @@ import com.google.common.collect.Lists;
  * 
  * @param <T>
  */
-class NodeLoaded<T extends Serializable & Comparable<T>> implements
+class NodeActual<T extends Serializable & Comparable<T>> implements
 		Iterable<T>, Node<T> {
+
+	private static final long serialVersionUID = 7308656158360291244L;
 
 	private Optional<Key<T>> first = Optional.absent();
 	private Optional<KeySide<T>> parentKeySide = Optional.absent();
@@ -32,7 +34,7 @@ class NodeLoaded<T extends Serializable & Comparable<T>> implements
 	 * @param degree
 	 * @param parent
 	 */
-	NodeLoaded(BTree<T> btree, Optional<KeySide<T>> parentKeySide) {
+	NodeActual(BTree<T> btree, Optional<KeySide<T>> parentKeySide) {
 		this.btree = btree;
 		Preconditions.checkNotNull(parentKeySide);
 		this.parentKeySide = parentKeySide;
@@ -43,7 +45,7 @@ class NodeLoaded<T extends Serializable & Comparable<T>> implements
 	 * 
 	 * @param degree
 	 */
-	NodeLoaded(BTree<T> btree) {
+	NodeActual(BTree<T> btree) {
 		this(btree, Optional.<KeySide<T>> absent());
 	}
 
@@ -200,7 +202,7 @@ class NodeLoaded<T extends Serializable & Comparable<T>> implements
 			// split
 			if (isRoot()) {
 				// creating new root
-				theParent = new NodeLoaded<T>(btree);
+				theParent = new NodeActual<T>(btree);
 				result = of(theParent);
 			} else {
 				theParent = parentKeySide.get().getKey().getNode().get();
@@ -255,12 +257,12 @@ class NodeLoaded<T extends Serializable & Comparable<T>> implements
 		previous.get().setNext(Optional.<Key<T>> absent());
 
 		// create child1 of first ->..->previous
-		Node<T> child1 = new NodeLoaded<T>(btree, of(new KeySide<T>(medianKey,
+		Node<T> child1 = new NodeActual<T>(btree, of(new KeySide<T>(medianKey,
 				Side.LEFT)));
 		child1.setFirst(first);
 
 		// create child2 of medianKey.next ->..->last
-		Node<T> child2 = new NodeLoaded<T>(btree, of(new KeySide<T>(medianKey,
+		Node<T> child2 = new NodeActual<T>(btree, of(new KeySide<T>(medianKey,
 				Side.RIGHT)));
 		child2.setFirst(key.get().next());
 

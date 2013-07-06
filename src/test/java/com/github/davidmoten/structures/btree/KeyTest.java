@@ -15,9 +15,9 @@ public class KeyTest {
 		Optional<Node<Double>> absent = Optional.<Node<Double>> absent();
 
 		Key<Double> k = new Key<Double>(1.0);
-		Node<Double> left = new NodeLoaded<Double>(tree,
+		Node<Double> left = new NodeActual<Double>(tree,
 				Optional.<KeySide<Double>> absent());
-		Node<Double> right = new NodeLoaded<Double>(tree,
+		Node<Double> right = new NodeActual<Double>(tree,
 				Optional.<KeySide<Double>> absent());
 
 		assertFalse(k.hasChild());

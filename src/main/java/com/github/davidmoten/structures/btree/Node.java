@@ -1,11 +1,12 @@
 package com.github.davidmoten.structures.btree;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Optional;
 
-interface Node<T extends Comparable<T>> {
+interface Node<T extends Serializable & Comparable<T>> extends Serializable {
 
 	/**
 	 * Adds the element t to the node. If root node of BTree is changed then

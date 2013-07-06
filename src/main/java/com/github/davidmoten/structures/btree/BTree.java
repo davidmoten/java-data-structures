@@ -17,7 +17,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 	private final int degree;
 	private Node<T> root;
-	private File file;
+	private transient File file;
 
 	/**
 	 * Constructor.
