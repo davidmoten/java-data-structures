@@ -10,6 +10,7 @@ import com.google.common.base.Preconditions;
 public class BTree<T extends Comparable<T>> implements Iterable<T> {
 
 	private Node<T> root;
+	private final int degree;
 
 	/**
 	 * Constructor.
@@ -17,8 +18,13 @@ public class BTree<T extends Comparable<T>> implements Iterable<T> {
 	 * @param degree
 	 */
 	public BTree(int degree) {
+		this.degree = degree;
 		Preconditions.checkArgument(degree >= 2, "degree must be >=2");
-		root = new NodeLoaded<T>(degree);
+		root = new NodeLoaded<T>(this);
+	}
+
+	public int getDegree() {
+		return degree;
 	}
 
 	/**

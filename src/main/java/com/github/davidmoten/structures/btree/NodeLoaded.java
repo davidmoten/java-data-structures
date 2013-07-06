@@ -20,9 +20,9 @@ import com.google.common.collect.Lists;
  */
 class NodeLoaded<T extends Comparable<T>> implements Iterable<T>, Node<T> {
 
-	private final int degree;
 	private Optional<Key<T>> first = Optional.absent();
 	private Optional<KeySide<T>> parentKeySide = Optional.absent();
+	private BTree<T> btree;
 
 	/**
 	 * Constructor.
@@ -30,9 +30,9 @@ class NodeLoaded<T extends Comparable<T>> implements Iterable<T>, Node<T> {
 	 * @param degree
 	 * @param parent
 	 */
-	NodeLoaded(int degree, Optional<KeySide<T>> parentKeySide) {
+	NodeLoaded(BTree<T> btree, Optional<KeySide<T>> parentKeySide) {
+		this.btree = btree;
 		Preconditions.checkNotNull(parentKeySide);
-		this.degree = degree;
 		this.parentKeySide = parentKeySide;
 	}
 
@@ -41,8 +41,8 @@ class NodeLoaded<T extends Comparable<T>> implements Iterable<T>, Node<T> {
 	 * 
 	 * @param degree
 	 */
-	NodeLoaded(int degree) {
-		this(degree, Optional.<KeySide<T>> absent());
+	NodeLoaded(BTree<T> btree) {
+		this(btree, Optional.<KeySide<T>> absent());
 	}
 
 	/*
@@ -192,13 +192,13 @@ class NodeLoaded<T extends Comparable<T>> implements Iterable<T>, Node<T> {
 
 		Optional<Node<T>> result = absent();
 		int keyCount = countKeys();
-		if (keyCount == degree) {
+		if (keyCount == btree.getDegree()) {
 
 			Node<T> theParent;
 			// split
 			if (isRoot()) {
 				// creating new root
-				theParent = new NodeLoaded<T>(degree);
+				theParent = new NodeLoaded<T>(btree);
 				result = of(theParent);
 			} else {
 				theParent = parentKeySide.get().getKey().getNode().get();
@@ -253,12 +253,12 @@ class NodeLoaded<T extends Comparable<T>> implements Iterable<T>, Node<T> {
 		previous.get().setNext(Optional.<Key<T>> absent());
 
 		// create child1 of first ->..->previous
-		Node<T> child1 = new NodeLoaded<T>(degree, of(new KeySide<T>(medianKey,
+		Node<T> child1 = new NodeLoaded<T>(btree, of(new KeySide<T>(medianKey,
 				Side.LEFT)));
 		child1.setFirst(first);
 
 		// create child2 of medianKey.next ->..->last
-		Node<T> child2 = new NodeLoaded<T>(degree, of(new KeySide<T>(medianKey,
+		Node<T> child2 = new NodeLoaded<T>(btree, of(new KeySide<T>(medianKey,
 				Side.RIGHT)));
 		child2.setFirst(key.get().next());
 

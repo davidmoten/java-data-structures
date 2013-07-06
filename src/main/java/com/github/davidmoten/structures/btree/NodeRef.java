@@ -10,14 +10,12 @@ import com.google.common.base.Optional;
 public class NodeRef<T extends Comparable<T>> implements Node<T> {
 
 	private Optional<Node<T>> node;
-	private final int degree;
 	private final BTree<T> btree;
 	private final long position;
 	private final Optional<KeySide<T>> parentKeySide;
 
-	public NodeRef(int degree, Optional<KeySide<T>> parentKeySide,
-			BTree<T> btree, long position) {
-		this.degree = degree;
+	public NodeRef(Optional<KeySide<T>> parentKeySide, BTree<T> btree,
+			long position) {
 		this.parentKeySide = parentKeySide;
 		this.btree = btree;
 		this.position = position;
@@ -25,7 +23,7 @@ public class NodeRef<T extends Comparable<T>> implements Node<T> {
 
 	private synchronized Node<T> node() {
 		if (!node.isPresent()) {
-			node = of((Node<T>) new NodeLoaded<T>(degree, parentKeySide));
+			node = of((Node<T>) new NodeLoaded<T>(btree, parentKeySide));
 		}
 		return node.get();
 	}

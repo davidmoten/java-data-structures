@@ -11,12 +11,13 @@ public class KeyTest {
 
 	@Test
 	public void testHasChild() {
+		BTree<Double> tree = new BTree<Double>(3);
 		Optional<Node<Double>> absent = Optional.<Node<Double>> absent();
 
 		Key<Double> k = new Key<Double>(1.0);
-		Node<Double> left = new NodeLoaded<Double>(3,
+		Node<Double> left = new NodeLoaded<Double>(tree,
 				Optional.<KeySide<Double>> absent());
-		Node<Double> right = new NodeLoaded<Double>(3,
+		Node<Double> right = new NodeLoaded<Double>(tree,
 				Optional.<KeySide<Double>> absent());
 
 		assertFalse(k.hasChild());
