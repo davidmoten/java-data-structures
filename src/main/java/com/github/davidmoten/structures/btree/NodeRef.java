@@ -1,5 +1,7 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.google.common.base.Optional.of;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -8,8 +10,23 @@ import com.google.common.base.Optional;
 public class NodeRef<T extends Comparable<T>> implements Node<T> {
 
 	private Optional<Node<T>> node;
+	private final int degree;
+	private final BTree<T> btree;
+	private final long position;
+	private final Optional<KeySide<T>> parentKeySide;
 
-	private Node<T> node() {
+	public NodeRef(int degree, Optional<KeySide<T>> parentKeySide,
+			BTree<T> btree, long position) {
+		this.degree = degree;
+		this.parentKeySide = parentKeySide;
+		this.btree = btree;
+		this.position = position;
+	}
+
+	private synchronized Node<T> node() {
+		if (!node.isPresent()) {
+			node = of((Node<T>) new NodeLoaded<T>(degree, parentKeySide));
+		}
 		return node.get();
 	}
 
