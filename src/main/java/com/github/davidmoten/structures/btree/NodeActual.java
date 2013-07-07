@@ -194,32 +194,41 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 		first = of(add(first.get(), key));
 
-		Optional<Node<T>> result = absent();
+		final Optional<Node<T>> result;
 		int keyCount = countKeys();
-		if (keyCount == btree.getDegree()) {
-
-			Node<T> theParent;
-			// split
-			if (isRoot()) {
-				// creating new root
-				theParent = new NodeRef<T>(btree, btree.nextPosition(),
-						Optional.<KeySide<T>> absent());
-				result = of(theParent);
-			} else {
-				theParent = parentKeySide.get().getKey().getNode().get();
-			}
-			// split result is present if root changed by splitting
-			Optional<Node<T>> splitResult = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-					keyCount, theParent);
-
-			if (splitResult.isPresent())
-				result = splitResult;
-
-		} else
+		if (keyCount == btree.getDegree())
+			result = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount);
+		else
 			result = absent();
 
 		return result;
 
+	}
+
+	private Optional<Node<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+			int keyCount) {
+		final Optional<Node<T>> result;
+		Node<T> theParent;
+		Optional<Node<T>> result1;
+		// split
+		if (isRoot()) {
+			// creating new root
+			theParent = new NodeRef<T>(btree, btree.nextPosition(),
+					Optional.<KeySide<T>> absent());
+			result1 = of(theParent);
+		} else {
+			theParent = parentKeySide.get().getKey().getNode().get();
+			result1 = absent();
+		}
+		// split result is present if root changed by splitting
+		Optional<Node<T>> splitResult = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+				keyCount, theParent);
+
+		if (splitResult.isPresent())
+			result = splitResult;
+		else
+			result = result1;
+		return result;
 	}
 
 	/**

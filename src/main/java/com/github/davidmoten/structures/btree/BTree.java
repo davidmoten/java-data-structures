@@ -19,6 +19,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private Node<T> root;
 
 	private transient File file;
+	private final long nextPosition = 1000;
 
 	/**
 	 * Constructor.
@@ -110,8 +111,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	public long nextPosition() {
-		// TODO Auto-generated method stub
-		return 0;
+		return nextPosition;
+	}
+
+	public void save(Node<T> node) {
+
 	}
 
 }
