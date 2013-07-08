@@ -30,7 +30,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * 
 	 * @param degree
 	 */
-	public BTree(int degree, File file, Class<T> cls, long keySize) {
+	private BTree(int degree, File file, Class<T> cls, long keySize) {
 		this.cls = cls;
 		Preconditions.checkArgument(degree >= 2, "degree must be >=2");
 		long startPosition = nextPosition();
