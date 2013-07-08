@@ -11,7 +11,7 @@ public class KeyTest {
 
 	@Test
 	public void testHasChild() {
-		BTree<Double> tree = new BTree<Double>(3);
+		BTree<Double> tree = BTree.<Double> builder().degree(3).build();
 		Optional<Node<Double>> absent = Optional.<Node<Double>> absent();
 
 		Key<Double> k = new Key<Double>(1.0);
