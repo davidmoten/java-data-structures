@@ -1,5 +1,6 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.github.davidmoten.structures.btree.BTree.builder;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -30,7 +31,7 @@ public class BTreeTest {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void testInstantiatingBTreeOfDegree1ThrowsException() {
-		BTree.builder().degree(1).build();
+		builder(Integer.class).degree(1).build();
 	}
 
 	/**
@@ -48,7 +49,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test1() {
-		BTree<String> t = BTree.<String> builder().degree(3).build();
+		BTree<String> t = builder(String.class).degree(3).build();
 		t.add("1");
 		assertEquals(1, t.getKeys().size());
 		assertEquals("1", t.getKeys().get(0).value());
@@ -68,7 +69,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test2() {
-		BTree<String> t = BTree.<String> builder().degree(3).build();
+		BTree<String> t = builder(String.class).degree(3).build();
 		t.add("1");
 		t.add("2");
 		t.add("3");
@@ -91,7 +92,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test2_5() {
-		BTree<Integer> t = BTree.<Integer> builder().degree(3).build();
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
 		t.add(2);
 		t.add(1);
 		assertEquals(2, t.getKeys().size());
@@ -110,13 +111,13 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test3() {
-		BTree<String> t = BTree.<String> builder().degree(3).build();
-		t.add("1");
-		t.add("2");
-		t.add("3");
-		t.add("4");
-		Key<String> top = t.getKeys().get(0);
-		assertEquals("4", top.getRight().get().getKeys().get(1).value());
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1);
+		t.add(2);
+		t.add(3);
+		t.add(4);
+		Key<Integer> top = t.getKeys().get(0);
+		assertEquals(4, (int) top.getRight().get().getKeys().get(1).value());
 	}
 
 	/**
@@ -130,7 +131,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test4() {
-		BTree<Integer> t = BTree.<Integer> builder().degree(3).build();
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
 		t.add(1);
 		t.add(2);
 		t.add(3);
@@ -151,7 +152,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test5() {
-		BTree<Double> t = BTree.<Double> builder().degree(3).build();
+		BTree<Double> t = builder(Double.class).degree(3).build();
 		t.add(1.0);
 		t.add(2.0);
 		t.add(3.0);
@@ -175,7 +176,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test6() {
-		BTree<Double> t = BTree.<Double> builder().degree(3).build();
+		BTree<Double> t = builder(Double.class).degree(3).build();
 		t.add(1.0);
 		t.add(2.0);
 		t.add(3.0);
@@ -218,7 +219,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test7() {
-		BTree<Double> t = BTree.<Double> builder().degree(3).build();
+		BTree<Double> t = builder(Double.class).degree(3).build();
 		t.add(1.0);
 		t.add(2.0);
 		// System.out.println(t);
@@ -270,7 +271,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void testSplitWhenDegreeIsEven() {
-		BTree<Double> t = BTree.<Double> builder().degree(4).build();
+		BTree<Double> t = builder(Double.class).degree(4).build();
 		t.add(1.0);
 		t.add(2.0);
 		t.add(3.0);
@@ -298,7 +299,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test8() {
-		BTree<Double> t = BTree.<Double> builder().degree(3).build();
+		BTree<Double> t = builder(Double.class).degree(3).build();
 		t.add(1.0);
 		t.add(2.0);
 		t.add(3.0);
@@ -327,7 +328,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test9() {
-		BTree<Double> t = BTree.<Double> builder().degree(3).build();
+		BTree<Double> t = builder(Double.class).degree(3).build();
 		t.add(1.0);
 		t.add(2.0);
 		t.add(3.0);
@@ -356,7 +357,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test10() {
-		BTree<Double> t = BTree.<Double> builder().degree(3).build();
+		BTree<Double> t = builder(Double.class).degree(3).build();
 		assertEquals(Optional.absent(), t.find(1.0));
 	}
 
@@ -376,7 +377,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test11() {
-		BTree<Double> t = BTree.<Double> builder().degree(4).build();
+		BTree<Double> t = builder(Double.class).degree(4).build();
 		t.add(1.0);
 		t.add(2.0);
 		t.add(3.0);
@@ -400,7 +401,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void test12() {
-		BTree<Double> t = BTree.<Double> builder().degree(4).build();
+		BTree<Double> t = builder(Double.class).degree(4).build();
 		t.add(1.0);
 		t.add(2.0);
 		t.add(3.0);
@@ -426,7 +427,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void testIteratorOnEmptyBTree() {
-		BTree<Integer> t = BTree.<Integer> builder().degree(4).build();
+		BTree<Integer> t = builder(Integer.class).degree(4).build();
 		assertFalse(t.iterator().hasNext());
 	}
 
@@ -446,7 +447,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void testIteratorOnBTreeWithOneValue() {
-		BTree<Integer> t = BTree.<Integer> builder().degree(4).build();
+		BTree<Integer> t = builder(Integer.class).degree(4).build();
 		t.add(1);
 		Iterator<Integer> it = t.iterator();
 		assertEquals(1, (int) it.next());
@@ -469,7 +470,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void testIteratorOnBTreeWithTwoValue() {
-		BTree<Integer> t = BTree.<Integer> builder().degree(4).build();
+		BTree<Integer> t = builder(Integer.class).degree(4).build();
 		t.add(1);
 		t.add(2);
 		Iterator<Integer> it = t.iterator();
@@ -494,7 +495,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void testIteratorOnBTreeWith5Values() {
-		BTree<Integer> t = BTree.<Integer> builder().degree(4).build();
+		BTree<Integer> t = builder(Integer.class).degree(4).build();
 		t.add(1);
 		t.add(2);
 		t.add(3);
@@ -525,7 +526,7 @@ public class BTreeTest {
 	 */
 	@Test
 	public void testIteratorOnBTreeWith7Values() {
-		BTree<Integer> t = BTree.<Integer> builder().degree(4).build();
+		BTree<Integer> t = builder(Integer.class).degree(4).build();
 		t.add(1);
 		t.add(2);
 		t.add(3);
@@ -549,7 +550,7 @@ public class BTreeTest {
 	@Test
 	public void testIteratorOnBTreeWithNValues() {
 		for (int n = 1; n <= 1000; n++) {
-			BTree<Integer> t = BTree.<Integer> builder().degree(4).build();
+			BTree<Integer> t = builder(Integer.class).degree(4).build();
 			for (int i = 1; i <= n; i++)
 				t.add(i);
 			Iterator<Integer> it = t.iterator();
@@ -566,7 +567,7 @@ public class BTreeTest {
 	@Test
 	public void testIteratorOnBTreeWithNValuesAddedInReverseOrder() {
 		for (int n = 1; n <= MANY_VALUES; n++) {
-			BTree<Integer> t = BTree.<Integer> builder().degree(4).build();
+			BTree<Integer> t = builder(Integer.class).degree(4).build();
 			for (int i = n; i >= 1; i--) {
 				t.add(i);
 			}
@@ -588,9 +589,9 @@ public class BTreeTest {
 	// @Test
 	public void testSave1() {
 		File f = new File("target/test1.index");
-		BTree<Integer> t = BTree.<Integer> builder().degree(3).file(f).build();
+		BTree<Integer> t = builder(Integer.class).degree(3).file(f).build();
 		t.add(1);
-		BTree<Integer> t2 = BTree.<Integer> builder().degree(3).file(f).build();
+		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
 		assertTrue(t2.find(1).isPresent());
 	}
 

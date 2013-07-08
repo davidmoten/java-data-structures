@@ -19,16 +19,19 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 	private final long nextPosition = 1000;
 
-	private int degree = 100;
-	private File file = new File("target/btree.index");
-	private long keySize = 1000;
+	private final int degree;
+	private final File file;
+	private final long keySize;
+
+	private final Class<T> cls;
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param degree
 	 */
-	public BTree(int degree, File file, long keySize) {
+	public BTree(int degree, File file, Class<T> cls, long keySize) {
+		this.cls = cls;
 		Preconditions.checkArgument(degree >= 2, "degree must be >=2");
 		long startPosition = nextPosition();
 		root = new NodeRef<T>(this, startPosition,
@@ -42,6 +45,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		private int degree = 100;
 		private File file = new File("target/btree.index");
 		private long keySize = 1000;
+		private final Class<R> cls;
+
+		public Builder(Class<R> cls) {
+			this.cls = cls;
+		}
 
 		public Builder<R> degree(int degree) {
 			this.degree = degree;
@@ -59,12 +67,13 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 
 		public BTree<R> build() {
-			return new BTree<R>(degree, file, keySize);
+			return new BTree<R>(degree, file, cls, keySize);
 		}
 	}
 
-	public static <R extends Comparable<R> & Serializable> Builder<R> builder() {
-		return new Builder<R>();
+	public static <R extends Comparable<R> & Serializable> Builder<R> builder(
+			Class<R> cls) {
+		return new Builder<R>(cls);
 	}
 
 	private static File createTempFile() {

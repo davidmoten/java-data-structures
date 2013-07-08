@@ -1,5 +1,6 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.github.davidmoten.structures.btree.BTree.builder;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -11,7 +12,7 @@ public class KeyTest {
 
 	@Test
 	public void testHasChild() {
-		BTree<Double> tree = BTree.<Double> builder().degree(3).build();
+		BTree<Double> tree = builder(Double.class).degree(3).build();
 		Optional<Node<Double>> absent = Optional.<Node<Double>> absent();
 
 		Key<Double> k = new Key<Double>(1.0);
