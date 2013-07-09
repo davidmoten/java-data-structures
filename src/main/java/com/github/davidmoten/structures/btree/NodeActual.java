@@ -550,7 +550,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
     public void save() {
         if (btree.getFile().isPresent()) {
             try {
-                System.out.println("saving " + this);
+                System.out.println("saving " + abbr());
                 RandomAccessFile f = new RandomAccessFile(
                         btree.getFile().get(), "rws");
                 f.seek(position);
@@ -561,14 +561,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
                     oos.writeObject(key);
                 }
                 oos.close();
-                int remainingBytes = btree.getDegree() * btree.getKeySize()
-                        - bytes.size();
-                if (remainingBytes < 0)
-                    throw new RuntimeException(
-                            "not enough bytes per key have been allocated");
-
-                f.write(bytes.toByteArray());
-                f.write(new byte[remainingBytes]);
+                writeBytes(f, bytes);
                 f.close();
                 System.out.println("written to " + btree.getFile().get() + ":"
                         + position);
@@ -578,6 +571,27 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private String abbr() {
+        StringBuffer s = new StringBuffer();
+        for (Key<T> key : keys()) {
+            if (s.length() > 0)
+                s.append(",");
+            s.append(key.value());
+        }
+        return s.toString();
+    }
+
+    private void writeBytes(RandomAccessFile f, ByteArrayOutputStream bytes)
+            throws IOException {
+        int remainingBytes = btree.getDegree() * btree.getKeySize()
+                - bytes.size();
+        if (remainingBytes < 0)
+            throw new RuntimeException(
+                    "not enough bytes per key have been allocated");
+        f.write(bytes.toByteArray());
+        f.write(new byte[remainingBytes]);
     }
 
 }
