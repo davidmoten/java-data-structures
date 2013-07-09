@@ -3,11 +3,9 @@ package com.github.davidmoten.structures.btree;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
@@ -411,6 +409,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
      */
     @Override
     public void setFirst(Optional<Key<T>> first) {
+        Preconditions.checkNotNull(first);
         this.first = first;
         updateParents();
         updateKeys();
@@ -545,8 +544,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         return builder.toString();
     }
 
-    @Override
-    public void save() {
+    private void save() {
         if (btree.getFile().isPresent()) {
             try {
                 RandomAccessFile f = new RandomAccessFile(
@@ -561,7 +559,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
                 oos.close();
                 f.write(bytes.toByteArray());
                 f.close();
-                System.out.println("written to " + f + ":" + position);
+                System.out.println("written to " + btree.getFile().get() + ":"
+                        + position);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
@@ -570,34 +569,4 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         }
     }
 
-    public void load() {
-        if (btree.getFile().isPresent()) {
-            try {
-                RandomAccessFile f = new RandomAccessFile(
-                        btree.getFile().get(), "r");
-                f.seek(position);
-                byte[] b = new byte[btree.getDegree() * btree.getKeySize()];
-                f.read(b);
-
-                ByteArrayInputStream bytes = new ByteArrayInputStream(b);
-                ObjectInputStream ois = new ObjectInputStream(bytes);
-                int count = ois.readInt();
-                Optional<Key<T>> previous = absent();
-                for (int i = 0; i < count; i++) {
-                    @SuppressWarnings("unchecked")
-                    Key<T> key = (Key<T>) ois.readObject();
-                    if (previous.isPresent())
-                        previous.get().setNext(of(key));
-                }
-                ois.close();
-                f.close();
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 }

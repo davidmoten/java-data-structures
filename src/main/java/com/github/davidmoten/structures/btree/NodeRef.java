@@ -1,7 +1,13 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -29,9 +35,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
     private synchronized Node<T> node() {
         if (!node.isPresent()) {
             if (position.isPresent()) {
-                node = of(new NodeActual<T>(btree, parentKeySide,
-                        position.get()));
-                node.get().load();
+                load();
             } else {
                 position = of(btree.nextPosition());
                 node = of(new NodeActual<T>(btree, parentKeySide,
@@ -39,6 +43,45 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
             }
         }
         return node.get();
+    }
+
+    public void load() {
+        node = of(new NodeActual<T>(btree, parentKeySide, position.get()));
+        if (btree.getFile().isPresent()) {
+            try {
+                RandomAccessFile f = new RandomAccessFile(
+                        btree.getFile().get(), "r");
+                f.seek(position.get());
+                byte[] b = new byte[btree.getDegree() * btree.getKeySize()];
+                f.read(b);
+
+                ByteArrayInputStream bytes = new ByteArrayInputStream(b);
+                ObjectInputStream ois = new ObjectInputStream(bytes);
+                int count = ois.readInt();
+                Optional<Key<T>> previous = absent();
+                Optional<Key<T>> first = absent();
+                for (int i = 0; i < count; i++) {
+                    @SuppressWarnings("unchecked")
+                    Key<T> key = (Key<T>) ois.readObject();
+                    key.setNode(of((Node<T>) this));
+                    key.setNext(Optional.<Key<T>> absent());
+                    if (!first.isPresent())
+                        first = of(key);
+                    if (previous.isPresent())
+                        previous.get().setNext(of(key));
+                    previous = of(key);
+                }
+                node.get().setFirst(first);
+                ois.close();
+                f.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @Override
@@ -99,11 +142,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
     @Override
     public String toString(String space) {
         return node().toString(space);
-    }
-
-    @Override
-    public void save() {
-        node().save();
     }
 
     @Override
