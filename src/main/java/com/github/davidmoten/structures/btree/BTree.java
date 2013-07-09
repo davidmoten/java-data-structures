@@ -38,12 +38,17 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
     public static class Builder<R extends Serializable & Comparable<R>> {
         private int degree = 100;
-        private File file = new File("target/btree.index");
+        private File file;
         private int keySize = 1000;
         private final Class<R> cls;
 
         public Builder(Class<R> cls) {
             this.cls = cls;
+            try {
+                this.file = File.createTempFile("btree", ".index");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         public Builder<R> degree(int degree) {
