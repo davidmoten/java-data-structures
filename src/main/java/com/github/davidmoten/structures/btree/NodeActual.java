@@ -201,8 +201,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         final Optional<Node<T>> result;
         if (keyCount == btree.getDegree())
             result = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount);
-        else
+        else {
+            save();
             result = absent();
+        }
         return result;
     }
 
@@ -545,50 +547,56 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
     @Override
     public void save() {
-        try {
-            RandomAccessFile f = new RandomAccessFile(btree.getFile(), "w");
-            f.seek(position);
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bytes);
-            oos.writeInt(countKeys());
-            for (Key<T> key : keys()) {
-                oos.writeObject(key);
+        if (btree.getFile().isPresent()) {
+            try {
+                RandomAccessFile f = new RandomAccessFile(
+                        btree.getFile().get(), "rws");
+                f.seek(position);
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(bytes);
+                oos.writeInt(countKeys());
+                for (Key<T> key : keys()) {
+                    oos.writeObject(key);
+                }
+                oos.close();
+                f.write(bytes.toByteArray());
+                f.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-            oos.close();
-            f.write(bytes.toByteArray());
-            f.close();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
     public void load() {
-        try {
-            RandomAccessFile f = new RandomAccessFile(btree.getFile(), "r");
-            f.seek(position);
-            byte[] b = new byte[btree.getDegree() * btree.getKeySize()];
-            f.read(b);
+        if (btree.getFile().isPresent()) {
+            try {
+                RandomAccessFile f = new RandomAccessFile(
+                        btree.getFile().get(), "r");
+                f.seek(position);
+                byte[] b = new byte[btree.getDegree() * btree.getKeySize()];
+                f.read(b);
 
-            ByteArrayInputStream bytes = new ByteArrayInputStream(b);
-            ObjectInputStream ois = new ObjectInputStream(bytes);
-            int count = ois.readInt();
-            Optional<Key<T>> previous = absent();
-            for (int i = 0; i < count; i++) {
-                @SuppressWarnings("unchecked")
-                Key<T> key = (Key<T>) ois.readObject();
-                if (previous.isPresent())
-                    previous.get().setNext(of(key));
+                ByteArrayInputStream bytes = new ByteArrayInputStream(b);
+                ObjectInputStream ois = new ObjectInputStream(bytes);
+                int count = ois.readInt();
+                Optional<Key<T>> previous = absent();
+                for (int i = 0; i < count; i++) {
+                    @SuppressWarnings("unchecked")
+                    Key<T> key = (Key<T>) ois.readObject();
+                    if (previous.isPresent())
+                        previous.get().setNext(of(key));
+                }
+                ois.close();
+                f.close();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
-            ois.close();
-            f.close();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
         }
     }
 }

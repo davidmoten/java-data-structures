@@ -1,5 +1,8 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.google.common.base.Optional.absent;
+import static com.google.common.base.Optional.of;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,7 +22,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
     private Node<T> root;
 
     private final int degree;
-    private final File file;
+    private final Optional<File> file;
     private final int keySize;
 
     /**
@@ -27,7 +30,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
      * 
      * @param degree
      */
-    private BTree(int degree, File file, Class<T> cls, int keySize) {
+    private BTree(int degree, Optional<File> file, Class<T> cls, int keySize) {
         Preconditions.checkArgument(degree >= 2, "degree must be >=2");
         root = new NodeRef<T>(this, Optional.<Long> absent(),
                 Optional.<KeySide<T>> absent());
@@ -38,17 +41,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
     public static class Builder<R extends Serializable & Comparable<R>> {
         private int degree = 100;
-        private File file;
+        private Optional<File> file = absent();
         private int keySize = 1000;
         private final Class<R> cls;
 
         public Builder(Class<R> cls) {
             this.cls = cls;
-            try {
-                this.file = File.createTempFile("btree", ".index");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         }
 
         public Builder<R> degree(int degree) {
@@ -57,7 +55,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
         }
 
         public Builder<R> file(File file) {
-            this.file = file;
+            this.file = of(file);
             return this;
         }
 
@@ -112,7 +110,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
      */
     public Iterable<Optional<T>> find(T t1, T t2, ComparisonOperator op1,
             ComparisonOperator op2) {
-        // TODO
         return null;
     }
 
@@ -141,9 +138,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
     public synchronized long nextPosition() {
         try {
-            if (!file.exists())
-                file.createNewFile();
-            return file.length();
+            if (file.isPresent()) {
+                if (!file.get().exists())
+                    file.get().createNewFile();
+                return file.get().length();
+            } else
+                return 0;
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -151,7 +151,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
         }
     }
 
-    public File getFile() {
+    public Optional<File> getFile() {
         return file;
     }
 
