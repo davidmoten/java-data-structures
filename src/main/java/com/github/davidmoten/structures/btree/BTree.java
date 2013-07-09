@@ -32,8 +32,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
      */
     private BTree(int degree, Optional<File> file, Class<T> cls, int keySize) {
         Preconditions.checkArgument(degree >= 2, "degree must be >=2");
-        root = new NodeRef<T>(this, Optional.<Long> absent(),
-                Optional.<KeySide<T>> absent());
+        if (file.isPresent() && file.get().exists()) {
+            root = new NodeRef<T>(this, of(0L), Optional.<KeySide<T>> absent());
+        } else
+            root = new NodeRef<T>(this, Optional.<Long> absent(),
+                    Optional.<KeySide<T>> absent());
         this.degree = degree;
         this.file = file;
         this.keySize = keySize;

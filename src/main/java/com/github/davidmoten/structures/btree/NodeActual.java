@@ -561,6 +561,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
                 oos.close();
                 f.write(bytes.toByteArray());
                 f.close();
+                System.out.println("written to " + f + ":" + position);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
