@@ -7,112 +7,116 @@ import java.io.Serializable;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
-class Key<T extends Serializable & Comparable<T>> {
+class Key<T extends Serializable & Comparable<T>> implements Serializable {
 
-	private final T t;
-	private Optional<Node<T>> left = absent();
-	private Optional<Node<T>> right = absent();
-	private boolean deleted = false;
-	private Optional<Key<T>> next = absent();
-	private Optional<Node<T>> node = absent();
+    private static final long serialVersionUID = 5000199744985500145L;
 
-	Key(T t) {
-		this.t = t;
-	}
+    private final T t;
+    private Optional<Node<T>> left = absent();
+    private Optional<Node<T>> right = absent();
+    private boolean deleted = false;
 
-	boolean isDeleted() {
-		return deleted;
-	}
+    // fields not to be serialized
+    private transient Optional<Key<T>> next = absent();
+    private transient Optional<Node<T>> node = absent();
 
-	void setDeleted(boolean deleted) {
-		this.deleted = deleted;
-	}
+    Key(T t) {
+        this.t = t;
+    }
 
-	T value() {
-		return t;
-	}
+    boolean isDeleted() {
+        return deleted;
+    }
 
-	Optional<Node<T>> getLeft() {
-		return left;
-	}
+    void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 
-	void setLeft(Optional<Node<T>> left) {
-		Preconditions.checkNotNull(left);
-		this.left = left;
+    T value() {
+        return t;
+    }
 
-	}
+    Optional<Node<T>> getLeft() {
+        return left;
+    }
 
-	Optional<Node<T>> getRight() {
-		return right;
-	}
+    void setLeft(Optional<Node<T>> left) {
+        Preconditions.checkNotNull(left);
+        this.left = left;
 
-	void setRight(Optional<Node<T>> right) {
-		Preconditions.checkNotNull(right);
-		this.right = right;
+    }
 
-	}
+    Optional<Node<T>> getRight() {
+        return right;
+    }
 
-	boolean hasChild() {
-		return left.isPresent() || right.isPresent();
-	}
+    void setRight(Optional<Node<T>> right) {
+        Preconditions.checkNotNull(right);
+        this.right = right;
 
-	@Override
-	public String toString() {
-		return toString("  ");
-	}
+    }
 
-	Optional<Node<T>> getParent() {
-		return node;
-	}
+    boolean hasChild() {
+        return left.isPresent() || right.isPresent();
+    }
 
-	void setNode(Optional<Node<T>> node) {
-		this.node = node;
-	}
+    @Override
+    public String toString() {
+        return toString("  ");
+    }
 
-	Optional<Key<T>> next() {
-		return next;
-	}
+    Optional<Node<T>> getParent() {
+        return node;
+    }
 
-	void setNext(Optional<Key<T>> next) {
-		this.next = next;
-	}
+    void setNode(Optional<Node<T>> node) {
+        this.node = node;
+    }
 
-	void updateLinks() {
-		if (left.isPresent()) {
-			left.get().setParentKeySide(
-					Optional.of(new KeySide<T>(this, Side.LEFT)));
-		}
-		if (right.isPresent()) {
-			right.get().setParentKeySide(
-					Optional.of(new KeySide<T>(this, Side.RIGHT)));
-		}
-	}
+    Optional<Key<T>> next() {
+        return next;
+    }
 
-	String toString(String space) {
-		StringBuilder builder = new StringBuilder();
-		builder.append("\n" + space + "Key [t=");
-		builder.append(t);
-		if (node.isPresent()) {
-			builder.append(", node=");
-			builder.append(node.get().keysAsString());
-		}
-		if (left.isPresent()) {
-			builder.append("\n" + space + "  left=");
-			builder.append(left.get().toString(space + "    "));
-		}
-		if (right.isPresent()) {
-			builder.append("\n" + space + "  right=");
-			builder.append(right.get().toString(space + "    "));
-		}
-		if (next.isPresent()) {
-			builder.append("\n" + space + "  next=");
-			builder.append(next.get().toString(space));
-		}
-		builder.append("]");
-		return builder.toString();
-	}
+    void setNext(Optional<Key<T>> next) {
+        this.next = next;
+    }
 
-	Optional<Node<T>> getNode() {
-		return node;
-	}
+    void updateLinks() {
+        if (left.isPresent()) {
+            left.get().setParentKeySide(
+                    Optional.of(new KeySide<T>(this, Side.LEFT)));
+        }
+        if (right.isPresent()) {
+            right.get().setParentKeySide(
+                    Optional.of(new KeySide<T>(this, Side.RIGHT)));
+        }
+    }
+
+    String toString(String space) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n" + space + "Key [t=");
+        builder.append(t);
+        if (node.isPresent()) {
+            builder.append(", node=");
+            builder.append(node.get().keysAsString());
+        }
+        if (left.isPresent()) {
+            builder.append("\n" + space + "  left=");
+            builder.append(left.get().toString(space + "    "));
+        }
+        if (right.isPresent()) {
+            builder.append("\n" + space + "  right=");
+            builder.append(right.get().toString(space + "    "));
+        }
+        if (next.isPresent()) {
+            builder.append("\n" + space + "  next=");
+            builder.append(next.get().toString(space));
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    Optional<Node<T>> getNode() {
+        return node;
+    }
 }
