@@ -157,10 +157,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
         }
     }
 
-    public void save(Node<T> node) {
-        // TODO
-    }
-
     public File getFile() {
         return file;
     }

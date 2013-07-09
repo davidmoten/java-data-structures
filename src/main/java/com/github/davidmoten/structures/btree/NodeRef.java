@@ -106,4 +106,20 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
         node().save();
     }
 
+    @Override
+    public String toString() {
+        if (node.isPresent()) {
+            return node.toString();
+        } else
+            return asString();
+    }
+
+    public String asString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("NodeRef [position=");
+        builder.append(position);
+        builder.append("]");
+        return builder.toString();
+    }
+
 }

@@ -126,10 +126,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
      * is guaranteed to be added against this node.
      * 
      * @param first
-     *            will always have a value
      * @param key
      */
-    private Key<T> add(Key<T> first, Key<T> key) {
+    private Key<T> add(Optional<Key<T>> first, Key<T> key) {
 
         // key is not on the current node
         key.setNode(of((Node<T>) this));
@@ -137,7 +136,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         // insert key
         Optional<Key<T>> previous = absent();
         Optional<Key<T>> next = absent();
-        for (Key<T> k : keys(of(first))) {
+        for (Key<T> k : keys(first)) {
             if (key.value().compareTo(k.value()) < 0) {
                 if (previous.isPresent())
                     previous.get().setNext(of(key));
@@ -148,7 +147,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
             previous = of(k);
         }
 
-        if (!next.isPresent()) {
+        if (!next.isPresent() && previous.isPresent()) {
             previous.get().setNext(of(key));
         }
 
@@ -157,7 +156,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         if (!previous.isPresent())
             result = key;
         else
-            result = first;
+            result = first.get();
 
         // update previous and following keys to the newly added one
         if (previous.isPresent()) {
@@ -199,12 +198,12 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
         key.setNode(of((Node<T>) this));
 
-        if (isEmpty()) {
-            setFirst(Optional.of(key));
-            return Optional.of((Node<T>) this);
-        }
+        // if (isEmpty()) {
+        // setFirst(Optional.of(key));
+        // return Optional.of((Node<T>) this);
+        // }
 
-        first = of(add(first.get(), key));
+        first = of(add(first, key));
 
         int keyCount = countKeys();
 
