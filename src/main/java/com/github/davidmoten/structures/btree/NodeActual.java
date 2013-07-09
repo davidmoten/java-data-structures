@@ -198,21 +198,12 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
         key.setNode(of((Node<T>) this));
 
-        // if (isEmpty()) {
-        // setFirst(Optional.of(key));
-        // return Optional.of((Node<T>) this);
-        // }
-
         first = of(add(first, key));
 
         int keyCount = countKeys();
 
         return performSplitIfRequired(keyCount);
 
-    }
-
-    private boolean isEmpty() {
-        return !first.isPresent();
     }
 
     private Optional<Node<T>> performSplitIfRequired(int keyCount) {
