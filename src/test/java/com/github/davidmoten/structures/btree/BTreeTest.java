@@ -589,6 +589,7 @@ public class BTreeTest {
     @Test
     public void testSaveOneItem() {
         File f = new File("target/test1.index");
+        f.delete();
         BTree<Integer> t = builder(Integer.class).degree(3).file(f).build();
         t.add(1);
         BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
@@ -597,7 +598,8 @@ public class BTreeTest {
 
     @Test
     public void testSaveTwoItems() {
-        File f = new File("target/test1.index");
+        File f = new File("target/test2.index");
+        f.delete();
         BTree<Integer> t = builder(Integer.class).degree(3).file(f).build();
         t.add(1);
         t.add(2);
