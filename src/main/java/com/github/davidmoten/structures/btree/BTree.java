@@ -165,4 +165,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
         return keySize;
     }
 
+    public void markNodeForReuse(long position) {
+        // TODO allow reuse of disk at position for a new Node
+    }
+
 }

@@ -33,9 +33,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
     private Optional<Key<T>> first = Optional.absent();
     private Optional<KeySide<T>> parentKeySide = Optional.absent();
-    private BTree<T> btree;
+    private final BTree<T> btree;
 
-    private long position;
+    private final long position;
 
     /**
      * Constructor.
@@ -50,15 +50,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         Preconditions.checkNotNull(parentKeySide);
         this.parentKeySide = parentKeySide;
         this.position = position;
-    }
-
-    /**
-     * Constructor. Should be used to create root node only.
-     * 
-     * @param degree
-     */
-    NodeActual(BTree<T> btree) {
-        this(btree, Optional.<KeySide<T>> absent(), 0);
     }
 
     /*
@@ -239,7 +230,14 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
             result = splitResult;
         else
             result = result1;
+
+        this.unload();
+
         return result;
+    }
+
+    private void unload() {
+        btree.markNodeForReuse(position);
     }
 
     /**
