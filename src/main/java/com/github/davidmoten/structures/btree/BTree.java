@@ -160,7 +160,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
     }
 
     public void markNodeForReuse(long position) {
-        // TODO allow reuse of disk at position for a new Node
+        if (file.isPresent()) {
+            // TODO allow reuse of disk at position for a new Node
+        }
     }
 
 }
