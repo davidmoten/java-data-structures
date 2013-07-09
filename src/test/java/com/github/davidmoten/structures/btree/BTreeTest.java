@@ -608,6 +608,20 @@ public class BTreeTest {
         assertTrue(t2.find(2).isPresent());
     }
 
+    @Test
+    public void testSaveThreeItemsDepthTwo() {
+        File f = new File("target/test3.index");
+        f.delete();
+        BTree<Integer> t = builder(Integer.class).degree(3).file(f).build();
+        t.add(1);
+        t.add(2);
+        t.add(3);
+        BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+        assertTrue(t2.find(1).isPresent());
+        assertTrue(t2.find(2).isPresent());
+        assertTrue(t2.find(3).isPresent());
+    }
+
     private static void assertKeyValuesAre(List<Double> expected,
             List<? extends Key<Double>> keys) {
         String msg = "expected " + expected + " but was " + keys;

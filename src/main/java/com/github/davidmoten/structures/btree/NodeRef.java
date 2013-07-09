@@ -160,4 +160,9 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
         return builder.toString();
     }
 
+    @Override
+    public void save() {
+        node().save();
+    }
+
 }

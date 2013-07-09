@@ -52,4 +52,6 @@ interface Node<T extends Serializable & Comparable<T>> extends Serializable {
 
     String toString(String space);
 
+    void save();
+
 }

@@ -279,11 +279,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent(),
                 of(new KeySide<T>(medianKey, Side.LEFT)));
         child1.setFirst(first);
+        child1.save();
 
         // create child2 of medianKey.next ->..->last
         Node<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent(),
                 of(new KeySide<T>(medianKey, Side.RIGHT)));
         child2.setFirst(key.get().next());
+        child2.save();
 
         // set the links on medianKey to the next key in the same node and to
         // its children
@@ -544,7 +546,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         return builder.toString();
     }
 
-    private void save() {
+    @Override
+    public void save() {
         if (btree.getFile().isPresent()) {
             try {
                 System.out.println("saving " + this);
@@ -558,7 +561,14 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
                     oos.writeObject(key);
                 }
                 oos.close();
+                int remainingBytes = btree.getDegree() * btree.getKeySize()
+                        - bytes.size();
+                if (remainingBytes < 0)
+                    throw new RuntimeException(
+                            "not enough bytes per key have been allocated");
+
                 f.write(bytes.toByteArray());
+                f.write(new byte[remainingBytes]);
                 f.close();
                 System.out.println("written to " + btree.getFile().get() + ":"
                         + position);
