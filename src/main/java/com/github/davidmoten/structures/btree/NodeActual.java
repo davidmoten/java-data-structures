@@ -547,6 +547,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
     private void save() {
         if (btree.getFile().isPresent()) {
             try {
+                System.out.println("saving " + this);
                 RandomAccessFile f = new RandomAccessFile(
                         btree.getFile().get(), "rws");
                 f.seek(position);
