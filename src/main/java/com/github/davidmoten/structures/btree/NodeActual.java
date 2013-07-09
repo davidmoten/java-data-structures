@@ -576,6 +576,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
             int count = ois.readInt();
             Optional<Key<T>> previous = absent();
             for (int i = 0; i < count; i++) {
+                @SuppressWarnings("unchecked")
                 Key<T> key = (Key<T>) ois.readObject();
                 if (previous.isPresent())
                     previous.get().setNext(of(key));

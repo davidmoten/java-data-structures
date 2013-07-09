@@ -22,15 +22,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
     private final File file;
     private final int keySize;
 
-    private final Class<T> cls;
-
     /**
      * Constructor.
      * 
      * @param degree
      */
     private BTree(int degree, File file, Class<T> cls, int keySize) {
-        this.cls = cls;
         Preconditions.checkArgument(degree >= 2, "degree must be >=2");
         root = new NodeRef<T>(this, Optional.<Long> absent(),
                 Optional.<KeySide<T>> absent());
@@ -72,14 +69,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
     public static <R extends Comparable<R> & Serializable> Builder<R> builder(
             Class<R> cls) {
         return new Builder<R>(cls);
-    }
-
-    private static File createTempFile() {
-        try {
-            return File.createTempFile("btree", "index");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public int getDegree() {
