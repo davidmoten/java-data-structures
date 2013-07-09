@@ -13,13 +13,13 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
 
     private static final long serialVersionUID = -420236968739933117L;
 
-    private final long position;
+    private Optional<Long> position;
 
-    private transient Optional<Node<T>> node = Optional.absent();
+    private transient Optional<NodeActual<T>> node = Optional.absent();
     private final transient BTree<T> btree;
     private final transient Optional<KeySide<T>> parentKeySide;
 
-    public NodeRef(BTree<T> btree, long position,
+    public NodeRef(BTree<T> btree, Optional<Long> position,
             Optional<KeySide<T>> parentKeySide) {
         this.parentKeySide = parentKeySide;
         this.btree = btree;
@@ -28,8 +28,15 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
 
     private synchronized Node<T> node() {
         if (!node.isPresent()) {
-            node = of((Node<T>) new NodeActual<T>(btree, parentKeySide,
-                    position));
+            if (position.isPresent()) {
+                node = of(new NodeActual<T>(btree, parentKeySide,
+                        position.get()));
+                node.get().load();
+            } else {
+                position = of(btree.nextPosition());
+                node = of(new NodeActual<T>(btree, parentKeySide,
+                        position.get()));
+            }
         }
         return node.get();
     }

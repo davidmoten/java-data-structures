@@ -1,6 +1,7 @@
 package com.github.davidmoten.structures.btree;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
@@ -17,8 +18,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
     private Node<T> root;
 
-    private final long nextPosition = 1000;
-
     private final int degree;
     private final File file;
     private final int keySize;
@@ -33,8 +32,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
     private BTree(int degree, File file, Class<T> cls, int keySize) {
         this.cls = cls;
         Preconditions.checkArgument(degree >= 2, "degree must be >=2");
-        long startPosition = nextPosition();
-        root = new NodeRef<T>(this, startPosition,
+        root = new NodeRef<T>(this, Optional.<Long> absent(),
                 Optional.<KeySide<T>> absent());
         this.degree = degree;
         this.file = file;
@@ -147,8 +145,16 @@ public class BTree<T extends Serializable & Comparable<T>> implements
         return builder.toString();
     }
 
-    public long nextPosition() {
-        return nextPosition;
+    public synchronized long nextPosition() {
+        try {
+            if (!file.exists())
+                file.createNewFile();
+            return file.length();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void save(Node<T> node) {
