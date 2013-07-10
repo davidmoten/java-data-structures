@@ -144,6 +144,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
         Optional<Node<T>> newRoot = root.add(t);
         if (newRoot.isPresent()) {
             root = newRoot.get();
+            rootPosition = newRoot.get().getPosition();
             if (file.isPresent())
                 writeHeader();
         }

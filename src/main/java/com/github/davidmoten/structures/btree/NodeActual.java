@@ -591,4 +591,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         f.write(new byte[remainingBytes]);
     }
 
+    @Override
+    public long getPosition() {
+        return position;
+    }
+
 }

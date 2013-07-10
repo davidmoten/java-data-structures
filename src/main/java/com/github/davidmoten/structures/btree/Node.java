@@ -54,4 +54,6 @@ interface Node<T extends Serializable & Comparable<T>> extends Serializable {
 
     void save();
 
+    long getPosition();
+
 }

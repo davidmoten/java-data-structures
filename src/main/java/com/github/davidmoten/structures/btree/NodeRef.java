@@ -47,8 +47,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
 
     public void load() {
 
-        Optional<NodeActual<T>> nd = of(new NodeActual<T>(btree, parentKeySide,
-                position.get()));
+        node = of(new NodeActual<T>(btree, parentKeySide, position.get()));
         if (btree.getFile().isPresent()) {
             try {
 
@@ -77,7 +76,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
                         previous.get().setNext(of(key));
                     previous = of(key);
                 }
-                nd.get().setFirst(first);
+                node.get().setFirst(first);
                 ois.close();
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
@@ -87,7 +86,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
                 throw new RuntimeException(e);
             }
         }
-        this.node = nd;
     }
 
     @Override
@@ -169,6 +167,11 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
     @Override
     public void save() {
         node().save();
+    }
+
+    @Override
+    public long getPosition() {
+        return node().getPosition();
     }
 
 }
