@@ -30,7 +30,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
     private final Optional<File> file;
     private final int keySize;
     private final static long POSITION_START = 1000;
-    private static long rootPosition = POSITION_START;
+    private long rootPosition = POSITION_START;
 
     /**
      * Constructor.
@@ -84,6 +84,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
             oos.close();
             f.seek(0);
             f.write(header.toByteArray());
+            if (header.size() < POSITION_START) {
+                byte[] more = new byte[(int) POSITION_START - header.size()];
+                f.write(more);
+            }
             f.close();
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);

@@ -46,15 +46,20 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
     }
 
     public void load() {
-        node = of(new NodeActual<T>(btree, parentKeySide, position.get()));
+
+        Optional<NodeActual<T>> nd = of(new NodeActual<T>(btree, parentKeySide,
+                position.get()));
         if (btree.getFile().isPresent()) {
             try {
+
                 RandomAccessFile f = new RandomAccessFile(
                         btree.getFile().get(), "r");
                 f.seek(position.get());
                 int numBytes = btree.getDegree() * btree.getKeySize();
                 byte[] b = new byte[numBytes];
-                f.read(b);
+                int numBytesRead = f.read(b);
+                System.out.println("numBytesRead=" + numBytesRead);
+                f.close();
 
                 ByteArrayInputStream bytes = new ByteArrayInputStream(b);
                 ObjectInputStream ois = new ObjectInputStream(bytes);
@@ -72,9 +77,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
                         previous.get().setNext(of(key));
                     previous = of(key);
                 }
-                node.get().setFirst(first);
+                nd.get().setFirst(first);
                 ois.close();
-                f.close();
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
@@ -83,6 +87,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
                 throw new RuntimeException(e);
             }
         }
+        this.node = nd;
     }
 
     @Override
