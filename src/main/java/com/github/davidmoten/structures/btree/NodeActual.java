@@ -31,7 +31,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
     private Optional<Key<T>> first = Optional.absent();
     private Optional<KeySide<T>> parentKeySide = Optional.absent();
-    private final BTree<T> btree;
+    private BTree<T> btree;
 
     private final long position;
 
@@ -44,8 +44,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
      * @param parent
      */
     NodeActual(BTree<T> btree, Optional<KeySide<T>> parentKeySide, long position) {
-        this.btree = btree;
         Preconditions.checkNotNull(parentKeySide);
+        this.btree = btree;
         this.parentKeySide = parentKeySide;
         this.position = position;
     }
@@ -150,13 +150,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         // update previous and following keys to the newly added one
         if (previous.isPresent()) {
             previous.get().setRight(key.getLeft());
-            previous.get().updateLinks();
+            previous.get().updateLinks(btree);
         }
         if (next.isPresent()) {
             next.get().setLeft(key.getRight());
-            next.get().updateLinks();
+            next.get().updateLinks(btree);
         }
-        key.updateLinks();
+        key.updateLinks(btree);
         return result;
     }
 
@@ -416,7 +416,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
     private void updateKeys() {
         for (Key<T> key : keys())
-            key.updateLinks();
+            key.updateLinks(btree);
     }
 
     @Override
@@ -594,6 +594,11 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
     @Override
     public long getPosition() {
         return position;
+    }
+
+    @Override
+    public void setBTree(BTree<T> btree) {
+        this.btree = btree;
     }
 
 }

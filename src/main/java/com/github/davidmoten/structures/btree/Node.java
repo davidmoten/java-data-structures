@@ -56,4 +56,11 @@ interface Node<T extends Serializable & Comparable<T>> extends Serializable {
 
     long getPosition();
 
+    /**
+     * Required to rehydrate transient field on Node.
+     * 
+     * @param btree
+     */
+    void setBTree(BTree<T> btree);
+
 }

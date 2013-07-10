@@ -22,8 +22,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
     private Optional<Long> position;
 
     private transient Optional<NodeActual<T>> node = Optional.absent();
-    private final transient BTree<T> btree;
-    private final transient Optional<KeySide<T>> parentKeySide;
+    private transient BTree<T> btree;
+    private transient Optional<KeySide<T>> parentKeySide;
 
     public NodeRef(BTree<T> btree, Optional<Long> position,
             Optional<KeySide<T>> parentKeySide) {
@@ -33,6 +33,14 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
     }
 
     private synchronized Node<T> node() {
+        if (node == null)
+            // this can happen when deserializing because node is a transient
+            // field
+            node = Optional.absent();
+        if (parentKeySide == null)
+            // this can happen when deserializing because parentKeySide is a
+            // transient field
+            parentKeySide = Optional.absent();
         if (!node.isPresent()) {
             if (position.isPresent()) {
                 load();
@@ -172,6 +180,11 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
     @Override
     public long getPosition() {
         return node().getPosition();
+    }
+
+    @Override
+    public void setBTree(BTree<T> btree) {
+        this.btree = btree;
     }
 
 }
