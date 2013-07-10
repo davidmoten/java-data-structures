@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 
-interface Node<T extends Serializable & Comparable<T>> extends Serializable {
+interface Node<T extends Serializable & Comparable<T>> {
 
     /**
      * Adds the element t to the node. If root node of BTree is changed then
@@ -55,12 +55,5 @@ interface Node<T extends Serializable & Comparable<T>> extends Serializable {
     void save();
 
     long getPosition();
-
-    /**
-     * Required to rehydrate transient field on Node.
-     * 
-     * @param btree
-     */
-    void setBTree(BTree<T> btree);
 
 }

@@ -14,16 +14,15 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 
-public class NodeRef<T extends Serializable & Comparable<T>> implements
-        Node<T>, Serializable {
+public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> {
 
-    private static final long serialVersionUID = -420236968739933117L;
+    static final int CHILD_ABSENT = -1;
 
     private Optional<Long> position;
 
-    private transient Optional<NodeActual<T>> node = Optional.absent();
-    private transient BTree<T> btree;
-    private transient Optional<KeySide<T>> parentKeySide;
+    private Optional<NodeActual<T>> node = Optional.absent();
+    private final BTree<T> btree;
+    private final Optional<KeySide<T>> parentKeySide;
 
     public NodeRef(BTree<T> btree, Optional<Long> position,
             Optional<KeySide<T>> parentKeySide) {
@@ -33,14 +32,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
     }
 
     private synchronized Node<T> node() {
-        if (node == null)
-            // this can happen when deserializing because node is a transient
-            // field
-            node = Optional.absent();
-        if (parentKeySide == null)
-            // this can happen when deserializing because parentKeySide is a
-            // transient field
-            parentKeySide = Optional.absent();
         if (!node.isPresent()) {
             if (position.isPresent()) {
                 load();
@@ -75,7 +66,18 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
                 Optional<Key<T>> first = absent();
                 for (int i = 0; i < count; i++) {
                     @SuppressWarnings("unchecked")
-                    Key<T> key = (Key<T>) ois.readObject();
+                    T t = (T) ois.readObject();
+                    long left = ois.readLong();
+                    long right = ois.readLong();
+                    boolean deleted = ois.readBoolean();
+                    Key<T> key = new Key<T>(t);
+                    if (left != CHILD_ABSENT)
+                        key.setLeft(of((Node<T>) new NodeRef<T>(btree,
+                                of(left), of(new KeySide<T>(key, Side.LEFT)))));
+                    if (right != CHILD_ABSENT)
+                        key.setRight(of((Node<T>) new NodeRef<T>(btree,
+                                of(right), of(new KeySide<T>(key, Side.RIGHT)))));
+                    key.setDeleted(deleted);
                     key.setNode(of((Node<T>) this));
                     key.setNext(Optional.<Key<T>> absent());
                     if (!first.isPresent())
@@ -180,11 +182,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
     @Override
     public long getPosition() {
         return node().getPosition();
-    }
-
-    @Override
-    public void setBTree(BTree<T> btree) {
-        this.btree = btree;
     }
 
 }

@@ -83,12 +83,10 @@ class Key<T extends Serializable & Comparable<T>> implements Serializable {
 
     void updateLinks(BTree<T> btree) {
         if (left.isPresent()) {
-            left.get().setBTree(btree);
             left.get().setParentKeySide(
                     Optional.of(new KeySide<T>(this, Side.LEFT)));
         }
         if (right.isPresent()) {
-            right.get().setBTree(btree);
             right.get().setParentKeySide(
                     Optional.of(new KeySide<T>(this, Side.RIGHT)));
         }

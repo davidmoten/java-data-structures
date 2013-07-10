@@ -27,11 +27,9 @@ import com.google.common.collect.Lists;
 class NodeActual<T extends Serializable & Comparable<T>> implements
         Iterable<T>, Node<T> {
 
-    private static final long serialVersionUID = 7308656158360291244L;
-
     private Optional<Key<T>> first = Optional.absent();
     private Optional<KeySide<T>> parentKeySide = Optional.absent();
-    private BTree<T> btree;
+    private final BTree<T> btree;
 
     private final long position;
 
@@ -554,7 +552,16 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
                 ObjectOutputStream oos = new ObjectOutputStream(bytes);
                 oos.writeInt(countKeys());
                 for (Key<T> key : keys()) {
-                    oos.writeObject(key);
+                    oos.writeObject(key.value());
+                    if (key.getLeft().isPresent())
+                        oos.writeLong(key.getLeft().get().getPosition());
+                    else
+                        oos.writeLong(NodeRef.CHILD_ABSENT);
+                    if (key.getRight().isPresent())
+                        oos.writeLong(key.getRight().get().getPosition());
+                    else
+                        oos.writeLong(NodeRef.CHILD_ABSENT);
+                    oos.writeBoolean(key.isDeleted());
                 }
                 oos.close();
                 f.seek(position);
@@ -594,11 +601,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
     @Override
     public long getPosition() {
         return position;
-    }
-
-    @Override
-    public void setBTree(BTree<T> btree) {
-        this.btree = btree;
     }
 
 }
