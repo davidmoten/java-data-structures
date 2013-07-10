@@ -7,9 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Deque;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -149,36 +147,21 @@ public class BTree<T extends Serializable & Comparable<T>> implements
         return keySize;
     }
 
-    private final Deque<Long> freePositions = new LinkedList<Long>();
-
-    public void markNodeForReuse(long position) {
-        synchronized (freePositions) {
-            if (file.isPresent()) {
-                System.out.println("free position=" + position);
-                freePositions.add(position);
-            }
-        }
-    }
-
     public long nextPosition() {
-        synchronized (freePositions) {
-            try {
-                if (file.isPresent()) {
-                    if (!freePositions.isEmpty())
-                        return freePositions.pop();
-                    else {
-                        if (!file.get().exists())
-                            file.get().createNewFile();
+        try {
+            if (file.isPresent()) {
 
-                        return file.get().length();
-                    }
-                } else
-                    return 0;
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+                if (!file.get().exists())
+                    file.get().createNewFile();
+
+                return file.get().length();
+
+            } else
+                return 0;
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -231,13 +231,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         else
             result = result1;
 
-        this.unload();
-
         return result;
-    }
-
-    private void unload() {
-        btree.markNodeForReuse(position);
     }
 
     /**
@@ -276,12 +270,14 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         previous.get().setNext(Optional.<Key<T>> absent());
 
         // create child1 of first ->..->previous
-        Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent(),
-                of(new KeySide<T>(medianKey, Side.LEFT)));
+        // this child will resuse the current node file position
+        Node<T> child1 = new NodeRef<T>(btree, of(position), of(new KeySide<T>(
+                medianKey, Side.LEFT)));
         child1.setFirst(first);
         child1.save();
 
         // create child2 of medianKey.next ->..->last
+        // this child will request a new file position
         Node<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent(),
                 of(new KeySide<T>(medianKey, Side.RIGHT)));
         child2.setFirst(key.get().next());
@@ -294,6 +290,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
         medianKey.setRight(Optional.of(child2));
 
         Optional<Node<T>> result = parent.add(medianKey);
+
         // medianKey.updateLinks();
         return result;
     }
