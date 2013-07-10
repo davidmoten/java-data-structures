@@ -52,7 +52,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements
                 RandomAccessFile f = new RandomAccessFile(
                         btree.getFile().get(), "r");
                 f.seek(position.get());
-                byte[] b = new byte[btree.getDegree() * btree.getKeySize()];
+                int numBytes = btree.getDegree() * btree.getKeySize();
+                byte[] b = new byte[numBytes];
                 f.read(b);
 
                 ByteArrayInputStream bytes = new ByteArrayInputStream(b);

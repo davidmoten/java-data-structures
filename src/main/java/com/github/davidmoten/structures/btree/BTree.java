@@ -3,9 +3,14 @@ package com.github.davidmoten.structures.btree;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +29,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
     private final int degree;
     private final Optional<File> file;
     private final int keySize;
+    private final static long POSITION_START = 1000;
+    private static long rootPosition = POSITION_START;
 
     /**
      * Constructor.
@@ -32,14 +39,57 @@ public class BTree<T extends Serializable & Comparable<T>> implements
      */
     private BTree(int degree, Optional<File> file, Class<T> cls, int keySize) {
         Preconditions.checkArgument(degree >= 2, "degree must be >=2");
-        if (file.isPresent() && file.get().exists()) {
-            root = new NodeRef<T>(this, of(0L), Optional.<KeySide<T>> absent());
-        } else
-            root = new NodeRef<T>(this, Optional.<Long> absent(),
-                    Optional.<KeySide<T>> absent());
         this.degree = degree;
         this.file = file;
         this.keySize = keySize;
+        if (file.isPresent() && file.get().exists()) {
+            readHeader();
+            root = new NodeRef<T>(this, of(rootPosition),
+                    Optional.<KeySide<T>> absent());
+        } else {
+            if (file.isPresent())
+                writeHeader();
+            root = new NodeRef<T>(this, Optional.<Long> absent(),
+                    Optional.<KeySide<T>> absent());
+        }
+    }
+
+    private void readHeader() {
+        try {
+            RandomAccessFile f = new RandomAccessFile(file.get(), "r");
+            byte[] header = new byte[(int) POSITION_START];
+            f.seek(0);
+            f.read(header);
+            f.close();
+            ObjectInputStream ois = new ObjectInputStream(
+                    new ByteArrayInputStream(header));
+            rootPosition = ois.readLong();
+            ois.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private synchronized void writeHeader() {
+        try {
+            if (!file.get().exists())
+                file.get().createNewFile();
+            RandomAccessFile f = new RandomAccessFile(file.get(), "rws");
+            ByteArrayOutputStream header = new ByteArrayOutputStream(
+                    (int) POSITION_START);
+            ObjectOutputStream oos = new ObjectOutputStream(header);
+            oos.writeLong(rootPosition);
+            oos.close();
+            f.seek(0);
+            f.write(header.toByteArray());
+            f.close();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static class Builder<R extends Serializable & Comparable<R>> {
@@ -88,8 +138,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
      */
     public void add(T t) {
         Optional<Node<T>> newRoot = root.add(t);
-        if (newRoot.isPresent())
+        if (newRoot.isPresent()) {
             root = newRoot.get();
+            if (file.isPresent())
+                writeHeader();
+        }
     }
 
     /**

@@ -550,7 +550,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
                 System.out.println("saving " + abbr());
                 RandomAccessFile f = new RandomAccessFile(
                         btree.getFile().get(), "rws");
-                f.seek(position);
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(bytes);
                 oos.writeInt(countKeys());
@@ -558,6 +557,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
                     oos.writeObject(key);
                 }
                 oos.close();
+                f.seek(position);
                 writeBytes(f, bytes);
                 f.close();
                 System.out.println("written to " + btree.getFile().get() + ":"
