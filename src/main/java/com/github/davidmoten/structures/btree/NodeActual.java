@@ -125,9 +125,11 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		Optional<Key<T>> next = absent();
 		for (Key<T> k : keys(first)) {
 			if (key.value().compareTo(k.value()) < 0) {
+				// it is important to set next before set previous so that
+				// concurrent reads work correctly
+				key.setNext(of(k));
 				if (previous.isPresent())
 					previous.get().setNext(of(key));
-				key.setNext(of(k));
 				next = of(k);
 				break;
 			}
