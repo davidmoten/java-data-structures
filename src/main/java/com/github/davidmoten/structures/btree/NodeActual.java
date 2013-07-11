@@ -120,7 +120,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		// key is not on the current node
 		key.setNode(of((Node<T>) this));
 
-		// insert key
+		// insert key in the list if before one
 		Optional<Key<T>> previous = absent();
 		Optional<Key<T>> next = absent();
 		for (Key<T> k : keys(first)) {
