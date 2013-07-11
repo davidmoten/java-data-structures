@@ -553,6 +553,16 @@ public class BTreeTest {
 		checkEquals(t2, 1, 2, 3, 4);
 	}
 
+	@Test
+	public void testSaveSevenItemsDepthThree() {
+		File f = new File("target/test3.index");
+		f.delete();
+		builder(Integer.class).degree(3).file(f).build()
+				.add(1, 2, 3, 4, 5, 6, 7);
+		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		checkEquals(t2, 1, 2, 3, 4, 5, 6, 7);
+	}
+
 	private static void assertKeyValuesAre(List<? extends Key<Integer>> keys,
 			Integer... expected) {
 		String msg = "expected " + expected + " but was " + keys;
