@@ -1,7 +1,6 @@
 package com.github.davidmoten.structures.btree;
 
 import static com.github.davidmoten.structures.btree.BTree.builder;
-import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -14,7 +13,6 @@ import org.junit.Test;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 public class BTreeTest {
 
@@ -49,14 +47,14 @@ public class BTreeTest {
      */
     @Test
     public void test1() {
-        BTree<String> t = builder(String.class).degree(3).build();
-        t.add("1");
+        BTree<Integer> t = builder(Integer.class).degree(3).build();
+        t.add(1);
         assertEquals(1, t.getKeys().size());
-        assertEquals("1", t.getKeys().get(0).value());
-        t.add("2");
+        assertEquals(1, (int) t.getKeys().get(0).value());
+        t.add(2);
         assertEquals(2, t.getKeys().size());
-        assertEquals("1", t.getKeys().get(0).value());
-        assertEquals("2", t.getKeys().get(1).value());
+        assertEquals(1, (int) t.getKeys().get(0).value());
+        assertEquals(2, (int) t.getKeys().get(1).value());
     }
 
     /**
@@ -69,17 +67,15 @@ public class BTreeTest {
      */
     @Test
     public void test2() {
-        BTree<String> t = builder(String.class).degree(3).build();
-        t.add("1");
-        t.add("2");
-        t.add("3");
+        BTree<Integer> t = builder(Integer.class).degree(3).build()
+                .add(1, 2, 3);
         assertEquals(1, t.getKeys().size());
-        Key<String> top = t.getKeys().get(0);
-        assertEquals("2", top.value());
+        Key<Integer> top = t.getKeys().get(0);
+        assertEquals(2, (int) top.value());
         assertEquals(1, top.getLeft().get().getKeys().size());
-        assertEquals("1", top.getLeft().get().getKeys().get(0).value());
+        assertEquals(1, (int) top.getLeft().get().getKeys().get(0).value());
         assertEquals(1, top.getRight().get().getKeys().size());
-        assertEquals("3", top.getRight().get().getKeys().get(0).value());
+        assertEquals(3, (int) top.getRight().get().getKeys().get(0).value());
     }
 
     /**
@@ -92,9 +88,7 @@ public class BTreeTest {
      */
     @Test
     public void test2_5() {
-        BTree<Integer> t = builder(Integer.class).degree(3).build();
-        t.add(2);
-        t.add(1);
+        BTree<Integer> t = builder(Integer.class).degree(3).build().add(2, 1);
         assertEquals(2, t.getKeys().size());
         assertEquals(1, (int) t.getKeys().get(0).value());
         assertEquals(2, (int) t.getKeys().get(1).value());
@@ -111,11 +105,8 @@ public class BTreeTest {
      */
     @Test
     public void test3() {
-        BTree<Integer> t = builder(Integer.class).degree(3).build();
-        t.add(1);
-        t.add(2);
-        t.add(3);
-        t.add(4);
+        BTree<Integer> t = builder(Integer.class).degree(3).build()
+                .add(1, 2, 3, 4);
         Key<Integer> top = t.getKeys().get(0);
         assertEquals(4, (int) top.getRight().get().getKeys().get(1).value());
     }
@@ -131,12 +122,8 @@ public class BTreeTest {
      */
     @Test
     public void test4() {
-        BTree<Integer> t = builder(Integer.class).degree(3).build();
-        t.add(1);
-        t.add(2);
-        t.add(3);
-        t.add(0);
-        System.out.println(t);
+        BTree<Integer> t = builder(Integer.class).degree(3).build()
+                .add(1, 2, 3, 0);
         Key<Integer> top = t.getKeys().get(0);
         assertEquals(0, (int) top.getLeft().get().getKeys().get(0).value());
     }
@@ -152,17 +139,11 @@ public class BTreeTest {
      */
     @Test
     public void test5() {
-        BTree<Double> t = builder(Double.class).degree(3).build();
-        t.add(1.0);
-        t.add(2.0);
-        t.add(3.0);
-        t.add(0.0);
-        System.out.println(t);
-        Key<Double> top = t.getKeys().get(0);
-        assertKeyValuesAre(Lists.newArrayList(0.0, 1.0), top.getLeft().get()
-                .getKeys());
-        assertKeyValuesAre(Lists.newArrayList(3.0), top.getRight().get()
-                .getKeys());
+        BTree<Integer> t = builder(Integer.class).degree(3).build()
+                .add(1, 2, 3, 0);
+        Key<Integer> top = t.getKeys().get(0);
+        assertKeyValuesAre(top.getLeft().get().getKeys(), 0, 1);
+        assertKeyValuesAre(top.getRight().get().getKeys(), 3);
     }
 
     /**
@@ -176,18 +157,16 @@ public class BTreeTest {
      */
     @Test
     public void test6() {
-        BTree<Double> t = builder(Double.class).degree(3).build();
-        t.add(1.0);
-        t.add(2.0);
-        t.add(3.0);
-        t.add(0.0);
-        t.add(0.5);
+        BTree<Integer> t = builder(Integer.class).degree(3).build();
+        t.add(10);
+        t.add(20);
+        t.add(30);
+        t.add(00);
+        t.add(05);
         System.out.println(t);
-        assertKeyValuesAre(Lists.newArrayList(0.5, 2.0), t.getKeys());
-        assertKeyValuesAre(Lists.newArrayList(0.0), t.getKeys().get(0)
-                .getLeft().get().getKeys());
-        assertKeyValuesAre(Lists.newArrayList(1.0), t.getKeys().get(0)
-                .getRight().get().getKeys());
+        assertKeyValuesAre(t.getKeys(), 5, 20);
+        assertKeyValuesAre(t.getKeys().get(0).getLeft().get().getKeys(), 0);
+        assertKeyValuesAre(t.getKeys().get(0).getRight().get().getKeys(), 10);
     }
 
     /**
@@ -219,33 +198,31 @@ public class BTreeTest {
      */
     @Test
     public void test7() {
-        BTree<Double> t = builder(Double.class).degree(3).build();
-        t.add(1.0);
-        t.add(2.0);
+        BTree<Integer> t = builder(Integer.class).degree(3).build();
+        t.add(10);
+        t.add(20);
         // System.out.println(t);
-        t.add(3.0);
+        t.add(30);
         // System.out.println(t);
-        t.add(4.0);
+        t.add(40);
         // System.out.println(t);
-        t.add(5.0);
+        t.add(50);
         System.out.println(t);
-        t.add(6.0);
+        t.add(60);
         System.out.println(t);
-        t.add(7.0);
+        t.add(70);
         System.out.println(t);
-        assertKeyValuesAre(Lists.newArrayList(4.0), t.getKeys());
-        assertKeyValuesAre(Lists.newArrayList(2.0), t.getKeys().get(0)
-                .getLeft().get().getKeys());
-        assertKeyValuesAre(Lists.newArrayList(6.0), t.getKeys().get(0)
-                .getRight().get().getKeys());
-        assertKeyValuesAre(Lists.newArrayList(1.0), t.getKeys().get(0)
-                .getLeft().get().getKeys().get(0).getLeft().get().getKeys());
-        assertKeyValuesAre(Lists.newArrayList(3.0), t.getKeys().get(0)
-                .getLeft().get().getKeys().get(0).getRight().get().getKeys());
-        assertKeyValuesAre(Lists.newArrayList(5.0), t.getKeys().get(0)
-                .getRight().get().getKeys().get(0).getLeft().get().getKeys());
-        assertKeyValuesAre(Lists.newArrayList(7.0), t.getKeys().get(0)
-                .getRight().get().getKeys().get(0).getRight().get().getKeys());
+        assertKeyValuesAre(t.getKeys(), 40);
+        assertKeyValuesAre(t.getKeys().get(0).getLeft().get().getKeys(), 20);
+        assertKeyValuesAre(t.getKeys().get(0).getRight().get().getKeys(), 60);
+        assertKeyValuesAre(t.getKeys().get(0).getLeft().get().getKeys().get(0)
+                .getLeft().get().getKeys(), 10);
+        assertKeyValuesAre(t.getKeys().get(0).getLeft().get().getKeys().get(0)
+                .getRight().get().getKeys(), 30);
+        assertKeyValuesAre(t.getKeys().get(0).getRight().get().getKeys().get(0)
+                .getLeft().get().getKeys(), 50);
+        assertKeyValuesAre(t.getKeys().get(0).getRight().get().getKeys().get(0)
+                .getRight().get().getKeys(), 70);
         System.out.println("iterated=" + Iterables.toString(t));
     }
 
@@ -271,16 +248,15 @@ public class BTreeTest {
      */
     @Test
     public void testSplitWhenDegreeIsEven() {
-        BTree<Double> t = builder(Double.class).degree(4).build();
-        t.add(1.0);
-        t.add(2.0);
-        t.add(3.0);
-        t.add(4.0);
-        assertKeyValuesAre(newArrayList(2.0), t.getKeys());
-        assertKeyValuesAre(newArrayList(1.0), t.getKeys().get(0).getLeft()
-                .get().getKeys());
-        assertKeyValuesAre(newArrayList(3.0, 4.0), t.getKeys().get(0)
-                .getRight().get().getKeys());
+        BTree<Integer> t = builder(Integer.class).degree(4).build();
+        t.add(10);
+        t.add(20);
+        t.add(30);
+        t.add(40);
+        assertKeyValuesAre(t.getKeys(), 20);
+        assertKeyValuesAre(t.getKeys().get(0).getLeft().get().getKeys(), 10);
+        assertKeyValuesAre(t.getKeys().get(0).getRight().get().getKeys(), 30,
+                40);
     }
 
     /**
@@ -447,11 +423,8 @@ public class BTreeTest {
      */
     @Test
     public void testIteratorOnBTreeWithOneValue() {
-        BTree<Integer> t = builder(Integer.class).degree(4).build();
-        t.add(1);
-        Iterator<Integer> it = t.iterator();
-        assertEquals(1, (int) it.next());
-        assertFalse(it.hasNext());
+        BTree<Integer> t = builder(Integer.class).degree(4).build().add(1);
+        checkEquals(t, 1);
     }
 
     /**
@@ -470,13 +443,8 @@ public class BTreeTest {
      */
     @Test
     public void testIteratorOnBTreeWithTwoValue() {
-        BTree<Integer> t = builder(Integer.class).degree(4).build();
-        t.add(1);
-        t.add(2);
-        Iterator<Integer> it = t.iterator();
-        assertEquals(1, (int) it.next());
-        assertEquals(2, (int) it.next());
-        assertFalse(it.hasNext());
+        BTree<Integer> t = builder(Integer.class).degree(4).build().add(1, 2);
+        checkEquals(t, 1, 2);
     }
 
     /**
@@ -496,18 +464,8 @@ public class BTreeTest {
     @Test
     public void testIteratorOnBTreeWith5Values() {
         BTree<Integer> t = builder(Integer.class).degree(4).build();
-        t.add(1);
-        t.add(2);
-        t.add(3);
-        t.add(4);
-        t.add(5);
-        Iterator<Integer> it = t.iterator();
-        assertEquals(1, (int) it.next());
-        assertEquals(2, (int) it.next());
-        assertEquals(3, (int) it.next());
-        assertEquals(4, (int) it.next());
-        assertEquals(5, (int) it.next());
-        assertFalse(it.hasNext());
+        t.add(1, 2, 3, 4, 5);
+        checkEquals(t, 1, 2, 3, 4, 5);
     }
 
     /**
@@ -527,24 +485,16 @@ public class BTreeTest {
     @Test
     public void testIteratorOnBTreeWith7Values() {
         BTree<Integer> t = builder(Integer.class).degree(4).build();
-        t.add(1);
-        t.add(2);
-        t.add(3);
-        System.out.println(t);
-        t.add(4);
-        t.add(5);
-        t.add(6);
-        t.add(7);
-        // System.out.println(t);
-        Iterator<Integer> it = t.iterator();
-        assertEquals(1, (int) it.next());
-        assertEquals(2, (int) it.next());
-        assertEquals(3, (int) it.next());
-        assertEquals(4, (int) it.next());
-        assertEquals(5, (int) it.next());
-        assertEquals(6, (int) it.next());
-        assertEquals(7, (int) it.next());
-        assertFalse(it.hasNext());
+        t.add(1, 2, 3, 4, 5, 6, 7);
+        checkEquals(t, 1, 2, 3, 4, 5, 6, 7);
+    }
+
+    private static <T> void checkEquals(Iterable<T> iterable, T... values) {
+        int i = 0;
+        for (T t : iterable) {
+            assertEquals(t, values[i]);
+            i++;
+        }
     }
 
     @Test
@@ -639,11 +589,11 @@ public class BTreeTest {
         assertTrue(t2.find(4).isPresent());
     }
 
-    private static void assertKeyValuesAre(List<Double> expected,
-            List<? extends Key<Double>> keys) {
+    private static void assertKeyValuesAre(List<? extends Key<Integer>> keys,
+            Integer... expected) {
         String msg = "expected " + expected + " but was " + keys;
-        assertEquals(msg, expected.size(), keys.size());
-        for (int i = 0; i < expected.size(); i++)
-            assertEquals(msg, expected.get(i), keys.get(i).value(), PRECISION);
+        assertEquals(msg, expected.length, keys.size());
+        for (int i = 0; i < expected.length; i++)
+            assertEquals(msg, expected[i], keys.get(i).value());
     }
 }

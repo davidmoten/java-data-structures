@@ -140,7 +140,13 @@ public class BTree<T extends Serializable & Comparable<T>> implements
      * 
      * @param t
      */
-    public void add(T t) {
+    public BTree<T> add(T... values) {
+        for (T t : values)
+            addOne(t);
+        return this;
+    }
+
+    private void addOne(T t) {
         Optional<Node<T>> newRoot = root.add(t);
         if (newRoot.isPresent()) {
             root = newRoot.get();
