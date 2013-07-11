@@ -574,15 +574,15 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
-	private String abbr() {
-		StringBuffer s = new StringBuffer();
-		for (Key<T> key : keys()) {
-			if (s.length() > 0)
-				s.append(",");
-			s.append(key.value());
-		}
-		return s.toString();
-	}
+	// private String abbr() {
+	// StringBuffer s = new StringBuffer();
+	// for (Key<T> key : keys()) {
+	// if (s.length() > 0)
+	// s.append(",");
+	// s.append(key.value());
+	// }
+	// return s.toString();
+	// }
 
 	private void writeBytes(RandomAccessFile f, ByteArrayOutputStream bytes)
 			throws IOException {
