@@ -546,7 +546,7 @@ public class BTreeTest {
 
 	@Test
 	public void testSaveFourItemsDepthTwo() {
-		File f = new File("target/test3.index");
+		File f = new File("target/test4.index");
 		f.delete();
 		builder(Integer.class).degree(3).file(f).build().add(1, 2, 3, 4);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
@@ -555,12 +555,26 @@ public class BTreeTest {
 
 	@Test
 	public void testSaveSevenItemsDepthThree() {
-		File f = new File("target/test3.index");
+		File f = new File("target/test5.index");
 		f.delete();
 		builder(Integer.class).degree(3).file(f).build()
 				.add(1, 2, 3, 4, 5, 6, 7);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
 		checkEquals(t2, 1, 2, 3, 4, 5, 6, 7);
+	}
+
+	@Test
+	public void testSave1000Items() {
+		File f = new File("target/test6.index");
+		f.delete();
+		Integer[] values = new Integer[1000];
+		for (int i = 0; i < values.length; i++)
+			values[i] = i + 1;
+
+		builder(Integer.class).degree(100).file(f).keySize(100).build()
+				.add(values);
+		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		checkEquals(t2, values);
 	}
 
 	private static void assertKeyValuesAre(List<? extends Key<Integer>> keys,
