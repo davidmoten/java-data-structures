@@ -157,13 +157,8 @@ public class BTreeTest {
      */
     @Test
     public void test6() {
-        BTree<Integer> t = builder(Integer.class).degree(3).build();
-        t.add(10);
-        t.add(20);
-        t.add(30);
-        t.add(00);
-        t.add(05);
-        System.out.println(t);
+        BTree<Integer> t = builder(Integer.class).degree(3).build()
+                .add(10, 20, 30, 0, 5);
         assertKeyValuesAre(t.getKeys(), 5, 20);
         assertKeyValuesAre(t.getKeys().get(0).getLeft().get().getKeys(), 0);
         assertKeyValuesAre(t.getKeys().get(0).getRight().get().getKeys(), 10);
@@ -198,20 +193,8 @@ public class BTreeTest {
      */
     @Test
     public void test7() {
-        BTree<Integer> t = builder(Integer.class).degree(3).build();
-        t.add(10);
-        t.add(20);
-        // System.out.println(t);
-        t.add(30);
-        // System.out.println(t);
-        t.add(40);
-        // System.out.println(t);
-        t.add(50);
-        System.out.println(t);
-        t.add(60);
-        System.out.println(t);
-        t.add(70);
-        System.out.println(t);
+        BTree<Integer> t = builder(Integer.class).degree(3).build()
+                .add(10, 20, 30, 40, 50, 60, 70);
         assertKeyValuesAre(t.getKeys(), 40);
         assertKeyValuesAre(t.getKeys().get(0).getLeft().get().getKeys(), 20);
         assertKeyValuesAre(t.getKeys().get(0).getRight().get().getKeys(), 60);
@@ -248,11 +231,8 @@ public class BTreeTest {
      */
     @Test
     public void testSplitWhenDegreeIsEven() {
-        BTree<Integer> t = builder(Integer.class).degree(4).build();
-        t.add(10);
-        t.add(20);
-        t.add(30);
-        t.add(40);
+        BTree<Integer> t = builder(Integer.class).degree(4).build()
+                .add(10, 20, 30, 40);
         assertKeyValuesAre(t.getKeys(), 20);
         assertKeyValuesAre(t.getKeys().get(0).getLeft().get().getKeys(), 10);
         assertKeyValuesAre(t.getKeys().get(0).getRight().get().getKeys(), 30,
@@ -275,16 +255,10 @@ public class BTreeTest {
      */
     @Test
     public void test8() {
-        BTree<Double> t = builder(Double.class).degree(3).build();
-        t.add(1.0);
-        t.add(2.0);
-        t.add(3.0);
-        t.add(4.0);
-        t.add(5.0);
-        t.add(6.0);
-        t.add(7.0);
+        BTree<Integer> t = builder(Integer.class).degree(3).build()
+                .add(1, 2, 3, 4, 5, 6, 7);
         for (int i = 1; i <= 7; i++) {
-            assertEquals(i, t.find((double) i).get(), PRECISION);
+            assertEquals(i, (int) t.find(i).get());
         }
     }
 
@@ -304,17 +278,11 @@ public class BTreeTest {
      */
     @Test
     public void test9() {
-        BTree<Double> t = builder(Double.class).degree(3).build();
-        t.add(1.0);
-        t.add(2.0);
-        t.add(3.0);
-        t.add(4.0);
-        t.add(5.0);
-        t.add(6.0);
-        t.add(7.0);
-        assertEquals(Optional.absent(), t.find(0.5));
-        assertEquals(Optional.absent(), t.find(1.5));
-        assertEquals(Optional.absent(), t.find(7.5));
+        BTree<Integer> t = builder(Integer.class).degree(3).build()
+                .add(10, 20, 30, 40, 50, 60, 70);
+        assertEquals(Optional.absent(), t.find(5));
+        assertEquals(Optional.absent(), t.find(15));
+        assertEquals(Optional.absent(), t.find(75));
     }
 
     /**
@@ -353,10 +321,8 @@ public class BTreeTest {
      */
     @Test
     public void test11() {
-        BTree<Double> t = builder(Double.class).degree(4).build();
-        t.add(1.0);
-        t.add(2.0);
-        t.add(3.0);
+        BTree<Double> t = builder(Double.class).degree(4).build()
+                .add(1.0, 2.0, 3.0);
         t.delete(2.0);
         assertEquals(Optional.absent(), t.find(2.0));
     }
@@ -377,10 +343,8 @@ public class BTreeTest {
      */
     @Test
     public void test12() {
-        BTree<Double> t = builder(Double.class).degree(4).build();
-        t.add(1.0);
-        t.add(2.0);
-        t.add(3.0);
+        BTree<Double> t = builder(Double.class).degree(4).build()
+                .add(1.0, 2.0, 3.0);
         t.delete(1.0);
         t.delete(2.0);
         t.delete(3.0);

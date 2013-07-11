@@ -180,7 +180,14 @@ public class BTree<T extends Serializable & Comparable<T>> implements
         return null;
     }
 
-    public long delete(T key) {
+    public long delete(T... keys) {
+        long count = 0;
+        for (T key : keys)
+            count += deleteOne(key);
+        return count;
+    }
+
+    private long deleteOne(T key) {
         return root.delete(key);
     }
 
