@@ -9,8 +9,6 @@ import com.google.common.base.Preconditions;
 
 class Key<T extends Serializable & Comparable<T>> {
 
-	private static final long serialVersionUID = 5000199744985500145L;
-
 	private final T t;
 	private Optional<Node<T>> left = absent();
 	private Optional<Node<T>> right = absent();
