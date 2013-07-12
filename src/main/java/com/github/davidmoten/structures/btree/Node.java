@@ -13,10 +13,19 @@ interface Node<T extends Serializable & Comparable<T>> {
 	 * returns new root node otherwise returns {@link Optional}.absent().
 	 * 
 	 * @param t
+	 * @param stack
 	 * @return
 	 */
 	Optional<Node<T>> add(T t, ImmutableStack<Node<T>> stack);
 
+	/**
+	 * Adds the key to the node. If root node of BTree is changed then returns
+	 * new root node otherwise returns this.
+	 * 
+	 * @param key
+	 * @param stack
+	 * @return
+	 */
 	Optional<Node<T>> add(Key<T> key, ImmutableStack<Node<T>> stack);
 
 	/**

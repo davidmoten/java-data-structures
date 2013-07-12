@@ -171,13 +171,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return count;
 	}
 
-	/**
-	 * Adds the key to the node. If root node of BTree is changed then returns
-	 * new root node otherwise returns this.
-	 * 
-	 * @param key
-	 * @return
-	 */
 	@Override
 	public Optional<Node<T>> add(Key<T> key, ImmutableStack<Node<T>> stack) {
 
