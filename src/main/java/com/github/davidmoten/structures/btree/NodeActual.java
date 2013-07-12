@@ -54,12 +54,12 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @see com.github.davidmoten.structures.btree.Node#add(T)
 	 */
 	@Override
-	public Optional<Node<T>> add(T t) {
+	public Optional<Node<T>> add(T t, ImmutableStack<Node<T>> stack) {
 
 		if (isLeafNode()) {
-			return add(new Key<T>(t));
+			return add(new Key<T>(t), stack);
 		} else
-			return addToNonLeafNode(t);
+			return addToNonLeafNode(t, stack);
 	}
 
 	/**
@@ -69,7 +69,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @param t
 	 * @return
 	 */
-	private Optional<Node<T>> addToNonLeafNode(T t) {
+	private Optional<Node<T>> addToNonLeafNode(T t,
+			ImmutableStack<Node<T>> stack) {
 		// Note that first will be present because if is internal (non-leaf)
 		// node then it must have some keys
 		Optional<Node<T>> result = absent();
@@ -79,7 +80,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			if (t.compareTo(key.value()) < 0) {
 				// don't need to check that left is present because of
 				// properties of b-tree
-				result = key.getLeft().get().add(t);
+				result = key.getLeft().get().add(t, stack);
 				added = true;
 				break;
 			}
@@ -89,7 +90,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		if (!added) {
 			// don't need to check that left is present because of properties
 			// of b-tree
-			result = last.get().getRight().get().add(t);
+			result = last.get().getRight().get().add(t, stack);
 		}
 		return result;
 	}
@@ -180,7 +181,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @return
 	 */
 	@Override
-	public Optional<Node<T>> add(Key<T> key) {
+	public Optional<Node<T>> add(Key<T> key, ImmutableStack<Node<T>> stack) {
 
 		key.setNode(of((Node<T>) this));
 
@@ -188,14 +189,16 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 		int keyCount = countKeys();
 
-		return performSplitIfRequired(keyCount);
+		return performSplitIfRequired(keyCount, stack);
 
 	}
 
-	private Optional<Node<T>> performSplitIfRequired(int keyCount) {
+	private Optional<Node<T>> performSplitIfRequired(int keyCount,
+			ImmutableStack<Node<T>> stack) {
 		final Optional<Node<T>> result;
 		if (keyCount == btree.getDegree())
-			result = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount);
+			result = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+					keyCount, stack);
 		else {
 			save();
 			result = absent();
@@ -204,7 +207,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	}
 
 	private Optional<Node<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-			int keyCount) {
+			int keyCount, ImmutableStack<Node<T>> stack) {
 		final Optional<Node<T>> result;
 		Node<T> theParent;
 		Optional<Node<T>> result1;
@@ -221,7 +224,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		}
 		// split result is present if root changed by splitting
 		Optional<Node<T>> splitResult = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-				keyCount, theParent);
+				keyCount, theParent, stack);
 
 		if (splitResult.isPresent())
 			result = splitResult;
@@ -250,7 +253,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @return
 	 */
 	private Optional<Node<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-			int keyCount, Node<T> parent) {
+			int keyCount, Node<T> parent, ImmutableStack<Node<T>> stack) {
 
 		int medianNumber = getMedianNumber(keyCount);
 
@@ -286,7 +289,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		medianKey.setLeft(Optional.of(child1));
 		medianKey.setRight(Optional.of(child2));
 
-		Optional<Node<T>> result = parent.add(medianKey);
+		Optional<Node<T>> result = parent.add(medianKey, stack);
 
 		// mark the current node position for reuse
 		btree.getPositionManager().releaseNodePosition(position);

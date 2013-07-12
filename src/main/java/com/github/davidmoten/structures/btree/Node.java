@@ -15,9 +15,9 @@ interface Node<T extends Serializable & Comparable<T>> {
 	 * @param t
 	 * @return
 	 */
-	Optional<Node<T>> add(T t);
+	Optional<Node<T>> add(T t, ImmutableStack<Node<T>> stack);
 
-	Optional<Node<T>> add(Key<T> key);
+	Optional<Node<T>> add(Key<T> key, ImmutableStack<Node<T>> stack);
 
 	/**
 	 * Returns the T matching t from this node or its children. Returns

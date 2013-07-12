@@ -149,7 +149,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	private void addOne(T t) {
-		Optional<Node<T>> newRoot = root.add(t);
+		Optional<Node<T>> newRoot = root.add(t, new ImmutableStack<Node<T>>());
 		if (newRoot.isPresent()) {
 			root = newRoot.get();
 			rootPosition = newRoot.get().getPosition();

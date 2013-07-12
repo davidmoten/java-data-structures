@@ -98,13 +98,13 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 	}
 
 	@Override
-	public Optional<Node<T>> add(T t) {
-		return node().add(t);
+	public Optional<Node<T>> add(T t, ImmutableStack<Node<T>> stack) {
+		return node().add(t, stack);
 	}
 
 	@Override
-	public Optional<Node<T>> add(Key<T> key) {
-		return node().add(key);
+	public Optional<Node<T>> add(Key<T> key, ImmutableStack<Node<T>> stack) {
+		return node().add(key, stack);
 	}
 
 	@Override
