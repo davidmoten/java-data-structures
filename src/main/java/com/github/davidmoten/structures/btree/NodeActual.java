@@ -221,7 +221,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			result1 = of(theParent);
 			stack = stack.push(theParent);
 		} else {
-			theParent = parentKeySide.get().getKey().getNode().get();
+			theParent = stack.peek().get();
 			result1 = absent();
 		}
 		// split result is present if root changed by splitting
