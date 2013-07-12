@@ -268,8 +268,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 		// create child1 of first ->..->previous
 		// this child will resuse the current node file position
-		Node<T> child1 = new NodeRef<T>(btree, of(position), of(new KeySide<T>(
-				medianKey, Side.LEFT)));
+		Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent(),
+				of(new KeySide<T>(medianKey, Side.LEFT)));
 		child1.setFirst(first);
 		child1.save();
 
@@ -287,6 +287,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		medianKey.setRight(Optional.of(child2));
 
 		Optional<Node<T>> result = parent.add(medianKey);
+
+		btree.getPositionManager().releaseNodePosition(position);
 
 		// medianKey.updateLinks();
 		return result;

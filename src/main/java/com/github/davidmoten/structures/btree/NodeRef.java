@@ -36,7 +36,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 			if (position.isPresent()) {
 				load();
 			} else {
-				position = of(btree.nextPosition());
+				position = of(btree.getPositionManager().nextPosition());
 				node = of(new NodeActual<T>(btree, parentKeySide,
 						position.get()));
 			}
