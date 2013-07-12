@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
-	
+
 
 	<groupId>com.github.davidmoten</groupId>
 	<artifactId>java-data-structures</artifactId>
@@ -79,6 +80,14 @@
 			<artifactId>guava</artifactId>
 			<version>14.0.1</version>
 		</dependency>
+<!-- 
+		<dependency>
+			<groupId>com.typesafe.akka</groupId>
+			<artifactId>akka-actor_2.11.0-M3</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+		
+		 -->
 
 		<!-- Test Dependencies -->
 		<dependency>
@@ -87,7 +96,7 @@
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 	</dependencies>
 
 	<build>

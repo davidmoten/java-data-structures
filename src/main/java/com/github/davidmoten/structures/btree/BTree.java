@@ -31,7 +31,16 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private final int keySize;
 	private final static long POSITION_START = 1000;
 	private long rootPosition = POSITION_START;
+	/**
+	 * Manages allocation of file positions for nodes.
+	 */
 	private final PositionManager positionManager;
+
+	/**
+	 * This object is synchronized on to ensure that adds and deletes happen one
+	 * at a time (synchronously).
+	 */
+	private final Object writeMonitor = new Object();
 
 	/**
 	 * Constructor.
@@ -147,12 +156,15 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	private void addOne(T t) {
-		Optional<Node<T>> newRoot = root.add(t, new ImmutableStack<Node<T>>());
-		if (newRoot.isPresent()) {
-			root = newRoot.get();
-			rootPosition = newRoot.get().getPosition();
-			if (file.isPresent())
-				writeHeader();
+		synchronized (writeMonitor) {
+			Optional<Node<T>> newRoot = root.add(t,
+					new ImmutableStack<Node<T>>());
+			if (newRoot.isPresent()) {
+				root = newRoot.get();
+				rootPosition = newRoot.get().getPosition();
+				if (file.isPresent())
+					writeHeader();
+			}
 		}
 	}
 
@@ -188,7 +200,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	private long deleteOne(T key) {
-		return root.delete(key);
+		synchronized (writeMonitor) {
+			return root.delete(key);
+		}
 	}
 
 	@VisibleForTesting
