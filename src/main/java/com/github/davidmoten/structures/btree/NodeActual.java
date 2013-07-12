@@ -267,7 +267,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		previous.get().setNext(Optional.<Key<T>> absent());
 
 		// create child1 of first ->..->previous
-		// this child will resuse the current node file position
+		// this child will request a new file position
 		Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent(),
 				of(new KeySide<T>(medianKey, Side.LEFT)));
 		child1.setFirst(first);
@@ -288,9 +288,32 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 		Optional<Node<T>> result = parent.add(medianKey);
 
+		// mark the current node position for reuse
 		btree.getPositionManager().releaseNodePosition(position);
 
-		// medianKey.updateLinks();
+		return result;
+	}
+
+	private Optional<Key<T>> copy(Optional<Key<T>> list, Node<T> node) {
+		Optional<Key<T>> result = absent();
+		Optional<Key<T>> key = list;
+		Optional<Key<T>> lastCreated = absent();
+		while (key.isPresent()) {
+			// copy the key
+			Key<T> k = new Key<T>(key.get().value());
+			k.setLeft(key.get().getLeft());
+			k.setRight(key.get().getRight());
+			k.setNode(of(node));
+			k.setDeleted(key.get().isDeleted());
+			// create first if does not exist
+			if (!result.isPresent())
+				result = of(k);
+			// link to previous
+			if (lastCreated.isPresent())
+				lastCreated.get().setNext(of(k));
+			lastCreated = of(k);
+			key = key.get().next();
+		}
 		return result;
 	}
 
