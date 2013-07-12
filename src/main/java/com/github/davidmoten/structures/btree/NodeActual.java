@@ -270,13 +270,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		// create child1 of first ->..->previous
 		// this child will request a new file position
 		Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
-		child1.setFirst(first);
+		child1.setFirst(copy(first, child1));
 		child1.save();
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
 		Node<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
-		child2.setFirst(key.get().next());
+		child2.setFirst(copy(key.get().next(), child2));
 		child2.save();
 
 		// set the links on medianKey to the next key in the same node and to
