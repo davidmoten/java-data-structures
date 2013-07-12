@@ -48,10 +48,6 @@ interface Node<T extends Serializable & Comparable<T>> {
 
 	String keysAsString();
 
-	Optional<KeySide<T>> getParentKeySide();
-
-	void setParentKeySide(Optional<KeySide<T>> parentKeySide);
-
 	String toString(String space);
 
 	void save();

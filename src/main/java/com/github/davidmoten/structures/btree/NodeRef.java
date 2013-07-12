@@ -148,16 +148,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 	}
 
 	@Override
-	public Optional<KeySide<T>> getParentKeySide() {
-		return node().getParentKeySide();
-	}
-
-	@Override
-	public void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
-		node().setParentKeySide(parentKeySide);
-	}
-
-	@Override
 	public String toString(String space) {
 		return node().toString(space);
 	}

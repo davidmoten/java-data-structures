@@ -150,13 +150,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		// update previous and following keys to the newly added one
 		if (previous.isPresent()) {
 			previous.get().setRight(key.getLeft());
-			previous.get().updateLinks(btree);
 		}
 		if (next.isPresent()) {
 			next.get().setLeft(key.getRight());
-			next.get().updateLinks(btree);
 		}
-		key.updateLinks(btree);
 		return result;
 	}
 
@@ -411,17 +408,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		Preconditions.checkNotNull(first);
 		this.first = first;
 		updateParents();
-		updateKeys();
-	}
-
-	private void updateKeys() {
-		for (Key<T> key : keys())
-			key.updateLinks(btree);
-	}
-
-	@Override
-	public void setParentKeySide(Optional<KeySide<T>> parentKeySide) {
-		this.parentKeySide = parentKeySide;
 	}
 
 	/*
@@ -449,7 +435,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 */
 	@Override
 	public Iterator<T> iterator() {
-		return new NodeIterator2<T>(this);
+		return new NodeIterator<T>(this);
 	}
 
 	private Iterable<Key<T>> keys(final Optional<Key<T>> first) {
@@ -501,16 +487,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			key = key.get().next();
 		}
 		return s.toString();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.davidmoten.structures.btree.Node#getParentKeySide()
-	 */
-	@Override
-	public Optional<KeySide<T>> getParentKeySide() {
-		return parentKeySide;
 	}
 
 	/*

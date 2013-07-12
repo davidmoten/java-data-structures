@@ -1,74 +1,77 @@
 package com.github.davidmoten.structures.btree;
 
-import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
 import java.io.Serializable;
+import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 
 class NodeIterator<T extends Serializable & Comparable<T>> implements
 		Iterator<T> {
 
-	private Optional<Key<T>> currentKey;
+	private final Deque<KeySide<T>> q = new LinkedList<KeySide<T>>();
 
 	NodeIterator(Node<T> node) {
-		currentKey = node.bottomLeft();
+		goToBottomLeft(of(node), q);
+	}
+
+	private void goToBottomLeft(Optional<Node<T>> node, Deque<KeySide<T>> q) {
+		if (node.isPresent() && node.get().getFirst().isPresent()) {
+			Key<T> first = node.get().getFirst().get();
+			q.push(new KeySide<T>(first, Side.TOP));
+			goToBottomLeft(node.get().getFirst().get().getLeft(), q);
+		}
+	}
+
+	private Optional<KeySide<T>> next(KeySide<T> k) {
+		if (k.getSide().equals(Side.LEFT))
+			return of(new KeySide<T>(k.getKey(), Side.TOP));
+		else if (k.getSide().equals(Side.TOP)) {
+			if (k.getKey().getRight().isPresent())
+				return of(new KeySide<T>(k.getKey(), Side.RIGHT));
+			else
+				return next(new KeySide<T>(k.getKey(), Side.RIGHT));
+		} else {
+			// side == Right
+			if (k.getKey().next().isPresent())
+				if (k.getKey().next().get().getLeft().isPresent())
+					return of(new KeySide<T>(k.getKey().next().get(), Side.TOP));
+				else
+					return of(new KeySide<T>(k.getKey().next().get(), Side.TOP));
+			else
+				return Optional.absent();
+		}
 	}
 
 	@Override
 	public boolean hasNext() {
-		return currentKey.isPresent();
+		return !q.isEmpty();
 	}
 
 	@Override
 	public T next() {
-		Preconditions.checkArgument(currentKey.isPresent(),
-				"no more elements in iterator");
-		T value = currentKey.get().value();
-		currentKey = next(currentKey, false);
-		return value;
-	}
-
-	private Optional<Key<T>> next(Optional<Key<T>> currentKey, boolean skipRight) {
-
-		// move to bottom left of right child of current key if exists
-		if (currentKey.get().getRight().isPresent() && !skipRight) {
-			return currentKey.get().getRight().get().bottomLeft();
-		} else if (currentKey.get().getRight().isPresent() && skipRight) {
-			if (currentKey.get().next().isPresent())
-				return currentKey.get().next();
-			else {
-				return nextParentKey(currentKey);
+		KeySide<T> key = q.pop();
+		Optional<KeySide<T>> n = next(key);
+		if (n.isPresent()) {
+			if (n.get().getSide().equals(Side.TOP))
+				q.push(n.get());
+			else if (n.get().getSide().equals(Side.LEFT)) {
+				Optional<KeySide<T>> n2 = next(n.get());
+				if (n2.isPresent())
+					q.push(n2.get());
+				goToBottomLeft(n.get().getKey().getLeft(), q);
+			} else if (n.get().getSide().equals(Side.RIGHT)) {
+				Optional<KeySide<T>> n2 = next(n.get());
+				if (n2.isPresent())
+					q.push(n2.get());
+				goToBottomLeft(n.get().getKey().getRight(), q);
 			}
 		}
-		// else to bottom left of next key if exists
-		else if (currentKey.get().next().isPresent()) {
-			Key<T> key = currentKey.get().next().get();
-			if (key.hasChild())
-				return key.getLeft().get().bottomLeft();
-			else
-				return of(key);
-		}
-		// else to next parent key if exists skipping right child
-		else {
-			return nextParentKey(currentKey);
-		}
-	}
 
-	private Optional<Key<T>> nextParentKey(Optional<Key<T>> currentKey) {
-		if (!currentKey.get().getParent().get().getParentKeySide().isPresent())
-			return absent();
-		else {
-			KeySide<T> pkSide = currentKey.get().getParent().get()
-					.getParentKeySide().get();
-			if (pkSide.getSide().equals(Side.RIGHT)) {
-				return next(of(pkSide.getKey()), true);
-			} else
-				return of(pkSide.getKey());
-		}
+		return key.getKey().value();
 	}
 
 	@Override
