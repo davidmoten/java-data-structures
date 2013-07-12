@@ -56,11 +56,19 @@ class NodeIterator2<T extends Serializable & Comparable<T>> implements
 		KeySide<T> key = q.pop();
 		Optional<KeySide<T>> n = next(key);
 		if (n.isPresent()) {
-			q.push(n.get());
-			if (n.get().getSide().equals(Side.LEFT)) {
+			if (n.get().getSide().equals(Side.TOP))
+				q.push(n.get());
+			else if (n.get().getSide().equals(Side.LEFT)) {
+				Optional<KeySide<T>> n2 = next(n.get());
+				if (n2.isPresent())
+					q.push(n2.get());
 				goToBottomLeft(n.get().getKey().getLeft(), q);
-			} else if (n.get().getSide().equals(Side.RIGHT))
+			} else if (n.get().getSide().equals(Side.RIGHT)) {
+				Optional<KeySide<T>> n2 = next(n.get());
+				if (n2.isPresent())
+					q.push(n2.get());
 				goToBottomLeft(n.get().getKey().getRight(), q);
+			}
 		}
 
 		return key.getKey().value();

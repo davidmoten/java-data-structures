@@ -431,6 +431,14 @@ public class BTreeTest {
 		checkEquals(t, 1, 2, 3, 4, 5);
 	}
 
+	@Test
+	public void testIteratorOnBTreeWith6Values() {
+		BTree<Integer> t = builder(Integer.class).degree(4).build();
+		t.add(1, 2, 3, 4, 5, 6);
+		System.out.println(t);
+		checkEquals(t, 1, 2, 3, 4, 5, 6);
+	}
+
 	/**
 	 * <p>
 	 * Given an BTree<Integer> with 7 values
@@ -459,6 +467,8 @@ public class BTreeTest {
 			assertEquals(t, values[i]);
 			i++;
 		}
+		assertTrue("iterable has " + i + " elements but values has "
+				+ values.length, values.length == i);
 	}
 
 	/**
@@ -476,6 +486,8 @@ public class BTreeTest {
 				t.add(i);
 			Iterator<Integer> it = t.iterator();
 			for (int i = 1; i <= n; i++) {
+				assertTrue("element " + i + " does not exist (n=" + n + ")",
+						it.hasNext());
 				int next = it.next();
 				if (i != next)
 					System.out.println(t);
@@ -502,6 +514,7 @@ public class BTreeTest {
 			Iterator<Integer> it = t.iterator();
 			for (int i = 1; i <= n; i++) {
 				try {
+					assertTrue("element " + i + " does not exist", it.hasNext());
 					int next = it.next();
 					assertEquals("n=" + n, i, next);
 				} catch (RuntimeException e) {
