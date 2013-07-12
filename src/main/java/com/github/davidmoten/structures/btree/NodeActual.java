@@ -28,7 +28,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		Iterable<T>, Node<T> {
 
 	private Optional<Key<T>> first = Optional.absent();
-	private Optional<KeySide<T>> parentKeySide = Optional.absent();
 	private final BTree<T> btree;
 
 	private final long position;
@@ -41,10 +40,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @param degree
 	 * @param parent
 	 */
-	NodeActual(BTree<T> btree, Optional<KeySide<T>> parentKeySide, long position) {
-		Preconditions.checkNotNull(parentKeySide);
+	NodeActual(BTree<T> btree, long position) {
 		this.btree = btree;
-		this.parentKeySide = parentKeySide;
 		this.position = position;
 	}
 
@@ -216,8 +213,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		// split
 		if (isRoot(stack)) {
 			// creating new root
-			theParent = new NodeRef<T>(btree, Optional.<Long> absent(),
-					Optional.<KeySide<T>> absent());
+			theParent = new NodeRef<T>(btree, Optional.<Long> absent());
 			result1 = of(theParent);
 			stack = stack.push(theParent);
 		} else {
@@ -273,15 +269,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
-		Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent(),
-				of(new KeySide<T>(medianKey, Side.LEFT)));
+		Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
 		child1.setFirst(first);
 		child1.save();
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
-		Node<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent(),
-				of(new KeySide<T>(medianKey, Side.RIGHT)));
+		Node<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
 		child2.setFirst(key.get().next());
 		child2.save();
 
@@ -534,8 +528,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			builder.append("\n" + space + "  first=");
 			builder.append(first.get().toString(space + "    "));
 		}
-		if (parentKeySide.isPresent())
-			builder.append("\n" + space + "  pks=" + parentKeySide.get());
 		builder.append("]");
 		return builder.toString();
 	}
@@ -548,8 +540,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			builder.append("first=");
 			builder.append(first.get());
 		}
-		if (parentKeySide.isPresent())
-			builder.append(", pks=" + parentKeySide.get());
 		builder.append("]");
 		return builder.toString();
 	}

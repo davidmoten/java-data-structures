@@ -46,13 +46,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		this.keySize = keySize;
 		if (file.isPresent() && file.get().exists()) {
 			readHeader();
-			root = new NodeRef<T>(this, of(rootPosition),
-					Optional.<KeySide<T>> absent());
+			root = new NodeRef<T>(this, of(rootPosition));
 		} else {
 			if (file.isPresent())
 				writeHeader();
-			root = new NodeRef<T>(this, Optional.<Long> absent(),
-					Optional.<KeySide<T>> absent());
+			root = new NodeRef<T>(this, Optional.<Long> absent());
 		}
 	}
 

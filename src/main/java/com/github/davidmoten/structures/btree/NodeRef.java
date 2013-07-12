@@ -22,11 +22,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 
 	private Optional<NodeActual<T>> node = Optional.absent();
 	private final BTree<T> btree;
-	private final Optional<KeySide<T>> parentKeySide;
 
-	public NodeRef(BTree<T> btree, Optional<Long> position,
-			Optional<KeySide<T>> parentKeySide) {
-		this.parentKeySide = parentKeySide;
+	public NodeRef(BTree<T> btree, Optional<Long> position) {
 		this.btree = btree;
 		this.position = position;
 	}
@@ -37,8 +34,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 				load();
 			} else {
 				position = of(btree.getPositionManager().nextPosition());
-				node = of(new NodeActual<T>(btree, parentKeySide,
-						position.get()));
+				node = of(new NodeActual<T>(btree, position.get()));
 			}
 		}
 		return node.get();
@@ -46,7 +42,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 
 	public void load() {
 
-		node = of(new NodeActual<T>(btree, parentKeySide, position.get()));
+		node = of(new NodeActual<T>(btree, position.get()));
 		if (btree.getFile().isPresent()) {
 			try {
 
@@ -71,11 +67,10 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 					boolean deleted = ois.readBoolean();
 					Key<T> key = new Key<T>(t);
 					if (left != CHILD_ABSENT)
-						key.setLeft(of((Node<T>) new NodeRef<T>(btree,
-								of(left), of(new KeySide<T>(key, Side.LEFT)))));
+						key.setLeft(of((Node<T>) new NodeRef<T>(btree, of(left))));
 					if (right != CHILD_ABSENT)
 						key.setRight(of((Node<T>) new NodeRef<T>(btree,
-								of(right), of(new KeySide<T>(key, Side.RIGHT)))));
+								of(right))));
 					key.setDeleted(deleted);
 					key.setNode(of((Node<T>) this));
 					key.setNext(Optional.<Key<T>> absent());
