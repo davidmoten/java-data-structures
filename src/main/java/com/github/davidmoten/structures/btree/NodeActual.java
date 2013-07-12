@@ -243,8 +243,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @return
 	 */
 	private boolean isRoot(ImmutableStack<Node<T>> stack) {
-		// return stack.isEmpty();
-		return !parentKeySide.isPresent();
+		return stack.isEmpty();
 	}
 
 	/**
