@@ -437,6 +437,11 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			return first.get().getLeft().get().bottomLeft();
 	}
 
+	@Override
+	public Optional<Key<T>> getFirst() {
+		return first;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -444,7 +449,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 */
 	@Override
 	public Iterator<T> iterator() {
-		return new NodeIterator<T>(this);
+		return new NodeIterator2<T>(this);
 	}
 
 	private Iterable<Key<T>> keys(final Optional<Key<T>> first) {

@@ -455,6 +455,7 @@ public class BTreeTest {
 	private static <T> void checkEquals(Iterable<T> iterable, T... values) {
 		int i = 0;
 		for (T t : iterable) {
+			assertTrue("not enough values", i < values.length);
 			assertEquals(t, values[i]);
 			i++;
 		}

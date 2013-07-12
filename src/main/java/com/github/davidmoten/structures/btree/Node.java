@@ -8,52 +8,54 @@ import com.google.common.base.Optional;
 
 interface Node<T extends Serializable & Comparable<T>> {
 
-    /**
-     * Adds the element t to the node. If root node of BTree is changed then
-     * returns new root node otherwise returns {@link Optional}.absent().
-     * 
-     * @param t
-     * @return
-     */
-    Optional<Node<T>> add(T t);
+	/**
+	 * Adds the element t to the node. If root node of BTree is changed then
+	 * returns new root node otherwise returns {@link Optional}.absent().
+	 * 
+	 * @param t
+	 * @return
+	 */
+	Optional<Node<T>> add(T t);
 
-    Optional<Node<T>> add(Key<T> key);
+	Optional<Node<T>> add(Key<T> key);
 
-    /**
-     * Returns the T matching t from this node or its children. Returns
-     * {@link Optional}.absent() if not found.
-     * 
-     * @param t
-     * @return
-     */
-    Optional<T> find(T t);
+	/**
+	 * Returns the T matching t from this node or its children. Returns
+	 * {@link Optional}.absent() if not found.
+	 * 
+	 * @param t
+	 * @return
+	 */
+	Optional<T> find(T t);
 
-    /**
-     * Marks all keys as deleted that equal t.
-     * 
-     * @param t
-     * @return
-     */
-    long delete(T t);
+	/**
+	 * Marks all keys as deleted that equal t.
+	 * 
+	 * @param t
+	 * @return
+	 */
+	long delete(T t);
 
-    List<? extends Key<T>> getKeys();
+	List<? extends Key<T>> getKeys();
 
-    void setFirst(Optional<Key<T>> first);
+	Optional<Key<T>> getFirst();
 
-    Optional<Key<T>> bottomLeft();
+	void setFirst(Optional<Key<T>> first);
 
-    Iterator<T> iterator();
+	Optional<Key<T>> bottomLeft();
 
-    String keysAsString();
+	Iterator<T> iterator();
 
-    Optional<KeySide<T>> getParentKeySide();
+	String keysAsString();
 
-    void setParentKeySide(Optional<KeySide<T>> parentKeySide);
+	Optional<KeySide<T>> getParentKeySide();
 
-    String toString(String space);
+	void setParentKeySide(Optional<KeySide<T>> parentKeySide);
 
-    void save();
+	String toString(String space);
 
-    long getPosition();
+	void save();
+
+	long getPosition();
 
 }

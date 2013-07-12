@@ -128,6 +128,11 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 	}
 
 	@Override
+	public Optional<Key<T>> getFirst() {
+		return node().getFirst();
+	}
+
+	@Override
 	public Optional<Key<T>> bottomLeft() {
 		return node().bottomLeft();
 	}
