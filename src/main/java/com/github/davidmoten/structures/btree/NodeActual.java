@@ -257,7 +257,11 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 		// get the median key and the preceding key
 		int count = 1;
-		Optional<Key<T>> key = first;
+
+		// for thread safety make a copy of the keys
+		Optional<Key<T>> list = copy(first);
+
+		Optional<Key<T>> key = list;
 		Optional<Key<T>> previous = absent();
 		while (count < medianNumber) {
 			previous = key;
@@ -265,18 +269,19 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			count++;
 		}
 		Key<T> medianKey = key.get();
+
 		previous.get().setNext(Optional.<Key<T>> absent());
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
 		Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
-		child1.setFirst(copy(first, child1));
+		child1.setFirst(list);
 		child1.save();
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
 		Node<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
-		child2.setFirst(copy(key.get().next(), child2));
+		child2.setFirst(key.get().next());
 		child2.save();
 
 		// set the links on medianKey to the next key in the same node and to
@@ -293,7 +298,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return result;
 	}
 
-	private Optional<Key<T>> copy(Optional<Key<T>> list, Node<T> node) {
+	private Optional<Key<T>> copy(Optional<Key<T>> list) {
 		Optional<Key<T>> result = absent();
 		Optional<Key<T>> key = list;
 		Optional<Key<T>> lastCreated = absent();
@@ -302,7 +307,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			Key<T> k = new Key<T>(key.get().value());
 			k.setLeft(key.get().getLeft());
 			k.setRight(key.get().getRight());
-			k.setNode(of(node));
 			k.setDeleted(key.get().isDeleted());
 			// create first if does not exist
 			if (!result.isPresent())
@@ -316,7 +320,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return result;
 	}
 
-	private void updateParents() {
+	private void updateNode() {
 		Optional<Key<T>> key = first;
 		while (key.isPresent()) {
 			key.get().setNode(of((Node<T>) this));
@@ -431,7 +435,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	public void setFirst(Optional<Key<T>> first) {
 		Preconditions.checkNotNull(first);
 		this.first = first;
-		updateParents();
+		updateNode();
 	}
 
 	/*
