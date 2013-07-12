@@ -214,7 +214,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		Optional<Node<T>> result1;
 
 		// split
-		if (isRoot()) {
+		if (isRoot(stack)) {
 			// creating new root
 			theParent = new NodeRef<T>(btree, Optional.<Long> absent(),
 					Optional.<KeySide<T>> absent());
@@ -241,7 +241,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * 
 	 * @return
 	 */
-	private boolean isRoot() {
+	private boolean isRoot(ImmutableStack<Node<T>> stack) {
+		// return stack.isEmpty();
 		return !parentKeySide.isPresent();
 	}
 
