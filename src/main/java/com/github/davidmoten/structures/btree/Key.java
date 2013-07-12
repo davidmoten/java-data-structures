@@ -7,7 +7,7 @@ import java.io.Serializable;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
-class Key<T extends Serializable & Comparable<T>> implements Serializable {
+class Key<T extends Serializable & Comparable<T>> {
 
 	private static final long serialVersionUID = 5000199744985500145L;
 

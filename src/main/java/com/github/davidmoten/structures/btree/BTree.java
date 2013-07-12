@@ -20,9 +20,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
 public class BTree<T extends Serializable & Comparable<T>> implements
-		Iterable<T>, Serializable {
-
-	private static final long serialVersionUID = -1738319993570666751L;
+		Iterable<T> {
 
 	private Node<T> root;
 
