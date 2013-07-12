@@ -80,7 +80,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			if (t.compareTo(key.value()) < 0) {
 				// don't need to check that left is present because of
 				// properties of b-tree
-				result = key.getLeft().get().add(t, stack);
+				result = key.getLeft().get().add(t, stack.push(this));
 				added = true;
 				break;
 			}
@@ -90,7 +90,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		if (!added) {
 			// don't need to check that left is present because of properties
 			// of b-tree
-			result = last.get().getRight().get().add(t, stack);
+			result = last.get().getRight().get().add(t, stack.push(this));
 		}
 		return result;
 	}
@@ -116,7 +116,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @param first
 	 * @param key
 	 */
-	private Key<T> add(Optional<Key<T>> first, Key<T> key) {
+	private Key<T> add(Optional<Key<T>> first, Key<T> key,
+			ImmutableStack<Node<T>> stack) {
 
 		// key is not on the current node
 		key.setNode(of((Node<T>) this));
@@ -185,7 +186,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 		key.setNode(of((Node<T>) this));
 
-		first = of(add(first, key));
+		first = of(add(first, key, stack));
 
 		int keyCount = countKeys();
 
