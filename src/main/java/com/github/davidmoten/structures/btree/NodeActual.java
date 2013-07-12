@@ -219,6 +219,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			theParent = new NodeRef<T>(btree, Optional.<Long> absent(),
 					Optional.<KeySide<T>> absent());
 			result1 = of(theParent);
+			stack = stack.push(theParent);
 		} else {
 			theParent = parentKeySide.get().getKey().getNode().get();
 			result1 = absent();
@@ -291,7 +292,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		medianKey.setLeft(Optional.of(child1));
 		medianKey.setRight(Optional.of(child2));
 
-		Optional<Node<T>> result = parent.add(medianKey, stack);
+		Optional<Node<T>> result = parent.add(medianKey, stack.pop());
 
 		// mark the current node position for reuse
 		btree.getPositionManager().releaseNodePosition(position);
