@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
@@ -591,6 +592,48 @@ public class BTreeTest {
 		checkEquals(t2, values);
 	}
 
+	@Test
+	public void testConcurrencyDoesNotProvokeException()
+			throws InterruptedException {
+		File f = new File("target/testConcurrency1.index");
+		f.delete();
+		final AtomicBoolean continue1 = new AtomicBoolean(true);
+		final AtomicBoolean continue2 = new AtomicBoolean(true);
+		final BTree<Integer> tree = builder(Integer.class).degree(3).file(f)
+				.build();
+		Thread t1 = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				int i = 1;
+				while (continue1.get()) {
+					tree.add(i++);
+				}
+			}
+		});
+		Thread t2 = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (continue2.get()) {
+					for (Integer key : tree)
+						System.out.print(key + ",");
+					System.out.println();
+				}
+			}
+		});
+		t1.start();
+		t2.start();
+		Thread.sleep(3000);
+		continue1.set(false);
+		continue2.set(false);
+
+		final BTree<Integer> tree2 = builder(Integer.class).degree(3).file(f)
+				.build();
+		for (Integer key : tree2)
+			System.out.print(key + ",");
+		System.out.println();
+
+	}
+
 	private static void assertKeyValuesAre(List<? extends Key<Integer>> keys,
 			Integer... expected) {
 		String msg = "expected " + expected + " but was " + keys;
@@ -598,4 +641,5 @@ public class BTreeTest {
 		for (int i = 0; i < expected.length; i++)
 			assertEquals(msg, expected[i], keys.get(i).value());
 	}
+
 }
