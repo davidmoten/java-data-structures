@@ -34,7 +34,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 				load();
 			} else {
 				position = of(btree.getPositionManager().nextPosition());
-				node = of(new NodeActual<T>(btree, position.get()));
+				node = of(new NodeActual<T>(btree, position.get(), this));
 			}
 		}
 		return node.get();
@@ -42,7 +42,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 
 	public void load() {
 
-		node = of(new NodeActual<T>(btree, position.get()));
+		node = of(new NodeActual<T>(btree, position.get(), this));
 		if (btree.getFile().isPresent()) {
 			try {
 
@@ -171,6 +171,11 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 	@Override
 	public long getPosition() {
 		return node().getPosition();
+	}
+
+	@Override
+	public void unload() {
+		node = absent();
 	}
 
 }

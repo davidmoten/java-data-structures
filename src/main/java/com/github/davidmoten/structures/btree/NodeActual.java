@@ -31,6 +31,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	private final BTree<T> btree;
 
 	private final long position;
+	private final NodeRef<T> ref;
 
 	/**
 	 * Constructor.
@@ -40,9 +41,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @param degree
 	 * @param parent
 	 */
-	NodeActual(BTree<T> btree, long position) {
+	NodeActual(BTree<T> btree, long position, NodeRef<T> ref) {
 		this.btree = btree;
 		this.position = position;
+		this.ref = ref;
 	}
 
 	/*
@@ -545,8 +547,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	public void save() {
 		if (btree.getFile().isPresent()) {
 			try {
-				RandomAccessFile f = new RandomAccessFile(
-						btree.getFile().get(), "rws");
 				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 				ObjectOutputStream oos = new ObjectOutputStream(bytes);
 				oos.writeInt(countKeys());
@@ -563,9 +563,14 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 					oos.writeBoolean(key.isDeleted());
 				}
 				oos.close();
+
+				RandomAccessFile f = new RandomAccessFile(
+						btree.getFile().get(), "rws");
 				f.seek(position);
 				writeBytes(f, bytes);
 				f.close();
+
+				btree.loaded(position, ref);
 			} catch (FileNotFoundException e) {
 				throw new RuntimeException(e);
 			} catch (IOException e) {
@@ -598,6 +603,11 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	@Override
 	public long getPosition() {
 		return position;
+	}
+
+	@Override
+	public void unload() {
+		throw new RuntimeException("not expected here");
 	}
 
 }

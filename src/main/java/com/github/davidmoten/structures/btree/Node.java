@@ -63,4 +63,6 @@ interface Node<T extends Serializable & Comparable<T>> {
 
 	long getPosition();
 
+	void unload();
+
 }
