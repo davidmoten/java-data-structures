@@ -338,11 +338,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return medianNumber;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.davidmoten.structures.btree.Node#find(T)
-	 */
 	@Override
 	public Optional<T> find(T t) {
 		boolean isLeaf = isLeafNode();
@@ -370,11 +365,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			return absent();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.davidmoten.structures.btree.Node#delete(T)
-	 */
 	@Override
 	public long delete(T t) {
 		int count = 0;
@@ -405,11 +395,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			return 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.davidmoten.structures.btree.Node#getKeys()
-	 */
 	@Override
 	@VisibleForTesting
 	public List<? extends Key<T>> getKeys() {
@@ -419,13 +404,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return list;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.github.davidmoten.structures.btree.Node#setFirst(com.google.common
-	 * .base.Optional)
-	 */
 	@Override
 	public void setFirst(Optional<Key<T>> first) {
 		Preconditions.checkNotNull(first);
@@ -433,11 +411,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		updateNode();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.davidmoten.structures.btree.Node#bottomLeft()
-	 */
 	@Override
 	public Optional<Key<T>> bottomLeft() {
 		if (isLeafNode())
@@ -451,11 +424,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return first;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.davidmoten.structures.btree.Node#iterator()
-	 */
 	@Override
 	public Iterator<T> iterator() {
 		return new NodeIterator<T>(this);
@@ -494,11 +462,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return keys(first);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.davidmoten.structures.btree.Node#keysAsString()
-	 */
 	@Override
 	public String keysAsString() {
 		StringBuilder s = new StringBuilder();
@@ -512,12 +475,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return s.toString();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.github.davidmoten.structures.btree.Node#toString(java.lang.String)
-	 */
 	@Override
 	public String toString(String space) {
 		StringBuilder builder = new StringBuilder();
