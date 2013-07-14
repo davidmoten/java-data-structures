@@ -76,15 +76,21 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private final Object writeMonitor = new Object();
 
-	private final Cache<Long, Node<T>> nodeCache = CacheBuilder.newBuilder()
-			.maximumSize(20L).removalListener(createRemovalListener()).build();
+	private final Cache<Long, Node<T>> nodeCache;
+
+	private Cache<Long, Node<T>> createNodeCache(long cacheSize) {
+		return CacheBuilder.newBuilder().maximumSize(cacheSize)
+				.removalListener(createRemovalListener()).build();
+	}
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param degree
 	 */
-	private BTree(int degree, Optional<File> file, Class<T> cls, int keySize) {
+	private BTree(int degree, Optional<File> file, Class<T> cls, int keySize,
+			long cacheSize) {
+
 		Preconditions.checkArgument(degree >= 2, "degree must be >=2");
 		Preconditions.checkArgument(keySize > 0, "keySize must be >0");
 		Preconditions.checkNotNull(file, "file cannot be null");
@@ -92,6 +98,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		this.file = file;
 		this.positionManager = new PositionManager(file);
 		this.keySize = keySize;
+		nodeCache = createNodeCache(cacheSize);
 		if (file.isPresent() && file.get().exists()) {
 			readHeader();
 			root = new NodeRef<T>(this, of(rootPosition));
@@ -179,6 +186,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		private Optional<File> file = absent();
 		private int keySize = 1000;
 		private final Class<R> cls;
+		private long cacheSize = 100;
 
 		/**
 		 * Constructor.
@@ -223,12 +231,24 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 
 		/**
+		 * Sets the size of the node cache being the number of nodes that are
+		 * kept loaded in memory.
+		 * 
+		 * @param cacheSize
+		 * @return
+		 */
+		public Builder<R> cacheSize(long cacheSize) {
+			this.cacheSize = cacheSize;
+			return this;
+		}
+
+		/**
 		 * Returns a new {@link BTree}.
 		 * 
 		 * @return
 		 */
 		public BTree<R> build() {
-			return new BTree<R>(degree, file, cls, keySize);
+			return new BTree<R>(degree, file, cls, keySize, cacheSize);
 		}
 	}
 
