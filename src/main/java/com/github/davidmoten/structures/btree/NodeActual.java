@@ -47,11 +47,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		this.ref = ref;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.davidmoten.structures.btree.Node#add(T)
-	 */
 	@Override
 	public Optional<Node<T>> add(T t, ImmutableStack<Node<T>> stack) {
 
