@@ -18,10 +18,6 @@ import java.util.List;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 
 /**
  * A standard BTree implementation as per wikipedia entry with some tweaks to
@@ -76,12 +72,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private final Object writeMonitor = new Object();
 
-	private final Cache<Long, Node<T>> nodeCache;
-
-	private Cache<Long, Node<T>> createNodeCache(long cacheSize) {
-		return CacheBuilder.newBuilder().maximumSize(cacheSize)
-				.removalListener(createRemovalListener()).build();
-	}
+	private final NodeCache<T> nodeCache;
 
 	/**
 	 * Constructor.
@@ -98,7 +89,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		this.file = file;
 		this.positionManager = new PositionManager(file);
 		this.keySize = keySize;
-		nodeCache = createNodeCache(cacheSize);
+		nodeCache = new NodeCache<T>(cacheSize);
 		if (file.isPresent() && file.get().exists()) {
 			readHeader();
 			root = new NodeRef<T>(this, of(rootPosition));
@@ -107,17 +98,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				writeHeader();
 			root = new NodeRef<T>(this, Optional.<Long> absent());
 		}
-	}
-
-	private RemovalListener<Long, Node<T>> createRemovalListener() {
-		return new RemovalListener<Long, Node<T>>() {
-
-			@Override
-			public void onRemoval(
-					RemovalNotification<Long, Node<T>> notification) {
-				notification.getValue().unload();
-			}
-		};
 	}
 
 	void loaded(long position, Node<T> node) {
