@@ -178,4 +178,9 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 		node = absent();
 	}
 
+	@Override
+	public AddResult<T> add2(T t, ImmutableStack<Node<T>> stack) {
+		return node().add2(t, stack);
+	}
+
 }

@@ -56,9 +56,41 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			return addToNonLeafNode(t, stack);
 	}
 
+	@Override
+	public AddResult<T> add2(T t, ImmutableStack<Node<T>> stack) {
+		// if (isLeafNode()) {
+		// return add2(new Key<T>(t), stack);
+		// } else
+		// return addToNonLeafNode2(t, stack);
+		return null;
+	}
+
+	private Node<T> addToNonLeafNode2(T t, ImmutableStack<Node<T>> stack) {
+
+		return null;
+	}
+
 	/**
-	 * Adds the element to the node. If root node of BTree is changed then
-	 * returns new root node otherwise returns {@link Optional}.absent().
+	 * 
+	 * Adds the given key to the current node. If this node needs to be split
+	 * then returns the new node that is the parent of the split keys. If the
+	 * node does not need to be split then returns the new node
+	 * 
+	 * @param key
+	 * @param stack
+	 * @return
+	 */
+	private AddResult<T> add2(Key<T> key, ImmutableStack<Node<T>> stack) {
+
+		return null;
+	}
+
+	/**
+	 * Add
+	 * 
+	 * 
+	 * e element to the node. If root node of BTree is changed then returns new
+	 * root node otherwise returns {@link Optional}.absent().
 	 * 
 	 * @param t
 	 * @return
