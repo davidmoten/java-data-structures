@@ -11,4 +11,7 @@ Aims:
 * 100% unit test coverage
 * thread-safe with minimal locking
 * persist to disk and load from disk efficiently
-* minimal memory use (uses disk when required)
+* use log structure storage (LSS)
+* enable snapshots
+* tuneable memory use (can use disk when required)
+
