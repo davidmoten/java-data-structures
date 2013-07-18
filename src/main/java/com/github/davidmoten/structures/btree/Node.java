@@ -18,7 +18,11 @@ interface Node<T extends Serializable & Comparable<T>> {
 	 */
 	Optional<Node<T>> add(T t, ImmutableStack<Node<T>> stack);
 
-	AddResult<T> add2(T t, ImmutableStack<Node<T>> stack);
+	AddResult<T> add2(T t);
+
+	AddResult<T> addToNonLeafNode2(T t);
+
+	AddResult<T> add2(Key<T> key);
 
 	/**
 	 * Adds the key to the node. If root node of BTree is changed then returns

@@ -49,7 +49,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 	@Override
 	public Optional<Node<T>> add(T t, ImmutableStack<Node<T>> stack) {
-
 		if (isLeafNode()) {
 			return add(new Key<T>(t), stack);
 		} else
@@ -57,32 +56,139 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	}
 
 	@Override
-	public AddResult<T> add2(T t, ImmutableStack<Node<T>> stack) {
-		// if (isLeafNode()) {
-		// return add2(new Key<T>(t), stack);
-		// } else
-		// return addToNonLeafNode2(t, stack);
+	public AddResult<T> add2(T t) {
+		if (isLeafNode()) {
+			return copy().add2(new Key<T>(t));
+		} else
+			return copy().addToNonLeafNode2(t);
+	}
+
+	private Node<T> copy() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	private Node<T> addToNonLeafNode2(T t, ImmutableStack<Node<T>> stack) {
+	@Override
+	public AddResult<T> addToNonLeafNode2(T t) {
 
-		return null;
+		// Note that first will be present because if is internal (non-leaf)
+		// node then it must have some keys
+		AddResult<T> result = null;
+		boolean added = false;
+		Optional<Key<T>> last = first;
+		for (Key<T> key : keys()) {
+			if (t.compareTo(key.value()) < 0) {
+				// don't need to check that left is present because of
+				// properties of b-tree
+				result = key.getLeft().get().add2(t);
+				if (result.getSplitKey().isPresent()) {
+					// add a split key to this node
+					result = add2(result.getSplitKey().get());
+				} else {
+					// TODO
+				}
+				added = true;
+				break;
+			}
+			last = of(key);
+		}
+
+		if (!added) {
+			// don't need to check that left is present because of properties
+			// of b-tree
+			result = last.get().getRight().get().add2(t);
+		}
+		return result;
 	}
 
 	/**
 	 * 
 	 * Adds the given key to the current node. If this node needs to be split
 	 * then returns the new node that is the parent of the split keys. If the
-	 * node does not need to be split then returns the new node
+	 * node does not need to be split then returns the new node.
 	 * 
 	 * @param key
 	 * @param stack
 	 * @return
 	 */
-	private AddResult<T> add2(Key<T> key, ImmutableStack<Node<T>> stack) {
+	@Override
+	public AddResult<T> add2(Key<T> key) {
 
+		key.setNode(of((Node<T>) this));
+
+		first = of(add2(first, key));
+
+		int keyCount = countKeys();
+
+		return performSplitIfRequired2(keyCount);
+	}
+
+	private Key<T> add2(Optional<Key<T>> first2, Key<T> key) {
+		// TODO Auto-generated method stub
 		return null;
+	}
+
+	private AddResult<T> performSplitIfRequired2(int keyCount) {
+		final AddResult<T> result;
+		if (keyCount == btree.getDegree())
+			result = AddResult
+					.createFromSplitKey(splitKeysEitherSideOfMedianIntoTwoChildrenOfParent2(keyCount));
+		else {
+			save();
+			result = AddResult.createFromNonSplitNode(this);
+		}
+		return result;
+	}
+
+	/**
+	 * Returns the median key with the keys before it as left child and keys
+	 * after it as right child.
+	 * 
+	 * @param keyCount
+	 * @param theParent
+	 * @return
+	 */
+	private Key<T> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent2(
+			int keyCount) {
+
+		int medianNumber = getMedianNumber(keyCount);
+
+		// get the median key and the preceding key
+		int count = 1;
+
+		// for thread safety make a copy of the keys
+		Optional<Key<T>> list = copy(first);
+
+		Optional<Key<T>> key = list;
+		Optional<Key<T>> previous = absent();
+		while (count < medianNumber) {
+			previous = key;
+			key = key.get().next();
+			count++;
+		}
+		Key<T> medianKey = key.get();
+
+		previous.get().setNext(Optional.<Key<T>> absent());
+
+		// create child1 of first ->..->previous
+		// this child will request a new file position
+		Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
+		child1.setFirst(list);
+		child1.save();
+
+		// create child2 of medianKey.next ->..->last
+		// this child will request a new file position
+		Node<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
+		child2.setFirst(key.get().next());
+		child2.save();
+
+		// set the links on medianKey to the next key in the same node and to
+		// its children
+		medianKey.setNext(Optional.<Key<T>> absent());
+		medianKey.setLeft(Optional.of(child1));
+		medianKey.setRight(Optional.of(child2));
+
+		return medianKey;
 	}
 
 	/**

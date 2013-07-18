@@ -179,8 +179,18 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 	}
 
 	@Override
-	public AddResult<T> add2(T t, ImmutableStack<Node<T>> stack) {
-		return node().add2(t, stack);
+	public AddResult<T> add2(T t) {
+		return node().add2(t);
+	}
+
+	@Override
+	public AddResult<T> addToNonLeafNode2(T t) {
+		return node().addToNonLeafNode2(t);
+	}
+
+	@Override
+	public AddResult<T> add2(Key<T> key) {
+		return node().add2(key);
 	}
 
 }
