@@ -281,6 +281,21 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	private void addOne2(T t) {
+		synchronized (writeMonitor) {
+			AddResult<T> result = root.add2(t);
+			if (result.getSplitKey().isPresent()) {
+				Node<T> node = new NodeRef(this, Optional.<Long> absent());
+				node.setFirst(result.getSplitKey());
+				node.save();
+				root = node;
+				rootPosition = root.getPosition();
+				if (file.isPresent())
+					writeHeader();
+			}
+		}
+	}
+
 	/**
 	 * Returns the first T found that equals t from this b-tree.
 	 * 

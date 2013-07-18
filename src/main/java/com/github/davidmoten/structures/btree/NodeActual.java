@@ -1,5 +1,7 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.github.davidmoten.structures.btree.AddResult.createFromNonSplitNode;
+import static com.github.davidmoten.structures.btree.AddResult.createFromSplitKey;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
@@ -57,15 +59,19 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 	@Override
 	public AddResult<T> add2(T t) {
+		AddResult<T> result;
 		if (isLeafNode()) {
-			return copy().add2(new Key<T>(t));
+			result = copy().add2(new Key<T>(t));
 		} else
-			return copy().addToNonLeafNode2(t);
+			result = copy().addToNonLeafNode2(t);
+		save();
+		return result;
 	}
 
 	private Node<T> copy() {
-		// TODO Auto-generated method stub
-		return null;
+		NodeRef<T> node = new NodeRef<T>(btree, Optional.<Long> absent());
+		node.setFirst(copy(first));
+		return node;
 	}
 
 	@Override
@@ -97,6 +103,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			// don't need to check that left is present because of properties
 			// of b-tree
 			result = last.get().getRight().get().add2(t);
+			// TODO
 		}
 		return result;
 	}
@@ -131,11 +138,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	private AddResult<T> performSplitIfRequired2(int keyCount) {
 		final AddResult<T> result;
 		if (keyCount == btree.getDegree())
-			result = AddResult
-					.createFromSplitKey(splitKeysEitherSideOfMedianIntoTwoChildrenOfParent2(keyCount));
+			result = createFromSplitKey(splitKeysEitherSideOfMedianIntoTwoChildrenOfParent2(keyCount));
 		else {
-			save();
-			result = AddResult.createFromNonSplitNode(this);
+			result = createFromNonSplitNode(this);
 		}
 		return result;
 	}
