@@ -411,6 +411,28 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	void load(NodeRef<T> node) {
+		if (getFile().isPresent()) {
+			try {
+
+				RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
+				f.seek(node.getPosition());
+				int numBytes = getDegree() * getKeySize();
+				byte[] b = new byte[numBytes];
+				f.read(b);
+				f.close();
+
+				ByteArrayInputStream bytes = new ByteArrayInputStream(b);
+				node.load(bytes);
+
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
 	private void writeBytes(RandomAccessFile f, ByteArrayOutputStream bytes)
 			throws IOException {
 		int remainingBytes = getDegree() * getKeySize() - bytes.size();

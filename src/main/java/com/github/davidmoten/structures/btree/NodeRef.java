@@ -3,13 +3,10 @@ package com.github.davidmoten.structures.btree;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -81,26 +78,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 	private void load() {
 
 		node = of(new NodeActual<T>(btree, position.get(), this));
-		if (btree.getFile().isPresent()) {
-			try {
-
-				RandomAccessFile f = new RandomAccessFile(
-						btree.getFile().get(), "r");
-				f.seek(position.get());
-				int numBytes = btree.getDegree() * btree.getKeySize();
-				byte[] b = new byte[numBytes];
-				f.read(b);
-				f.close();
-
-				ByteArrayInputStream bytes = new ByteArrayInputStream(b);
-				load(bytes);
-
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
+		btree.load(this);
 	}
 
 	@Override
