@@ -5,11 +5,6 @@ import static com.github.davidmoten.structures.btree.AddResult.createFromSplitKe
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -262,7 +257,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		// insert key in the list if before one
 		Optional<Key<T>> previous = absent();
 		Optional<Key<T>> next = absent();
-		for (Key<T> k : keys(first)) {
+		for (Key<T> k : Util.keys(first)) {
 			if (key.value().compareTo(k.value()) < 0) {
 				// it is important to set next before set previous so that
 				// concurrent reads work correctly
@@ -301,7 +296,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * 
 	 * @return
 	 */
-	private int countKeys() {
+	@Override
+	public int countKeys() {
 		int count = 0;
 		Optional<Key<T>> k = first;
 		while (k.isPresent()) {
@@ -567,37 +563,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return new NodeIterator<T>(this);
 	}
 
-	private Iterable<Key<T>> keys(final Optional<Key<T>> first) {
-		return new Iterable<Key<T>>() {
-
-			@Override
-			public Iterator<Key<T>> iterator() {
-				return new Iterator<Key<T>>() {
-					Optional<Key<T>> key = first;
-
-					@Override
-					public boolean hasNext() {
-						return key.isPresent();
-					}
-
-					@Override
-					public Key<T> next() {
-						Key<T> result = key.get();
-						key = key.get().next();
-						return result;
-					}
-
-					@Override
-					public void remove() {
-						// do nothing
-					}
-				};
-			}
-		};
-	}
-
-	private Iterable<Key<T>> keys() {
-		return keys(first);
+	@Override
+	public Iterable<Key<T>> keys() {
+		return Util.keys(first);
 	}
 
 	@Override
@@ -640,38 +608,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 	@Override
 	public void save() {
-		if (btree.getFile().isPresent()) {
-			try {
-				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-				ObjectOutputStream oos = new ObjectOutputStream(bytes);
-				oos.writeInt(countKeys());
-				for (Key<T> key : keys()) {
-					oos.writeObject(key.value());
-					if (key.getLeft().isPresent())
-						oos.writeLong(key.getLeft().get().getPosition());
-					else
-						oos.writeLong(NodeRef.CHILD_ABSENT);
-					if (key.getRight().isPresent())
-						oos.writeLong(key.getRight().get().getPosition());
-					else
-						oos.writeLong(NodeRef.CHILD_ABSENT);
-					oos.writeBoolean(key.isDeleted());
-				}
-				oos.close();
+		btree.save(ref);
 
-				RandomAccessFile f = new RandomAccessFile(
-						btree.getFile().get(), "rws");
-				f.seek(position);
-				writeBytes(f, bytes);
-				f.close();
-
-				btree.loaded(position, ref);
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
 	}
 
 	// private String abbr() {
@@ -683,17 +621,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	// }
 	// return s.toString();
 	// }
-
-	private void writeBytes(RandomAccessFile f, ByteArrayOutputStream bytes)
-			throws IOException {
-		int remainingBytes = btree.getDegree() * btree.getKeySize()
-				- bytes.size();
-		if (remainingBytes < 0)
-			throw new RuntimeException(
-					"not enough bytes per key have been allocated");
-		f.write(bytes.toByteArray());
-		f.write(new byte[remainingBytes]);
-	}
 
 	@Override
 	public long getPosition() {

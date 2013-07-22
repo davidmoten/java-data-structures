@@ -65,10 +65,14 @@ interface Node<T extends Serializable & Comparable<T>> {
 
 	String toString(String space);
 
-	void save();
-
 	long getPosition();
 
 	void unload();
+
+	void save();
+
+	int countKeys();
+
+	Iterable<Key<T>> keys();
 
 }

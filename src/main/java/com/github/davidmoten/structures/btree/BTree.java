@@ -390,6 +390,51 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		return root.iterator();
 	}
 
+	void save(NodeRef<T> node) {
+		if (getFile().isPresent()) {
+			try {
+				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+				ObjectOutputStream oos = new ObjectOutputStream(bytes);
+				oos.writeInt(node.countKeys());
+				for (Key<T> key : node.keys()) {
+					oos.writeObject(key.value());
+					if (key.getLeft().isPresent())
+						oos.writeLong(key.getLeft().get().getPosition());
+					else
+						oos.writeLong(NodeRef.CHILD_ABSENT);
+					if (key.getRight().isPresent())
+						oos.writeLong(key.getRight().get().getPosition());
+					else
+						oos.writeLong(NodeRef.CHILD_ABSENT);
+					oos.writeBoolean(key.isDeleted());
+				}
+				oos.close();
+
+				RandomAccessFile f = new RandomAccessFile(getFile().get(),
+						"rws");
+				f.seek(node.getPosition());
+				writeBytes(f, bytes);
+				f.close();
+
+				loaded(node.getPosition(), node);
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	private void writeBytes(RandomAccessFile f, ByteArrayOutputStream bytes)
+			throws IOException {
+		int remainingBytes = getDegree() * getKeySize() - bytes.size();
+		if (remainingBytes < 0)
+			throw new RuntimeException(
+					"not enough bytes per key have been allocated");
+		f.write(bytes.toByteArray());
+		f.write(new byte[remainingBytes]);
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

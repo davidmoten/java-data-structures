@@ -193,4 +193,14 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 		return node().add2(key);
 	}
 
+	@Override
+	public int countKeys() {
+		return node().countKeys();
+	}
+
+	@Override
+	public Iterable<Key<T>> keys() {
+		return node().keys();
+	}
+
 }
