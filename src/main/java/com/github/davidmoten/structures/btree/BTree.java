@@ -285,9 +285,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		synchronized (writeMonitor) {
 			AddResult<T> result = root.add2(t);
 			if (result.getSplitKey().isPresent()) {
-				Node<T> node = new NodeRef(this, Optional.<Long> absent());
+				NodeRef<T> node = new NodeRef(this, Optional.<Long> absent());
 				node.setFirst(result.getSplitKey());
-				node.save();
+				save(node);
 				root = node;
 				rootPosition = root.getPosition();
 				if (file.isPresent())
@@ -394,21 +394,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		if (getFile().isPresent()) {
 			try {
 				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-				ObjectOutputStream oos = new ObjectOutputStream(bytes);
-				oos.writeInt(node.countKeys());
-				for (Key<T> key : node.keys()) {
-					oos.writeObject(key.value());
-					if (key.getLeft().isPresent())
-						oos.writeLong(key.getLeft().get().getPosition());
-					else
-						oos.writeLong(NodeRef.CHILD_ABSENT);
-					if (key.getRight().isPresent())
-						oos.writeLong(key.getRight().get().getPosition());
-					else
-						oos.writeLong(NodeRef.CHILD_ABSENT);
-					oos.writeBoolean(key.isDeleted());
-				}
-				oos.close();
+				node.save(bytes);
 
 				RandomAccessFile f = new RandomAccessFile(getFile().get(),
 						"rws");

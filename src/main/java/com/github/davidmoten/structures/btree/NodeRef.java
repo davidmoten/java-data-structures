@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Iterator;
@@ -164,11 +165,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 	}
 
 	@Override
-	public void save() {
-		node().save();
-	}
-
-	@Override
 	public long getPosition() {
 		return node().getPosition();
 	}
@@ -201,6 +197,12 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 	@Override
 	public Iterable<Key<T>> keys() {
 		return node().keys();
+	}
+
+	@Override
+	public void save(OutputStream os) {
+		node().save(os);
+
 	}
 
 }

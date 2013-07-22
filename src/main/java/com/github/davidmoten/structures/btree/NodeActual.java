@@ -5,6 +5,9 @@ import static com.github.davidmoten.structures.btree.AddResult.createFromSplitKe
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -59,7 +62,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			result = copy().add2(new Key<T>(t));
 		} else
 			result = copy().addToNonLeafNode2(t);
-		save();
+		btree.save(ref);
 		return result;
 	}
 
@@ -172,21 +175,21 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
-		Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
+		NodeRef<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
 		child1.setFirst(list);
-		child1.save();
+		btree.save(child1);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
-		Node<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
+		NodeRef<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
 		child2.setFirst(key.get().next());
-		child2.save();
+		btree.save(child2);
 
 		// set the links on medianKey to the next key in the same node and to
 		// its children
 		medianKey.setNext(Optional.<Key<T>> absent());
-		medianKey.setLeft(Optional.of(child1));
-		medianKey.setRight(Optional.of(child2));
+		medianKey.setLeft(Optional.<Node<T>> of(child1));
+		medianKey.setRight(Optional.<Node<T>> of(child2));
 
 		return medianKey;
 	}
@@ -327,7 +330,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			result = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
 					keyCount, stack);
 		else {
-			save();
+			btree.save(ref);
 			result = absent();
 		}
 		return result;
@@ -403,21 +406,21 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
-		Node<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
+		NodeRef<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
 		child1.setFirst(list);
-		child1.save();
+		btree.save(child1);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
-		Node<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
+		NodeRef<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
 		child2.setFirst(key.get().next());
-		child2.save();
+		btree.save(child2);
 
 		// set the links on medianKey to the next key in the same node and to
 		// its children
 		medianKey.setNext(Optional.<Key<T>> absent());
-		medianKey.setLeft(Optional.of(child1));
-		medianKey.setRight(Optional.of(child2));
+		medianKey.setLeft(Optional.<Node<T>> of(child1));
+		medianKey.setRight(Optional.<Node<T>> of(child2));
 
 		Optional<Node<T>> result = parent.add(medianKey, stack.pop());
 
@@ -607,9 +610,27 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	}
 
 	@Override
-	public void save() {
-		btree.save(ref);
+	public void save(OutputStream os) {
 
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(os);
+			oos.writeInt(countKeys());
+			for (Key<T> key : keys()) {
+				oos.writeObject(key.value());
+				if (key.getLeft().isPresent())
+					oos.writeLong(key.getLeft().get().getPosition());
+				else
+					oos.writeLong(NodeRef.CHILD_ABSENT);
+				if (key.getRight().isPresent())
+					oos.writeLong(key.getRight().get().getPosition());
+				else
+					oos.writeLong(NodeRef.CHILD_ABSENT);
+				oos.writeBoolean(key.isDeleted());
+			}
+			oos.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	// private String abbr() {

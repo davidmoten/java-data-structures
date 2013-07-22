@@ -1,5 +1,6 @@
 package com.github.davidmoten.structures.btree;
 
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
@@ -69,10 +70,10 @@ interface Node<T extends Serializable & Comparable<T>> {
 
 	void unload();
 
-	void save();
-
 	int countKeys();
 
 	Iterable<Key<T>> keys();
+
+	void save(OutputStream os);
 
 }
