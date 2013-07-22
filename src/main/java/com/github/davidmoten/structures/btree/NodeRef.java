@@ -6,6 +6,7 @@ import static com.google.common.base.Optional.of;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
@@ -41,7 +42,43 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 		return node.get();
 	}
 
-	public void load() {
+	void load(InputStream is) {
+
+		try {
+			ObjectInputStream ois = new ObjectInputStream(is);
+			int count = ois.readInt();
+			Optional<Key<T>> previous = absent();
+			Optional<Key<T>> first = absent();
+			for (int i = 0; i < count; i++) {
+				@SuppressWarnings("unchecked")
+				T t = (T) ois.readObject();
+				long left = ois.readLong();
+				long right = ois.readLong();
+				boolean deleted = ois.readBoolean();
+				Key<T> key = new Key<T>(t);
+				if (left != CHILD_ABSENT)
+					key.setLeft(of((Node<T>) new NodeRef<T>(btree, of(left))));
+				if (right != CHILD_ABSENT)
+					key.setRight(of((Node<T>) new NodeRef<T>(btree, of(right))));
+				key.setDeleted(deleted);
+				key.setNode(of((Node<T>) this));
+				key.setNext(Optional.<Key<T>> absent());
+				if (!first.isPresent())
+					first = of(key);
+				if (previous.isPresent())
+					previous.get().setNext(of(key));
+				previous = of(key);
+			}
+			node.get().setFirst(first);
+			ois.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private void load() {
 
 		node = of(new NodeActual<T>(btree, position.get(), this));
 		if (btree.getFile().isPresent()) {
@@ -56,38 +93,11 @@ public class NodeRef<T extends Serializable & Comparable<T>> implements Node<T> 
 				f.close();
 
 				ByteArrayInputStream bytes = new ByteArrayInputStream(b);
-				ObjectInputStream ois = new ObjectInputStream(bytes);
-				int count = ois.readInt();
-				Optional<Key<T>> previous = absent();
-				Optional<Key<T>> first = absent();
-				for (int i = 0; i < count; i++) {
-					@SuppressWarnings("unchecked")
-					T t = (T) ois.readObject();
-					long left = ois.readLong();
-					long right = ois.readLong();
-					boolean deleted = ois.readBoolean();
-					Key<T> key = new Key<T>(t);
-					if (left != CHILD_ABSENT)
-						key.setLeft(of((Node<T>) new NodeRef<T>(btree, of(left))));
-					if (right != CHILD_ABSENT)
-						key.setRight(of((Node<T>) new NodeRef<T>(btree,
-								of(right))));
-					key.setDeleted(deleted);
-					key.setNode(of((Node<T>) this));
-					key.setNext(Optional.<Key<T>> absent());
-					if (!first.isPresent())
-						first = of(key);
-					if (previous.isPresent())
-						previous.get().setNext(of(key));
-					previous = of(key);
-				}
-				node.get().setFirst(first);
-				ois.close();
+				load(bytes);
+
 			} catch (FileNotFoundException e) {
 				throw new RuntimeException(e);
 			} catch (IOException e) {
-				throw new RuntimeException(e);
-			} catch (ClassNotFoundException e) {
 				throw new RuntimeException(e);
 			}
 		}
