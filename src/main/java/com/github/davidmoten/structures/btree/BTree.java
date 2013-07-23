@@ -35,7 +35,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	/**
 	 * The root node.
 	 */
-	private Node<T> root;
+	private NodeRef<T> root;
 
 	/**
 	 * The maximum number of keys in a node plus one.
@@ -100,7 +100,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
-	void loaded(long position, Node<T> node) {
+	void loaded(long position, NodeRef<T> node) {
 		nodeCache.put(position, node);
 	}
 
@@ -270,8 +270,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private void addOne(T t) {
 		synchronized (writeMonitor) {
-			Optional<Node<T>> newRoot = root.add(t,
-					new ImmutableStack<Node<T>>());
+			Optional<NodeRef<T>> newRoot = root.add(t,
+					new ImmutableStack<NodeRef<T>>());
 			if (newRoot.isPresent()) {
 				root = newRoot.get();
 				rootPosition = newRoot.get().getPosition();
@@ -289,8 +289,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				node.setFirst(result.getSplitKey());
 				save(node);
 				root = node;
-			}
-			else {
+			} else {
+				save(result.getNode().get());
 				root = result.getNode().get();
 			}
 			rootPosition = root.getPosition();
@@ -402,6 +402,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				RandomAccessFile f = new RandomAccessFile(getFile().get(),
 						"rws");
 				f.seek(node.getPosition());
+				// System.out.println("writing to " + node.getPosition() + ": "
+				// + Arrays.toString(bytes.toByteArray()));
 				writeBytes(f, bytes);
 				f.close();
 
@@ -423,6 +425,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				int numBytes = getDegree() * getKeySize();
 				byte[] b = new byte[numBytes];
 				f.read(b);
+				// System.out.println("read from " + node.getPosition() + ": "
+				// + Arrays.toString(b));
 				f.close();
 
 				ByteArrayInputStream bytes = new ByteArrayInputStream(b);

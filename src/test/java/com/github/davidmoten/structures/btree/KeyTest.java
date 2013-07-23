@@ -13,11 +13,13 @@ public class KeyTest {
 	@Test
 	public void testHasChild() {
 		BTree<Double> tree = builder(Double.class).degree(3).build();
-		Optional<Node<Double>> absent = Optional.<Node<Double>> absent();
+		Optional<NodeRef<Double>> absent = Optional.absent();
 
 		Key<Double> k = new Key<Double>(1.0);
-		Node<Double> left = new NodeRef<Double>(tree, Optional.<Long> absent());
-		Node<Double> right = new NodeRef<Double>(tree, Optional.<Long> absent());
+		NodeRef<Double> left = new NodeRef<Double>(tree,
+				Optional.<Long> absent());
+		NodeRef<Double> right = new NodeRef<Double>(tree,
+				Optional.<Long> absent());
 
 		assertFalse(k.hasChild());
 		k.setLeft(Optional.of(left));

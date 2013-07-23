@@ -9,29 +9,29 @@ import com.google.common.cache.RemovalNotification;
 
 public class NodeCache<T extends Serializable & Comparable<T>> {
 
-	private final Cache<Long, Node<T>> nodeCache;
+	private final Cache<Long, NodeRef<T>> nodeCache;
 
 	public NodeCache(long maxNodesInMemory) {
 		nodeCache = createNodeCache(maxNodesInMemory);
 	}
 
-	private Cache<Long, Node<T>> createNodeCache(long cacheSize) {
+	private Cache<Long, NodeRef<T>> createNodeCache(long cacheSize) {
 		return CacheBuilder.newBuilder().maximumSize(cacheSize)
 				.removalListener(createRemovalListener()).build();
 	}
 
-	private RemovalListener<Long, Node<T>> createRemovalListener() {
-		return new RemovalListener<Long, Node<T>>() {
+	private RemovalListener<Long, NodeRef<T>> createRemovalListener() {
+		return new RemovalListener<Long, NodeRef<T>>() {
 
 			@Override
 			public void onRemoval(
-					RemovalNotification<Long, Node<T>> notification) {
+					RemovalNotification<Long, NodeRef<T>> notification) {
 				notification.getValue().unload();
 			}
 		};
 	}
 
-	public void put(long position, Node<T> node) {
+	public void put(long position, NodeRef<T> node) {
 		nodeCache.put(position, node);
 	}
 

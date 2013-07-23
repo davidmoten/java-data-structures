@@ -10,13 +10,13 @@ import com.google.common.base.Preconditions;
 class Key<T extends Serializable & Comparable<T>> {
 
 	private final T t;
-	private Optional<Node<T>> left = absent();
-	private Optional<Node<T>> right = absent();
+	private Optional<NodeRef<T>> left = absent();
+	private Optional<NodeRef<T>> right = absent();
 	private boolean deleted = false;
 
 	// fields not to be serialized
 	private transient Optional<Key<T>> next = absent();
-	private transient Optional<Node<T>> node = absent();
+	private transient Optional<NodeRef<T>> node = absent();
 
 	Key(T t) {
 		this.t = t;
@@ -34,21 +34,21 @@ class Key<T extends Serializable & Comparable<T>> {
 		return t;
 	}
 
-	Optional<Node<T>> getLeft() {
+	Optional<NodeRef<T>> getLeft() {
 		return left;
 	}
 
-	void setLeft(Optional<Node<T>> left) {
+	void setLeft(Optional<NodeRef<T>> left) {
 		Preconditions.checkNotNull(left);
 		this.left = left;
 
 	}
 
-	Optional<Node<T>> getRight() {
+	Optional<NodeRef<T>> getRight() {
 		return right;
 	}
 
-	void setRight(Optional<Node<T>> right) {
+	void setRight(Optional<NodeRef<T>> right) {
 		Preconditions.checkNotNull(right);
 		this.right = right;
 
@@ -63,11 +63,11 @@ class Key<T extends Serializable & Comparable<T>> {
 		return toString("  ");
 	}
 
-	Optional<Node<T>> getParent() {
+	Optional<NodeRef<T>> getParent() {
 		return node;
 	}
 
-	void setNode(Optional<Node<T>> node) {
+	void setNode(Optional<NodeRef<T>> node) {
 		this.node = node;
 	}
 
@@ -103,7 +103,7 @@ class Key<T extends Serializable & Comparable<T>> {
 		return builder.toString();
 	}
 
-	Optional<Node<T>> getNode() {
+	Optional<NodeRef<T>> getNode() {
 		return node;
 	}
 }

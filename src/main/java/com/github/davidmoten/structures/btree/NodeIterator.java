@@ -14,11 +14,11 @@ class NodeIterator<T extends Serializable & Comparable<T>> implements
 
 	private final Deque<KeySide<T>> q = new LinkedList<KeySide<T>>();
 
-	NodeIterator(Node<T> node) {
+	NodeIterator(NodeRef<T> node) {
 		goToBottomLeft(of(node), q);
 	}
 
-	private void goToBottomLeft(Optional<Node<T>> node, Deque<KeySide<T>> q) {
+	private void goToBottomLeft(Optional<NodeRef<T>> node, Deque<KeySide<T>> q) {
 		if (node.isPresent() && node.get().getFirst().isPresent()) {
 			Key<T> first = node.get().getFirst().get();
 			q.push(new KeySide<T>(first, Side.TOP));

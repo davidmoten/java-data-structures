@@ -24,8 +24,7 @@ import com.google.common.collect.Lists;
  * 
  * @param <T>
  */
-class NodeActual<T extends Serializable & Comparable<T>> implements
-		Iterable<T>, Node<T> {
+class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
 	private Optional<Key<T>> first = Optional.absent();
 	private final BTree<T> btree;
@@ -47,15 +46,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		this.ref = ref;
 	}
 
-	@Override
-	public Optional<Node<T>> add(T t, ImmutableStack<Node<T>> stack) {
+	public Optional<NodeRef<T>> add(T t, ImmutableStack<NodeRef<T>> stack) {
 		if (isLeafNode()) {
 			return add(new Key<T>(t), stack);
 		} else
 			return addToNonLeafNode(t, stack);
 	}
 
-	@Override
 	public AddResult<T> add2(T t) {
 		AddResult<T> result;
 		if (isLeafNode()) {
@@ -66,13 +63,12 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return result;
 	}
 
-	private Node<T> copy() {
+	private NodeRef<T> copy() {
 		NodeRef<T> node = new NodeRef<T>(btree, Optional.<Long> absent());
 		node.setFirst(copy(first));
 		return node;
 	}
 
-	@Override
 	public AddResult<T> addToNonLeafNode2(T t) {
 
 		// Note that first will be present because if is internal (non-leaf)
@@ -123,10 +119,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @param stack
 	 * @return
 	 */
-	@Override
+
 	public AddResult<T> add2(Key<T> key) {
 
-		key.setNode(of((Node<T>) this));
+		key.setNode(of(ref));
 
 		first = of(add2(first, key));
 
@@ -146,7 +142,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 */
 	private Key<T> add2(Optional<Key<T>> first, Key<T> key) {
 		// key is not on the current node
-		key.setNode(of((Node<T>) this));
+		key.setNode(of(ref));
 
 		// insert key in the list if before one
 		Optional<Key<T>> previous = absent();
@@ -190,7 +186,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		if (keyCount == btree.getDegree())
 			result = createFromSplitKey(splitKeysEitherSideOfMedianIntoTwoChildrenOfParent2(keyCount));
 		else {
-			result = createFromNonSplitNode(this);
+			result = createFromNonSplitNode(ref);
 		}
 		return result;
 	}
@@ -240,8 +236,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		// set the links on medianKey to the next key in the same node and to
 		// its children
 		medianKey.setNext(Optional.<Key<T>> absent());
-		medianKey.setLeft(Optional.<Node<T>> of(child1));
-		medianKey.setRight(Optional.<Node<T>> of(child2));
+		medianKey.setLeft(Optional.of(child1));
+		medianKey.setRight(Optional.of(child2));
 
 		return medianKey;
 	}
@@ -256,18 +252,18 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @param t
 	 * @return
 	 */
-	private Optional<Node<T>> addToNonLeafNode(T t,
-			ImmutableStack<Node<T>> stack) {
+	private Optional<NodeRef<T>> addToNonLeafNode(T t,
+			ImmutableStack<NodeRef<T>> stack) {
 		// Note that first will be present because if is internal (non-leaf)
 		// node then it must have some keys
-		Optional<Node<T>> result = absent();
+		Optional<NodeRef<T>> result = absent();
 		boolean added = false;
 		Optional<Key<T>> last = first;
 		for (Key<T> key : keys()) {
 			if (t.compareTo(key.value()) < 0) {
 				// don't need to check that left is present because of
 				// properties of b-tree
-				result = key.getLeft().get().add(t, stack.push(this));
+				result = key.getLeft().get().add(t, stack.push(ref));
 				added = true;
 				break;
 			}
@@ -277,7 +273,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		if (!added) {
 			// don't need to check that left is present because of properties
 			// of b-tree
-			result = last.get().getRight().get().add(t, stack.push(this));
+			result = last.get().getRight().get().add(t, stack.push(ref));
 		}
 		return result;
 	}
@@ -304,10 +300,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @param key
 	 */
 	private Key<T> add(Optional<Key<T>> first, Key<T> key,
-			ImmutableStack<Node<T>> stack) {
+			ImmutableStack<NodeRef<T>> stack) {
 
 		// key is not on the current node
-		key.setNode(of((Node<T>) this));
+		key.setNode(of(ref));
 
 		// insert key in the list if before one
 		Optional<Key<T>> previous = absent();
@@ -361,10 +357,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return count;
 	}
 
-	@Override
-	public Optional<Node<T>> add(Key<T> key, ImmutableStack<Node<T>> stack) {
+	public Optional<NodeRef<T>> add(Key<T> key, ImmutableStack<NodeRef<T>> stack) {
 
-		key.setNode(of((Node<T>) this));
+		key.setNode(of(ref));
 
 		first = of(add(first, key, stack));
 
@@ -374,9 +369,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 
 	}
 
-	private Optional<Node<T>> performSplitIfRequired(int keyCount,
-			ImmutableStack<Node<T>> stack) {
-		final Optional<Node<T>> result;
+	private Optional<NodeRef<T>> performSplitIfRequired(int keyCount,
+			ImmutableStack<NodeRef<T>> stack) {
+		final Optional<NodeRef<T>> result;
 		if (keyCount == btree.getDegree())
 			result = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
 					keyCount, stack);
@@ -387,11 +382,11 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return result;
 	}
 
-	private Optional<Node<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-			int keyCount, ImmutableStack<Node<T>> stack) {
-		final Optional<Node<T>> result;
-		Node<T> theParent;
-		Optional<Node<T>> result1;
+	private Optional<NodeRef<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+			int keyCount, ImmutableStack<NodeRef<T>> stack) {
+		final Optional<NodeRef<T>> result;
+		NodeRef<T> theParent;
+		Optional<NodeRef<T>> result1;
 
 		// split
 		if (isRoot(stack)) {
@@ -404,7 +399,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			result1 = absent();
 		}
 		// split result is present if root changed by splitting
-		Optional<Node<T>> splitResult = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+		Optional<NodeRef<T>> splitResult = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
 				keyCount, theParent, stack);
 
 		if (splitResult.isPresent())
@@ -421,7 +416,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * 
 	 * @return
 	 */
-	private boolean isRoot(ImmutableStack<Node<T>> stack) {
+	private boolean isRoot(ImmutableStack<NodeRef<T>> stack) {
 		return stack.isEmpty();
 	}
 
@@ -433,8 +428,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * @param theParent
 	 * @return
 	 */
-	private Optional<Node<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-			int keyCount, Node<T> parent, ImmutableStack<Node<T>> stack) {
+	private Optional<NodeRef<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
+			int keyCount, NodeRef<T> parent, ImmutableStack<NodeRef<T>> stack) {
 
 		int medianNumber = getMedianNumber(keyCount);
 
@@ -470,10 +465,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		// set the links on medianKey to the next key in the same node and to
 		// its children
 		medianKey.setNext(Optional.<Key<T>> absent());
-		medianKey.setLeft(Optional.<Node<T>> of(child1));
-		medianKey.setRight(Optional.<Node<T>> of(child2));
+		medianKey.setLeft(Optional.of(child1));
+		medianKey.setRight(Optional.of(child2));
 
-		Optional<Node<T>> result = parent.add(medianKey, stack.pop());
+		Optional<NodeRef<T>> result = parent.add(medianKey, stack.pop());
 
 		// mark the current node position for reuse
 		btree.getPositionManager().releaseNodePosition(position);
@@ -506,7 +501,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	private void updateNode() {
 		Optional<Key<T>> key = first;
 		while (key.isPresent()) {
-			key.get().setNode(of((Node<T>) this));
+			key.get().setNode(of(ref));
 			key = key.get().next();
 		}
 	}
@@ -526,7 +521,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return medianNumber;
 	}
 
-	@Override
 	public Optional<T> find(T t) {
 		boolean isLeaf = isLeafNode();
 		Optional<Key<T>> key = first;
@@ -544,7 +538,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			key = key.get().next();
 		}
 		if (!isLeaf) {
-			Optional<Node<T>> right = last.get().getRight();
+			Optional<NodeRef<T>> right = last.get().getRight();
 			if (right.isPresent())
 				return right.get().find(t);
 			else
@@ -553,7 +547,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			return absent();
 	}
 
-	@Override
 	public long delete(T t) {
 		int count = 0;
 		boolean isLeaf = isLeafNode();
@@ -574,7 +567,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		if (count > 0)
 			return count;
 		if (!isLeaf && last.isPresent()) {
-			Optional<Node<T>> right = last.get().getRight();
+			Optional<NodeRef<T>> right = last.get().getRight();
 			if (right.isPresent())
 				return right.get().delete(t);
 			else
@@ -583,7 +576,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			return 0;
 	}
 
-	@Override
 	@VisibleForTesting
 	public List<? extends Key<T>> getKeys() {
 		List<Key<T>> list = Lists.newArrayList();
@@ -592,14 +584,12 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return list;
 	}
 
-	@Override
 	public void setFirst(Optional<Key<T>> first) {
 		Preconditions.checkNotNull(first);
 		this.first = first;
 		updateNode();
 	}
 
-	@Override
 	public Optional<Key<T>> bottomLeft() {
 		if (isLeafNode())
 			return this.first;
@@ -607,22 +597,19 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 			return first.get().getLeft().get().bottomLeft();
 	}
 
-	@Override
 	public Optional<Key<T>> getFirst() {
 		return first;
 	}
 
 	@Override
 	public Iterator<T> iterator() {
-		return new NodeIterator<T>(this);
+		return new NodeIterator<T>(ref);
 	}
 
-	@Override
 	public Iterable<Key<T>> keys() {
 		return Util.keys(first);
 	}
 
-	@Override
 	public String keysAsString() {
 		StringBuilder s = new StringBuilder();
 		Optional<Key<T>> key = first;
@@ -635,7 +622,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return s.toString();
 	}
 
-	@Override
 	public String toString(String space) {
 		StringBuilder builder = new StringBuilder();
 
@@ -660,13 +646,14 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		return builder.toString();
 	}
 
-	@Override
 	public void save(OutputStream os) {
 
 		try {
+			System.out.println("saving node " + abbr());
 			ObjectOutputStream oos = new ObjectOutputStream(os);
 			oos.writeInt(countKeys());
 			for (Key<T> key : keys()) {
+				System.out.println("saving key " + key.value());
 				oos.writeObject(key.value());
 				if (key.getLeft().isPresent())
 					oos.writeLong(key.getLeft().get().getPosition());
@@ -684,22 +671,20 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
-	// private String abbr() {
-	// StringBuffer s = new StringBuffer();
-	// for (Key<T> key : keys()) {
-	// if (s.length() > 0)
-	// s.append(",");
-	// s.append(key.value());
-	// }
-	// return s.toString();
-	// }
+	private String abbr() {
+		StringBuffer s = new StringBuffer();
+		for (Key<T> key : keys()) {
+			if (s.length() > 0)
+				s.append(",");
+			s.append(key.value());
+		}
+		return s.toString();
+	}
 
-	@Override
 	public long getPosition() {
 		return position;
 	}
 
-	@Override
 	public void unload() {
 		throw new RuntimeException("not expected here");
 	}
