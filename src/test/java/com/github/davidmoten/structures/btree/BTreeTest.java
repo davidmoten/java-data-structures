@@ -108,6 +108,7 @@ public class BTreeTest {
 		BTree<Integer> t = builder(Integer.class).degree(3).build()
 				.add(1, 2, 3, 4);
 		Key<Integer> top = t.getKeys().get(0);
+		System.out.println(t);
 		assertEquals(4, (int) top.getRight().get().getKeys().get(1).value());
 	}
 

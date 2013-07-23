@@ -259,7 +259,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	public BTree<T> add(T... values) {
 		for (T t : values)
-			addOne(t);
+			addOne2(t);
 		return this;
 	}
 
@@ -285,10 +285,16 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		synchronized (writeMonitor) {
 			AddResult<T> result = root.add2(t);
 			if (result.getSplitKey().isPresent()) {
-				NodeRef<T> node = new NodeRef(this, Optional.<Long> absent());
+				NodeRef<T> node = new NodeRef<T>(this, Optional.<Long> absent());
 				node.setFirst(result.getSplitKey());
 				save(node);
 				root = node;
+				rootPosition = root.getPosition();
+				if (file.isPresent())
+					writeHeader();
+			}
+			else {
+				root = result.getNode().get();
 				rootPosition = root.getPosition();
 				if (file.isPresent())
 					writeHeader();
