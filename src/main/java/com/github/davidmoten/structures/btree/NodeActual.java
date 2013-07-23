@@ -649,7 +649,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	public void save(OutputStream os) {
 
 		try {
-			System.out.println("saving node " + abbr());
 			ObjectOutputStream oos = new ObjectOutputStream(os);
 			oos.writeInt(countKeys());
 			for (Key<T> key : keys()) {

@@ -45,7 +45,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 			ObjectInputStream ois = new ObjectInputStream(is);
 			int count = ois.readInt();
-			System.out.println("read count=" + count);
 			Optional<Key<T>> previous = absent();
 			Optional<Key<T>> first = absent();
 			for (int i = 0; i < count; i++) {

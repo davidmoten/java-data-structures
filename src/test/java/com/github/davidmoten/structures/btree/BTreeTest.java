@@ -564,9 +564,12 @@ public class BTreeTest {
 	public void testSaveFourItemsDepthTwo() {
 		File f = new File("target/test4.index");
 		f.delete();
-		builder(Integer.class).degree(3).file(f).build().add(1, 2, 3, 4);
+		BTree<Integer> t = builder(Integer.class).degree(3).file(f).build()
+				.add(1, 2, 3, 4);
+		System.out.println(t);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
 		System.out.println(t2);
+		// System.out.println(Lists.newArrayList(t2));
 		checkEquals(t2, 1, 2, 3, 4);
 	}
 
