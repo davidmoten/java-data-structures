@@ -90,7 +90,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 					result = add2(result.getSplitKey().get());
 				} else {
 					key.setLeft(result.getNode());
-					result = AddResult.createFromNonSplitNode(this);
+					result = AddResult.createFromNonSplitNode(ref);
 				}
 				added = true;
 				break;
@@ -101,12 +101,12 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 		if (!added) {
 			// don't need to check that left is present because of properties
 			// of b-tree
-			 result = last.get().getRight().get().add2(t);
+			result = last.get().getRight().get().add2(t);
 			if (result.getSplitKey().isPresent()) {
 				result = add2(result.getSplitKey().get());
 			} else {
 				last.get().setRight(result.getNode());
-				result = AddResult.createFromNonSplitNode(this);
+				result = AddResult.createFromNonSplitNode(ref);
 			}
 		}
 		Preconditions.checkNotNull(result);
@@ -351,8 +351,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements
 	 * 
 	 * @return
 	 */
-	@Override
-	public int countKeys() {
+	private int countKeys() {
 		int count = 0;
 		Optional<Key<T>> k = first;
 		while (k.isPresent()) {

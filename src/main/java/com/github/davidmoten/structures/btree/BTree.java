@@ -289,16 +289,13 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				node.setFirst(result.getSplitKey());
 				save(node);
 				root = node;
-				rootPosition = root.getPosition();
-				if (file.isPresent())
-					writeHeader();
 			}
 			else {
 				root = result.getNode().get();
-				rootPosition = root.getPosition();
-				if (file.isPresent())
-					writeHeader();
 			}
+			rootPosition = root.getPosition();
+			if (file.isPresent())
+				writeHeader();
 		}
 	}
 

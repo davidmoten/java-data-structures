@@ -70,7 +70,6 @@ interface Node<T extends Serializable & Comparable<T>> {
 
 	void unload();
 
-	int countKeys();
 
 	Iterable<Key<T>> keys();
 
