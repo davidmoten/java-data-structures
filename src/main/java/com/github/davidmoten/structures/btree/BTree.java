@@ -288,6 +288,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 	private void flushSaves() {
 		if (getFile().isPresent()) {
+			System.out.println("flushing " + saveQueue.size());
 			ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
 			long startPos = positionManager.nextPosition();
 			long pos = startPos;
@@ -309,7 +310,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				loaded(node.getPosition().get(), node);
 			}
 			try {
-
 				RandomAccessFile f = new RandomAccessFile(getFile().get(),
 						"rws");
 				f.seek(startPos);
@@ -434,8 +434,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				int numBytes = nodeLengthBytes();
 				byte[] b = new byte[numBytes];
 				f.read(b);
-				// System.out.println("read from " + node.getPosition() + ": "
-				// + Arrays.toString(b));
 				f.close();
 
 				ByteArrayInputStream bytes = new ByteArrayInputStream(b);

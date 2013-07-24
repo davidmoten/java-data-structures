@@ -17,7 +17,7 @@ import com.google.common.collect.Iterables;
 
 public class BTreeTest {
 
-	private static final int MANY_VALUES = 1000;
+	private static final int MANY_VALUES = 50;
 
 	/**
 	 * Given nothing
@@ -585,10 +585,10 @@ public class BTreeTest {
 	}
 
 	@Test
-	public void testSave1000Items() {
+	public void testSaveManyItems() {
 		File f = new File("target/test6.index");
 		f.delete();
-		Integer[] values = new Integer[1000];
+		Integer[] values = new Integer[MANY_VALUES];
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
 
