@@ -12,6 +12,9 @@ Aims:
 * thread-safe with minimal locking
 * persist to disk and load from disk efficiently
 * use log structure storage (LSS)
+* append only batched writes
 * enable snapshots
 * tuneable memory use (can use disk when required)
+
+
 
