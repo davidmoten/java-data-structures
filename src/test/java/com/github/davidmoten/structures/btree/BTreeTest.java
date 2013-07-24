@@ -17,7 +17,7 @@ import com.google.common.collect.Iterables;
 
 public class BTreeTest {
 
-	private static final int MANY_VALUES = 50;
+	private static final int MANY_VALUES = 1000;
 
 	/**
 	 * Given nothing

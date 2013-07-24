@@ -136,7 +136,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		try {
 			if (!file.get().exists())
 				file.get().createNewFile();
-			RandomAccessFile f = new RandomAccessFile(file.get(), "rws");
+			RandomAccessFile f = new RandomAccessFile(file.get(), "rw");
 			ByteArrayOutputStream header = new ByteArrayOutputStream(
 					(int) NODE_STORAGE_START);
 			ObjectOutputStream oos = new ObjectOutputStream(header);
@@ -310,8 +310,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				loaded(node.getPosition().get(), node);
 			}
 			try {
-				RandomAccessFile f = new RandomAccessFile(getFile().get(),
-						"rws");
+				RandomAccessFile f = new RandomAccessFile(getFile().get(), "rw");
 				f.seek(startPos);
 				writeBytes(f, allBytes);
 				f.close();
