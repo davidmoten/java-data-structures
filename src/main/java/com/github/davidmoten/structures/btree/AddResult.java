@@ -37,4 +37,10 @@ class AddResult<T extends Serializable & Comparable<T>> {
 			NodeRef<R> node) {
 		return new AddResult<R>(Optional.<Key<R>> absent(), Optional.of(node));
 	}
+
+	@Override
+	public String toString() {
+		return "AddResult [splitKey=" + splitKey + ", node=" + node + "]";
+	}
+
 }
