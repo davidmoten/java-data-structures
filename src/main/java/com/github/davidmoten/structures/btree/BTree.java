@@ -408,6 +408,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				// + Arrays.toString(bytes.toByteArray()));
 				writeBytes(f, bytes);
 				f.close();
+				displayNode(node.getPosition(), node.node());
 
 				loaded(node.getPosition(), node);
 			} catch (FileNotFoundException e) {
@@ -474,26 +475,30 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				NodeRef<T> ref = new NodeRef<T>(this, Optional.<Long> absent());
 				NodeActual<T> node = new NodeActual<T>(this, ref);
 				ref.load(is, node);
-				System.out.println("node position=" + pos);
-				for (Key<T> key : node.keys()) {
-					String left;
-					if (key.getLeft().isPresent())
-						left = key.getLeft().get().getPosition() + "";
-					else
-						left = "";
-					String right;
-					if (key.getRight().isPresent())
-						right = key.getRight().get().getPosition() + "";
-					else
-						right = "";
-					System.out.println("    keys " + key.value() + " L=" + left
-							+ " R=" + right);
-				}
+				displayNode(pos, node);
 				pos += nodeLengthBytes();
 			}
 			System.out.println("------------");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private void displayNode(long pos, NodeActual<T> node) {
+		System.out.println("node position=" + pos);
+		for (Key<T> key : node.keys()) {
+			String left;
+			if (key.getLeft().isPresent())
+				left = key.getLeft().get().getPosition() + "";
+			else
+				left = "";
+			String right;
+			if (key.getRight().isPresent())
+				right = key.getRight().get().getPosition() + "";
+			else
+				right = "";
+			System.out.println("    key " + key.value() + " L=" + left + " R="
+					+ right);
 		}
 	}
 

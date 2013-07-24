@@ -27,7 +27,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		this.position = position;
 	}
 
-	private synchronized NodeActual<T> node() {
+	synchronized NodeActual<T> node() {
 		if (!node.isPresent()) {
 			if (position.isPresent()) {
 				load();
