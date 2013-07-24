@@ -103,10 +103,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node().getFirst();
 	}
 
-	public Optional<Key<T>> bottomLeft() {
-		return node().bottomLeft();
-	}
-
 	public Iterator<T> iterator() {
 		return node().iterator();
 	}

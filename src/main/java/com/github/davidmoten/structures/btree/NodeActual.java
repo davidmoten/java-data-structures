@@ -375,13 +375,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		updateNode();
 	}
 
-	public Optional<Key<T>> bottomLeft() {
-		if (isLeafNode())
-			return this.first;
-		else
-			return first.get().getLeft().get().bottomLeft();
-	}
-
 	public Optional<Key<T>> getFirst() {
 		return first;
 	}
