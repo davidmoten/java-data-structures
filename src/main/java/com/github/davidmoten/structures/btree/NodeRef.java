@@ -32,7 +32,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 			if (position.isPresent()) {
 				load();
 			} else {
-				position = of(btree.getPositionManager().nextPosition());
 				node = of(new NodeActual<T>(btree, this));
 			}
 		}
@@ -144,9 +143,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return builder.toString();
 	}
 
-	public long getPosition() {
-		node();
-		return position.get();
+	public Optional<Long> getPosition() {
+		return position;
 	}
 
 	public void unload() {
@@ -171,7 +169,10 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	public void save(OutputStream os) {
 		node().save(os);
+	}
 
+	public void setPosition(Optional<Long> position) {
+		this.position = position;
 	}
 
 }

@@ -650,14 +650,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			ObjectOutputStream oos = new ObjectOutputStream(os);
 			oos.writeInt(countKeys());
 			for (Key<T> key : keys()) {
-				System.out.println("saving key " + key.value());
 				oos.writeObject(key.value());
 				if (key.getLeft().isPresent())
-					oos.writeLong(key.getLeft().get().getPosition());
+					oos.writeLong(key.getLeft().get().getPosition().get());
 				else
 					oos.writeLong(NodeRef.CHILD_ABSENT);
 				if (key.getRight().isPresent())
-					oos.writeLong(key.getRight().get().getPosition());
+					oos.writeLong(key.getRight().get().getPosition().get());
 				else
 					oos.writeLong(NodeRef.CHILD_ABSENT);
 				oos.writeBoolean(key.isDeleted());

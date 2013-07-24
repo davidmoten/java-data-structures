@@ -61,7 +61,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	/**
 	 * The current position in the file of the root node.
 	 */
-	private long rootPosition = NODE_STORAGE_START;
+	private Optional<Long> rootPosition = of(NODE_STORAGE_START);
 	/**
 	 * Manages allocation of file positions for nodes.
 	 */
@@ -93,7 +93,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		nodeCache = new NodeCache<T>(cacheSize);
 		if (file.isPresent() && file.get().exists()) {
 			readHeader();
-			root = new NodeRef<T>(this, of(rootPosition));
+			root = new NodeRef<T>(this, rootPosition);
 		} else {
 			if (file.isPresent())
 				writeHeader();
@@ -118,7 +118,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			f.close();
 			ObjectInputStream ois = new ObjectInputStream(
 					new ByteArrayInputStream(header));
-			rootPosition = ois.readLong();
+			rootPosition = Optional.of(ois.readLong());
 			ois.close();
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
@@ -139,7 +139,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			ByteArrayOutputStream header = new ByteArrayOutputStream(
 					(int) NODE_STORAGE_START);
 			ObjectOutputStream oos = new ObjectOutputStream(header);
-			oos.writeLong(rootPosition);
+			oos.writeLong(rootPosition.get());
 			System.out.println("rootPosition saved as " + rootPosition);
 			oos.close();
 			f.seek(0);
@@ -403,14 +403,15 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 				RandomAccessFile f = new RandomAccessFile(getFile().get(),
 						"rws");
-				f.seek(node.getPosition());
+				node.setPosition(Optional.of(positionManager.nextPosition()));
+				f.seek(node.getPosition().get());
 				// System.out.println("writing to " + node.getPosition() + ": "
 				// + Arrays.toString(bytes.toByteArray()));
 				writeBytes(f, bytes);
 				f.close();
-				displayNode(node.getPosition(), node.node());
+				displayNode(node.getPosition().get(), node.node());
 
-				loaded(node.getPosition(), node);
+				loaded(node.getPosition().get(), node);
 			} catch (FileNotFoundException e) {
 				throw new RuntimeException(e);
 			} catch (IOException e) {
@@ -424,7 +425,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			try {
 
 				RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
-				f.seek(node.getPosition());
+				f.seek(node.getPosition().get());
 				int numBytes = nodeLengthBytes();
 				byte[] b = new byte[numBytes];
 				f.read(b);
@@ -489,12 +490,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		for (Key<T> key : node.keys()) {
 			String left;
 			if (key.getLeft().isPresent())
-				left = key.getLeft().get().getPosition() + "";
+				left = key.getLeft().get().getPosition().get() + "";
 			else
 				left = "";
 			String right;
 			if (key.getRight().isPresent())
-				right = key.getRight().get().getPosition() + "";
+				right = key.getRight().get().getPosition().get() + "";
 			else
 				right = "";
 			System.out.println("    key " + key.value() + " L=" + left + " R="
