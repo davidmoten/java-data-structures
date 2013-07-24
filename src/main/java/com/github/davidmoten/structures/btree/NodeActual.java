@@ -51,7 +51,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		} else
 			result = copy().addToNonLeafNode(t);
 		if (result.getNode().isPresent())
-			btree.save(result.getNode().get());
+			btree.addToSaveQueue(result.getNode().get());
 		return result;
 	}
 
@@ -217,13 +217,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		// this child will request a new file position
 		NodeRef<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
 		child1.setFirst(list);
-		btree.save(child1);
+		btree.addToSaveQueue(child1);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
 		NodeRef<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
 		child2.setFirst(key.get().next());
-		btree.save(child2);
+		btree.addToSaveQueue(child2);
 
 		// set the links on medianKey to the next key in the same node and to
 		// its children

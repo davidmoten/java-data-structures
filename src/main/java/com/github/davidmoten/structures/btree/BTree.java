@@ -271,7 +271,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			if (result.getSplitKey().isPresent()) {
 				NodeRef<T> node = new NodeRef<T>(this, Optional.<Long> absent());
 				node.setFirst(result.getSplitKey());
-				save(node);
+				addToSaveQueue(node);
 				flushSaves();
 				root = node;
 			} else {
@@ -420,7 +420,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 	private final LinkedList<NodeRef<T>> saveQueue = new LinkedList<NodeRef<T>>();
 
-	void save(NodeRef<T> node) {
+	void addToSaveQueue(NodeRef<T> node) {
 		if (file.isPresent())
 			saveQueue.push(node);
 	}
