@@ -247,58 +247,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	}
 
 	/**
-	 * Inserts key into the list of keys in sorted order. The inserted key has
-	 * priority in terms of its children become the children of its neighbours
-	 * in the list of keys. This method does not do splitting of keys, the key
-	 * is guaranteed to be added against this node.
-	 * 
-	 * @param first
-	 * @param key
-	 */
-	private Key<T> add(Optional<Key<T>> first, Key<T> key,
-			ImmutableStack<NodeRef<T>> stack) {
-
-		// key is not on the current node
-		key.setNode(of(ref));
-
-		// insert key in the list if before one
-		Optional<Key<T>> previous = absent();
-		Optional<Key<T>> next = absent();
-		for (Key<T> k : Util.keys(first)) {
-			if (key.value().compareTo(k.value()) < 0) {
-				// it is important to set next before set previous so that
-				// concurrent reads work correctly
-				key.setNext(of(k));
-				if (previous.isPresent())
-					previous.get().setNext(of(key));
-				next = of(k);
-				break;
-			}
-			previous = of(k);
-		}
-
-		if (!next.isPresent() && previous.isPresent()) {
-			previous.get().setNext(of(key));
-		}
-
-		// if key is the first key then return key as the new first
-		Key<T> result;
-		if (!previous.isPresent())
-			result = key;
-		else
-			result = first.get();
-
-		// update previous and following keys to the newly added one
-		if (previous.isPresent()) {
-			previous.get().setRight(key.getLeft());
-		}
-		if (next.isPresent()) {
-			next.get().setLeft(key.getRight());
-		}
-		return result;
-	}
-
-	/**
 	 * Returns the number of keys in this node.
 	 * 
 	 * @return
@@ -506,7 +454,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		}
 	}
 
-	private String abbr() {
+	String abbr() {
 		StringBuffer s = new StringBuffer();
 		for (Key<T> key : keys()) {
 			if (s.length() > 0)
