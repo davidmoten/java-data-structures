@@ -83,14 +83,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		btree.load(this);
 	}
 
-	public Optional<NodeRef<T>> add(T t, ImmutableStack<NodeRef<T>> stack) {
-		return node().add(t, stack);
-	}
-
-	public Optional<NodeRef<T>> add(Key<T> key, ImmutableStack<NodeRef<T>> stack) {
-		return node().add(key, stack);
-	}
-
 	public Optional<T> find(T t) {
 		return node().find(t);
 	}
@@ -151,16 +143,16 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		node = absent();
 	}
 
-	public AddResult<T> add2(T t) {
-		return node().add2(t);
+	public AddResult<T> add(T t) {
+		return node().add(t);
 	}
 
-	public AddResult<T> addToNonLeafNode2(T t) {
-		return node().addToNonLeafNode2(t);
+	public AddResult<T> addToNonLeafNode(T t) {
+		return node().addToNonLeafNode(t);
 	}
 
-	public AddResult<T> add2(Key<T> key) {
-		return node().add2(key);
+	public AddResult<T> add(Key<T> key) {
+		return node().add(key);
 	}
 
 	public Iterable<Key<T>> keys() {

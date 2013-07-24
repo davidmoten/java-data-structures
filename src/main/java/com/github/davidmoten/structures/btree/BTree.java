@@ -14,6 +14,7 @@ import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -140,7 +141,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 					(int) NODE_STORAGE_START);
 			ObjectOutputStream oos = new ObjectOutputStream(header);
 			oos.writeLong(rootPosition.get());
-			System.out.println("rootPosition saved as " + rootPosition);
 			oos.close();
 			f.seek(0);
 			f.write(header.toByteArray());
@@ -265,39 +265,62 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		return this;
 	}
 
-	/**
-	 * Adds a single element to the btree.
-	 * 
-	 * @param t
-	 */
-	private void addOne(T t) {
-		synchronized (writeMonitor) {
-			Optional<NodeRef<T>> newRoot = root.add(t,
-					new ImmutableStack<NodeRef<T>>());
-			if (newRoot.isPresent()) {
-				root = newRoot.get();
-				rootPosition = newRoot.get().getPosition();
-				if (file.isPresent())
-					writeHeader();
-			}
-		}
-	}
-
 	private void addOne2(T t) {
 		synchronized (writeMonitor) {
-			AddResult<T> result = root.add2(t);
+			AddResult<T> result = root.add(t);
 			if (result.getSplitKey().isPresent()) {
 				NodeRef<T> node = new NodeRef<T>(this, Optional.<Long> absent());
 				node.setFirst(result.getSplitKey());
 				save(node);
+				flushSaves();
 				root = node;
 			} else {
-				save(result.getNode().get());
+				// note that new node has already been saved so don't need to
+				// call save here
+				flushSaves();
 				root = result.getNode().get();
 			}
 			rootPosition = root.getPosition();
 			if (file.isPresent())
 				writeHeader();
+		}
+	}
+
+	private void flushSaves() {
+		if (getFile().isPresent()) {
+			ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
+			long startPos = positionManager.nextPosition();
+			long pos = startPos;
+			while (!saveQueue.isEmpty()) {
+				NodeRef<T> node = saveQueue.removeLast();
+
+				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+				node.save(bytes);
+				node.setPosition(Optional.of(pos));
+
+				try {
+					allBytes.write(bytes.toByteArray());
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+
+				pos += bytes.size();
+
+				loaded(node.getPosition().get(), node);
+			}
+			try {
+
+				RandomAccessFile f = new RandomAccessFile(getFile().get(),
+						"rws");
+				f.seek(startPos);
+				writeBytes(f, allBytes);
+				f.close();
+
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
@@ -395,29 +418,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		return root.iterator();
 	}
 
+	private final LinkedList<NodeRef<T>> saveQueue = new LinkedList<NodeRef<T>>();
+
 	void save(NodeRef<T> node) {
-		if (getFile().isPresent()) {
-			try {
-				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-				node.save(bytes);
-
-				RandomAccessFile f = new RandomAccessFile(getFile().get(),
-						"rws");
-				node.setPosition(Optional.of(positionManager.nextPosition()));
-				f.seek(node.getPosition().get());
-				// System.out.println("writing to " + node.getPosition() + ": "
-				// + Arrays.toString(bytes.toByteArray()));
-				writeBytes(f, bytes);
-				f.close();
-				displayNode(node.getPosition().get(), node.node());
-
-				loaded(node.getPosition().get(), node);
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
+		if (file.isPresent())
+			saveQueue.push(node);
 	}
 
 	void load(NodeRef<T> node) {

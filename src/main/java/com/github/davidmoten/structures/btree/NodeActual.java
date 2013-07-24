@@ -44,19 +44,12 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		this.ref = ref;
 	}
 
-	public Optional<NodeRef<T>> add(T t, ImmutableStack<NodeRef<T>> stack) {
-		if (isLeafNode()) {
-			return add(new Key<T>(t), stack);
-		} else
-			return addToNonLeafNode(t, stack);
-	}
-
-	public AddResult<T> add2(T t) {
+	public AddResult<T> add(T t) {
 		AddResult<T> result;
 		if (isLeafNode()) {
-			result = copy().add2(new Key<T>(t));
+			result = copy().add(new Key<T>(t));
 		} else
-			result = copy().addToNonLeafNode2(t);
+			result = copy().addToNonLeafNode(t);
 		if (result.getNode().isPresent())
 			btree.save(result.getNode().get());
 		return result;
@@ -68,7 +61,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		return node;
 	}
 
-	public AddResult<T> addToNonLeafNode2(T t) {
+	public AddResult<T> addToNonLeafNode(T t) {
 
 		// Note that first will be present because if is internal (non-leaf)
 		// node then it must have some keys
@@ -79,10 +72,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			if (t.compareTo(key.value()) < 0) {
 				// don't need to check that left is present because of
 				// properties of b-tree
-				result = key.getLeft().get().add2(t);
+				result = key.getLeft().get().add(t);
 				if (result.getSplitKey().isPresent()) {
 					// add a split key to this node
-					result = add2(result.getSplitKey().get());
+					result = add(result.getSplitKey().get());
 				} else {
 					key.setLeft(result.getNode());
 					result = AddResult.createFromNonSplitNode(ref);
@@ -96,9 +89,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		if (!added) {
 			// don't need to check that left is present because of properties
 			// of b-tree
-			result = last.get().getRight().get().add2(t);
+			result = last.get().getRight().get().add(t);
 			if (result.getSplitKey().isPresent()) {
-				result = add2(result.getSplitKey().get());
+				result = add(result.getSplitKey().get());
 			} else {
 				last.get().setRight(result.getNode());
 				result = AddResult.createFromNonSplitNode(ref);
@@ -119,15 +112,15 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * @return
 	 */
 
-	public AddResult<T> add2(Key<T> key) {
+	public AddResult<T> add(Key<T> key) {
 
 		key.setNode(of(ref));
 
-		first = of(add2(first, key));
+		first = of(add(first, key));
 
 		int keyCount = countKeys();
 
-		return performSplitIfRequired2(keyCount);
+		return performSplitIfRequired(keyCount);
 	}
 
 	/**
@@ -139,7 +132,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * @param first
 	 * @param key
 	 */
-	private Key<T> add2(Optional<Key<T>> first, Key<T> key) {
+	private Key<T> add(Optional<Key<T>> first, Key<T> key) {
 		// key is not on the current node
 		key.setNode(of(ref));
 
@@ -180,10 +173,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		return result;
 	}
 
-	private AddResult<T> performSplitIfRequired2(int keyCount) {
+	private AddResult<T> performSplitIfRequired(int keyCount) {
 		final AddResult<T> result;
 		if (keyCount == btree.getDegree())
-			result = createFromSplitKey(splitKeysEitherSideOfMedianIntoTwoChildrenOfParent2(keyCount));
+			result = createFromSplitKey(splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount));
 		else {
 			result = createFromNonSplitNode(ref);
 		}
@@ -198,7 +191,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * @param theParent
 	 * @return
 	 */
-	private Key<T> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent2(
+	private Key<T> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
 			int keyCount) {
 
 		int medianNumber = getMedianNumber(keyCount);
@@ -239,42 +232,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		medianKey.setRight(Optional.of(child2));
 
 		return medianKey;
-	}
-
-	/**
-	 * Add
-	 * 
-	 * 
-	 * e element to the node. If root node of BTree is changed then returns new
-	 * root node otherwise returns {@link Optional}.absent().
-	 * 
-	 * @param t
-	 * @return
-	 */
-	private Optional<NodeRef<T>> addToNonLeafNode(T t,
-			ImmutableStack<NodeRef<T>> stack) {
-		// Note that first will be present because if is internal (non-leaf)
-		// node then it must have some keys
-		Optional<NodeRef<T>> result = absent();
-		boolean added = false;
-		Optional<Key<T>> last = first;
-		for (Key<T> key : keys()) {
-			if (t.compareTo(key.value()) < 0) {
-				// don't need to check that left is present because of
-				// properties of b-tree
-				result = key.getLeft().get().add(t, stack.push(ref));
-				added = true;
-				break;
-			}
-			last = of(key);
-		}
-
-		if (!added) {
-			// don't need to check that left is present because of properties
-			// of b-tree
-			result = last.get().getRight().get().add(t, stack.push(ref));
-		}
-		return result;
 	}
 
 	/**
@@ -354,124 +311,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			k = k.get().next();
 		}
 		return count;
-	}
-
-	public Optional<NodeRef<T>> add(Key<T> key, ImmutableStack<NodeRef<T>> stack) {
-
-		key.setNode(of(ref));
-
-		first = of(add(first, key, stack));
-
-		int keyCount = countKeys();
-
-		return performSplitIfRequired(keyCount, stack);
-
-	}
-
-	private Optional<NodeRef<T>> performSplitIfRequired(int keyCount,
-			ImmutableStack<NodeRef<T>> stack) {
-		final Optional<NodeRef<T>> result;
-		if (keyCount == btree.getDegree())
-			result = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-					keyCount, stack);
-		else {
-			result = absent();
-		}
-		return result;
-	}
-
-	private Optional<NodeRef<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-			int keyCount, ImmutableStack<NodeRef<T>> stack) {
-		final Optional<NodeRef<T>> result;
-		NodeRef<T> theParent;
-		Optional<NodeRef<T>> result1;
-
-		// split
-		if (isRoot(stack)) {
-			// creating new root
-			theParent = new NodeRef<T>(btree, Optional.<Long> absent());
-			result1 = of(theParent);
-			stack = stack.push(theParent);
-		} else {
-			theParent = stack.peek().get();
-			result1 = absent();
-		}
-		// split result is present if root changed by splitting
-		Optional<NodeRef<T>> splitResult = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-				keyCount, theParent, stack);
-
-		if (splitResult.isPresent())
-			result = splitResult;
-		else
-			result = result1;
-
-		return result;
-	}
-
-	/**
-	 * Returns true if and only if this is the root node of the BTree (has no
-	 * parent).
-	 * 
-	 * @return
-	 */
-	private boolean isRoot(ImmutableStack<NodeRef<T>> stack) {
-		return stack.isEmpty();
-	}
-
-	/**
-	 * Returns the median key with the keys before it as left child and keys
-	 * after it as right child.
-	 * 
-	 * @param keyCount
-	 * @param theParent
-	 * @return
-	 */
-	private Optional<NodeRef<T>> splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
-			int keyCount, NodeRef<T> parent, ImmutableStack<NodeRef<T>> stack) {
-
-		int medianNumber = getMedianNumber(keyCount);
-
-		// get the median key and the preceding key
-		int count = 1;
-
-		// for thread safety make a copy of the keys
-		Optional<Key<T>> list = copy(first);
-
-		Optional<Key<T>> key = list;
-		Optional<Key<T>> previous = absent();
-		while (count < medianNumber) {
-			previous = key;
-			key = key.get().next();
-			count++;
-		}
-		Key<T> medianKey = key.get();
-
-		previous.get().setNext(Optional.<Key<T>> absent());
-
-		// create child1 of first ->..->previous
-		// this child will request a new file position
-		NodeRef<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
-		child1.setFirst(list);
-		btree.save(child1);
-
-		// create child2 of medianKey.next ->..->last
-		// this child will request a new file position
-		NodeRef<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
-		child2.setFirst(key.get().next());
-		btree.save(child2);
-
-		// set the links on medianKey to the next key in the same node and to
-		// its children
-		medianKey.setNext(Optional.<Key<T>> absent());
-		medianKey.setLeft(Optional.of(child1));
-		medianKey.setRight(Optional.of(child2));
-
-		Optional<NodeRef<T>> result = parent.add(medianKey, stack.pop());
-
-		// mark the current node position for reuse
-		// btree.getPositionManager().releaseNodePosition(position);
-
-		return result;
 	}
 
 	private Optional<Key<T>> copy(Optional<Key<T>> list) {
