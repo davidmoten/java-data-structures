@@ -57,7 +57,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			result = copy().add2(new Key<T>(t));
 		} else
 			result = copy().addToNonLeafNode2(t);
-		btree.save(ref);
+		if (result.getNode().isPresent())
+			btree.save(result.getNode().get());
 		return result;
 	}
 
@@ -374,7 +375,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			result = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(
 					keyCount, stack);
 		else {
-			btree.save(ref);
 			result = absent();
 		}
 		return result;
