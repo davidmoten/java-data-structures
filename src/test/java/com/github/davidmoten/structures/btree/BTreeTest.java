@@ -567,6 +567,7 @@ public class BTreeTest {
 		BTree<Integer> t = builder(Integer.class).degree(3).file(f).build()
 				.add(1, 2, 3, 4);
 		System.out.println(t);
+		t.displayFile();
 		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
 		System.out.println(t2);
 		// System.out.println(Lists.newArrayList(t2));

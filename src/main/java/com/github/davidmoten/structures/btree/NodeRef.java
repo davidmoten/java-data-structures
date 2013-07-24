@@ -33,14 +33,13 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 				load();
 			} else {
 				position = of(btree.getPositionManager().nextPosition());
-				node = of(new NodeActual<T>(btree, position.get(), this));
+				node = of(new NodeActual<T>(btree, this));
 			}
 		}
 		return node.get();
 	}
 
-	void load(InputStream is) {
-
+	void load(InputStream is, NodeActual<T> node) {
 		try {
 
 			ObjectInputStream ois = new ObjectInputStream(is);
@@ -67,8 +66,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 					previous.get().setNext(of(key));
 				previous = of(key);
 			}
-			node.get().setFirst(first);
 			ois.close();
+			node.setFirst(first);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (ClassNotFoundException e) {
@@ -76,9 +75,12 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		}
 	}
 
-	private void load() {
+	void load(InputStream is) {
+		load(is, node.get());
+	}
 
-		node = of(new NodeActual<T>(btree, position.get(), this));
+	private void load() {
+		node = of(new NodeActual<T>(btree, this));
 		btree.load(this);
 	}
 
@@ -143,7 +145,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 	}
 
 	public long getPosition() {
-		return node().getPosition();
+		node();
+		return position.get();
 	}
 
 	public void unload() {

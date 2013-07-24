@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
@@ -139,6 +140,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 					(int) NODE_STORAGE_START);
 			ObjectOutputStream oos = new ObjectOutputStream(header);
 			oos.writeLong(rootPosition);
+			System.out.println("rootPosition saved as " + rootPosition);
 			oos.close();
 			f.seek(0);
 			f.write(header.toByteArray());
@@ -422,7 +424,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 				RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
 				f.seek(node.getPosition());
-				int numBytes = getDegree() * getKeySize();
+				int numBytes = nodeLengthBytes();
 				byte[] b = new byte[numBytes];
 				f.read(b);
 				// System.out.println("read from " + node.getPosition() + ": "
@@ -440,14 +442,71 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	private int nodeLengthBytes() {
+		return getDegree() * getKeySize();
+	}
+
 	private void writeBytes(RandomAccessFile f, ByteArrayOutputStream bytes)
 			throws IOException {
-		int remainingBytes = getDegree() * getKeySize() - bytes.size();
+		int remainingBytes = nodeLengthBytes() - bytes.size();
 		if (remainingBytes < 0)
 			throw new RuntimeException(
 					"not enough bytes per key have been allocated");
 		f.write(bytes.toByteArray());
 		f.write(new byte[remainingBytes]);
+	}
+
+	public void displayFile() {
+		try {
+			System.out.println("------------ File contents ----------------");
+			System.out.println(getFile().get());
+			System.out.println("length=" + getFile().get().length());
+			RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
+			{
+				ObjectInputStream ois = new ObjectInputStream(getStream(f, 0,
+						NODE_STORAGE_START));
+				long rootPosition = ois.readLong();
+				System.out.println("rootPosition = " + rootPosition);
+			}
+			int pos = 1000;
+			while (pos < file.get().length()) {
+				InputStream is = getStream(f, pos, nodeLengthBytes());
+				NodeRef<T> ref = new NodeRef<T>(this, Optional.<Long> absent());
+				NodeActual<T> node = new NodeActual<T>(this, ref);
+				ref.load(is, node);
+				System.out.println("node position=" + pos);
+				for (Key<T> key : node.keys()) {
+					String left;
+					if (key.getLeft().isPresent())
+						left = key.getLeft().get().getPosition() + "";
+					else
+						left = "";
+					String right;
+					if (key.getRight().isPresent())
+						right = key.getRight().get().getPosition() + "";
+					else
+						right = "";
+					System.out.println("    keys " + key.value() + " L=" + left
+							+ " R=" + right);
+				}
+				pos += nodeLengthBytes();
+			}
+			System.out.println("------------");
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private ByteArrayInputStream getStream(RandomAccessFile f, long pos,
+			long numBytes) {
+		try {
+			f.seek(pos);
+			byte[] bytes = new byte[(int) numBytes];
+			f.read(bytes);
+			return new ByteArrayInputStream(bytes);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

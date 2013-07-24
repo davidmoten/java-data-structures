@@ -29,7 +29,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	private Optional<Key<T>> first = Optional.absent();
 	private final BTree<T> btree;
 
-	private final long position;
 	private final NodeRef<T> ref;
 
 	/**
@@ -40,9 +39,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * @param degree
 	 * @param parent
 	 */
-	NodeActual(BTree<T> btree, long position, NodeRef<T> ref) {
+	NodeActual(BTree<T> btree, NodeRef<T> ref) {
 		this.btree = btree;
-		this.position = position;
 		this.ref = ref;
 	}
 
@@ -471,7 +469,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		Optional<NodeRef<T>> result = parent.add(medianKey, stack.pop());
 
 		// mark the current node position for reuse
-		btree.getPositionManager().releaseNodePosition(position);
+		// btree.getPositionManager().releaseNodePosition(position);
 
 		return result;
 	}
@@ -678,10 +676,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			s.append(key.value());
 		}
 		return s.toString();
-	}
-
-	public long getPosition() {
-		return position;
 	}
 
 	public void unload() {
