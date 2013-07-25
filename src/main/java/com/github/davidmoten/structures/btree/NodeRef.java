@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Optional;
+import com.google.common.io.CountingInputStream;
 
 public class NodeRef<T extends Serializable & Comparable<T>> {
 
@@ -38,10 +39,11 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node.get();
 	}
 
-	void load(InputStream is, NodeActual<T> node) {
+	long load(InputStream is, NodeActual<T> node) {
 		try {
 			System.out.println("loading");
-			ObjectInputStream ois = new ObjectInputStream(is);
+			CountingInputStream cis = new CountingInputStream(is);
+			ObjectInputStream ois = new ObjectInputStream(cis);
 			int count = ois.readInt();
 			Optional<Key<T>> previous = absent();
 			Optional<Key<T>> first = absent();
@@ -65,8 +67,10 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 					previous.get().setNext(of(key));
 				previous = of(key);
 			}
-			ois.close();
+			// don't close the input stream to avoid closing the underlying
+			// stream
 			node.setFirst(first);
+			return cis.getCount();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (ClassNotFoundException e) {

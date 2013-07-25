@@ -3,12 +3,13 @@ package com.github.davidmoten.structures.btree;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
@@ -379,18 +380,18 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 				try {
 					allBytes.write(bytes.toByteArray());
-					int remainingBytes = maxNodeLengthBytes() - bytes.size();
-					if (remainingBytes < 0)
-						throw new RuntimeException(
-								"max node length not big enough for its keys");
-					else if (remainingBytes > 0)
-						// write blank bytes
-						allBytes.write(new byte[remainingBytes]);
+					// int remainingBytes = maxNodeLengthBytes() - bytes.size();
+					// if (remainingBytes < 0)
+					// throw new RuntimeException(
+					// "max node length not big enough for its keys");
+					// else if (remainingBytes > 0)
+					// // write blank bytes
+					// allBytes.write(new byte[remainingBytes]);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
 
-				pos += maxNodeLengthBytes();
+				pos += bytes.size();
 
 				loaded(node.getPosition().get(), node);
 			}
@@ -530,17 +531,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	void load(NodeRef<T> node) {
 		if (getFile().isPresent()) {
 			try {
-
-				RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
-				f.seek(node.getPosition().get());
-				int numBytes = maxNodeLengthBytes();
-				byte[] b = new byte[numBytes];
-				f.read(b);
-				f.close();
-
-				ByteArrayInputStream bytes = new ByteArrayInputStream(b);
-				node.load(bytes);
-
+				FileInputStream fis = new FileInputStream(getFile().get());
+				fis.skip(node.getPosition().get());
+				BufferedInputStream bis = new BufferedInputStream(fis, 1024);
+				node.load(bis);
 			} catch (FileNotFoundException e) {
 				throw new RuntimeException(e);
 			} catch (IOException e) {
@@ -577,16 +571,17 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		try {
 			System.out.println("------------ File contents ----------------");
 			System.out.println(getFile().get());
-			System.out.println("length=" + getFile().get().length());
-			RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
+			long length = getFile().get().length();
+			System.out.println("length=" + length);
+			FileInputStream fis = new FileInputStream(getFile().get());
 			int pos = 0;
-			while (pos < file.get().length()) {
-				InputStream is = getStream(f, pos, maxNodeLengthBytes());
+			while (pos < length) {
 				NodeRef<T> ref = new NodeRef<T>(this, Optional.<Long> absent());
 				NodeActual<T> node = new NodeActual<T>(this, ref);
-				ref.load(is, node);
+				long size = ref.load(fis, node);
 				displayNode(pos, node);
-				pos += maxNodeLengthBytes();
+				pos += size;
+				System.out.println("pos=" + pos);
 			}
 			System.out.println("------------");
 		} catch (IOException e) {
@@ -615,26 +610,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				right = "";
 			System.out.println("    key " + key.value() + " L=" + left + " R="
 					+ right);
-		}
-	}
-
-	/**
-	 * Returns a byte stream referring to section of a file.
-	 * 
-	 * @param f
-	 * @param pos
-	 * @param numBytes
-	 * @return
-	 */
-	private ByteArrayInputStream getStream(RandomAccessFile f, long pos,
-			long numBytes) {
-		try {
-			f.seek(pos);
-			byte[] bytes = new byte[(int) numBytes];
-			f.read(bytes);
-			return new ByteArrayInputStream(bytes);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
