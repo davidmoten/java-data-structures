@@ -57,12 +57,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	/**
 	 * Where node storage starts in the file.
 	 */
-	private final static long NODE_STORAGE_START = 1000;
+	private final static long METADATA_LENGTH = 1000;
 
 	/**
 	 * The current position in the file of the root node.
 	 */
-	private Optional<Long> rootPosition = of(NODE_STORAGE_START);
+	private Optional<Long> rootPosition = of(0L);
 	/**
 	 * Manages allocation of file positions for nodes.
 	 */
@@ -81,7 +81,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * 
 	 * @param degree
 	 */
-	private BTree(int degree, Optional<File> file, Class<T> cls, int keySize,
+	private BTree(Class<T> cls, int degree, Optional<File> file, int keySize,
 			long cacheSize) {
 
 		Preconditions.checkArgument(degree >= 2, "degree must be >=2");
@@ -106,14 +106,23 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		nodeCache.put(position, node);
 	}
 
+	private Optional<File> getHeaderFile() {
+		if (file.isPresent())
+			return of(new File(file.get().getParentFile(), file.get().getName()
+					+ ".metadata"));
+		else
+			return absent();
+	}
+
 	/**
 	 * Reads the header information from the file including the position of the
 	 * root node.
 	 */
 	private void readHeader() {
 		try {
-			RandomAccessFile f = new RandomAccessFile(file.get(), "r");
-			byte[] header = new byte[(int) NODE_STORAGE_START];
+			RandomAccessFile f = new RandomAccessFile(getHeaderFile().get(),
+					"r");
+			byte[] header = new byte[(int) METADATA_LENGTH];
 			f.seek(0);
 			f.read(header);
 			f.close();
@@ -136,16 +145,17 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		try {
 			if (!file.get().exists())
 				file.get().createNewFile();
-			RandomAccessFile f = new RandomAccessFile(file.get(), "rw");
+			RandomAccessFile f = new RandomAccessFile(getHeaderFile().get(),
+					"rw");
 			ByteArrayOutputStream header = new ByteArrayOutputStream(
-					(int) NODE_STORAGE_START);
+					(int) METADATA_LENGTH);
 			ObjectOutputStream oos = new ObjectOutputStream(header);
 			oos.writeLong(rootPosition.get());
 			oos.close();
 			f.seek(0);
 			f.write(header.toByteArray());
-			if (header.size() < NODE_STORAGE_START) {
-				byte[] more = new byte[(int) NODE_STORAGE_START - header.size()];
+			if (header.size() < METADATA_LENGTH) {
+				byte[] more = new byte[(int) METADATA_LENGTH - header.size()];
 				f.write(more);
 			}
 			f.close();
@@ -230,7 +240,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		 * @return
 		 */
 		public BTree<R> build() {
-			return new BTree<R>(degree, file, cls, keySize, cacheSize);
+			return new BTree<R>(cls, degree, file, keySize, cacheSize);
 		}
 	}
 
@@ -469,13 +479,13 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			System.out.println(getFile().get());
 			System.out.println("length=" + getFile().get().length());
 			RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
-			{
-				ObjectInputStream ois = new ObjectInputStream(getStream(f, 0,
-						NODE_STORAGE_START));
-				long rootPosition = ois.readLong();
-				System.out.println("rootPosition = " + rootPosition);
-			}
-			int pos = 1000;
+			// {
+			// ObjectInputStream ois = new ObjectInputStream(getStream(f, 0,
+			// NODE_STORAGE_START));
+			// long rootPosition = ois.readLong();
+			// System.out.println("rootPosition = " + rootPosition);
+			// }
+			int pos = 0;
 			while (pos < file.get().length()) {
 				InputStream is = getStream(f, pos, nodeLengthBytes());
 				NodeRef<T> ref = new NodeRef<T>(this, Optional.<Long> absent());
