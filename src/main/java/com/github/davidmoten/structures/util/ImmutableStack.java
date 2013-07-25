@@ -1,4 +1,4 @@
-package com.github.davidmoten.structures.btree;
+package com.github.davidmoten.structures.util;
 
 import java.util.Deque;
 import java.util.LinkedList;
