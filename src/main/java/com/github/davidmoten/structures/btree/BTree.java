@@ -42,7 +42,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	/**
 	 * The current position in the file of the root node.
 	 */
-	private Optional<Long> rootPosition = of(0L);
+	private Optional<Long> rootPosition;
 
 	/**
 	 * The maximum number of keys in a node plus one.
@@ -121,16 +121,17 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 		if (file.isPresent() && file.get().exists()) {
 			Header header = readHeader();
-			rootPosition = of(header.rootPosition);
 			degree = header.degree;
 			keySizeBytes = header.keySizeBytes;
+			rootPosition = of(header.rootPosition);
 			root = new NodeRef<T>(this, rootPosition);
 		} else {
 			this.degree = builder.degree.get();
 			keySizeBytes = builder.keySizeBytes.get();
+			rootPosition = of(1L);
+			root = new NodeRef<T>(this, Optional.<Long> absent());
 			if (file.isPresent())
 				writeHeader();
-			root = new NodeRef<T>(this, Optional.<Long> absent());
 		}
 	}
 
@@ -168,12 +169,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		try {
 			RandomAccessFile f = new RandomAccessFile(getHeaderFile().get(),
 					"r");
-			byte[] header = new byte[(int) METADATA_LENGTH];
+			byte[] bytes = new byte[(int) METADATA_LENGTH];
 			f.seek(0);
-			f.read(header);
+			f.read(bytes);
 			f.close();
 			ObjectInputStream ois = new ObjectInputStream(
-					new ByteArrayInputStream(header));
+					new ByteArrayInputStream(bytes));
 			Long rootPosition = ois.readLong();
 			int degree = ois.readInt();
 			int keySizeBytes = ois.readInt();
@@ -196,18 +197,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				file.get().createNewFile();
 			RandomAccessFile f = new RandomAccessFile(getHeaderFile().get(),
 					"rw");
-			ByteArrayOutputStream header = new ByteArrayOutputStream(
-					(int) METADATA_LENGTH);
-			ObjectOutputStream oos = new ObjectOutputStream(header);
-			oos.writeLong(rootPosition.get());
-			oos.writeInt(degree);
-			oos.writeInt(keySizeBytes);
-			oos.close();
+			byte[] header = composeHeader();
 
 			f.seek(0);
-			f.write(header.toByteArray());
-			if (header.size() < METADATA_LENGTH) {
-				byte[] more = new byte[(int) METADATA_LENGTH - header.size()];
+			f.write(header);
+			if (header.length < METADATA_LENGTH) {
+				byte[] more = new byte[(int) METADATA_LENGTH - header.length];
 				f.write(more);
 			}
 			f.close();
@@ -216,6 +211,23 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * Returns the bytes containing the header information for this BTree.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	private byte[] composeHeader() throws IOException {
+		ByteArrayOutputStream header = new ByteArrayOutputStream(
+				(int) METADATA_LENGTH);
+		ObjectOutputStream oos = new ObjectOutputStream(header);
+		oos.writeLong(rootPosition.get());
+		oos.writeInt(degree);
+		oos.writeInt(keySizeBytes);
+		oos.close();
+		return header.toByteArray();
 	}
 
 	/**
@@ -229,16 +241,13 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		private Optional<Integer> degree = of(100);
 		private Optional<File> file = absent();
 		private Optional<Integer> keySizeBytes = of(100);
-		private final Class<R> cls;
 		private Optional<Long> cacheSize = of(100L);
 
 		/**
 		 * Constructor.
 		 * 
-		 * @param cls
 		 */
-		public Builder(Class<R> cls) {
-			this.cls = cls;
+		public Builder() {
 		}
 
 		/**
@@ -300,11 +309,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * Creates a {@link Builder}.
 	 * 
 	 * @param cls
+	 *            - used for type inference only.
 	 * @return
 	 */
 	public static <R extends Comparable<R> & Serializable> Builder<R> builder(
 			Class<R> cls) {
-		return new Builder<R>(cls);
+		return new Builder<R>();
 	}
 
 	/**
