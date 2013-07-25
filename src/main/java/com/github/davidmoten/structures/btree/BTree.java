@@ -12,7 +12,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -347,55 +346,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private void flushSaves() {
 		if (storage.isPresent()) {
-			ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
-			long startPos = storage.get().nextPosition();
-			long pos = startPos;
-			while (!saveQueue.isEmpty()) {
-				NodeRef<T> node = saveQueue.removeLast();
-
-				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-				node.save(bytes);
-				node.setPosition(Optional.of(pos));
-
-				try {
-					allBytes.write(bytes.toByteArray());
-					// int remainingBytes = maxNodeLengthBytes() - bytes.size();
-					// if (remainingBytes < 0)
-					// throw new RuntimeException(
-					// "max node length not big enough for its keys");
-					// else if (remainingBytes > 0)
-					// // write blank bytes
-					// allBytes.write(new byte[remainingBytes]);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-
-				pos += bytes.size();
-
-				loaded(node.getPosition().get(), node);
-			}
-			saveToFile(allBytes.toByteArray(), startPos);
-		} else
-			saveQueue.clear();
-	}
-
-	/**
-	 * Saves byte array to the startpos given in the file.
-	 * 
-	 * @param bytes
-	 * @param startPos
-	 */
-	private void saveToFile(byte[] bytes, long startPos) {
-		try {
-			RandomAccessFile f = new RandomAccessFile(file.get(), "rw");
-			f.seek(startPos);
-			f.write(bytes);
-			f.close();
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+			storage.get().save(saveQueue);
 		}
+		saveQueue.clear();
 	}
 
 	/**
