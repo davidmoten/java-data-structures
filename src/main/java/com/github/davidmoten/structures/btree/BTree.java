@@ -4,11 +4,11 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -159,14 +159,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private Metadata readMetadata() {
 		try {
-			RandomAccessFile f = new RandomAccessFile(getMetadataFile().get(),
-					"r");
-			byte[] bytes = new byte[(int) METADATA_LENGTH];
-			f.seek(0);
-			f.read(bytes);
-			f.close();
-			ObjectInputStream ois = new ObjectInputStream(
-					new ByteArrayInputStream(bytes));
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
+					getMetadataFile().get()));
 			Long rootPosition = ois.readLong();
 			int degree = ois.readInt();
 			ois.close();
@@ -186,17 +180,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		try {
 			if (!file.get().exists())
 				file.get().createNewFile();
-			RandomAccessFile f = new RandomAccessFile(getMetadataFile().get(),
-					"rw");
+			FileOutputStream fos = new FileOutputStream(getMetadataFile().get());
 			byte[] bytes = composeMetadata();
-
-			f.seek(0);
-			f.write(bytes);
-			if (bytes.length < METADATA_LENGTH) {
-				byte[] more = new byte[(int) METADATA_LENGTH - bytes.length];
-				f.write(more);
-			}
-			f.close();
+			fos.write(bytes);
+			fos.close();
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
