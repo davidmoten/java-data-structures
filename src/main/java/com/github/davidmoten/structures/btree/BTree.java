@@ -128,8 +128,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		} else {
 			this.degree = builder.degree.get();
 			keySizeBytes = builder.keySizeBytes.get();
-			rootPosition = of(0L);
 			root = new NodeRef<T>(this, Optional.<Long> absent());
+			saveQueue.add(root);
+			flushSaves();
+			rootPosition = root.getPosition();
 			if (file.isPresent())
 				writeHeader();
 		}
