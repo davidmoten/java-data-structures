@@ -35,7 +35,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		Iterable<T> {
 
 	/**
-	 * The root node.
+	 * The root node. Mutable!
 	 */
 	private NodeRef<T> root;
 
@@ -123,7 +123,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			this.degree = builder.degree.get();
 			keySizeBytes = builder.keySizeBytes.get();
 			root = new NodeRef<T>(this, Optional.<Long> absent());
-			saveQueue.add(root);
+			addToSaveQueue(root);
 			flushSaves();
 			if (file.isPresent())
 				writeHeader();
@@ -387,7 +387,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 	private void saveToFile(ByteArrayOutputStream allBytes, long startPos) {
 		try {
-			RandomAccessFile f = new RandomAccessFile(getFile().get(), "rw");
+			RandomAccessFile f = new RandomAccessFile(file.get(), "rw");
 			f.seek(startPos);
 			writeBytes(f, allBytes);
 			f.close();
