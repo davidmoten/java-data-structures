@@ -30,7 +30,7 @@ public class Storage {
 		}
 	}
 
-	public <T extends Serializable & Comparable<T>> void save(
+	public synchronized <T extends Serializable & Comparable<T>> void save(
 			LinkedList<NodeRef<T>> saveQueue) {
 		ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
 		long startPos = nextPosition();
@@ -50,6 +50,7 @@ public class Storage {
 
 			pos += bytes.size();
 
+			// TODO does node cache work without this line?
 			// loaded(node.getPosition().get(), node);
 		}
 		saveToFile(allBytes.toByteArray(), startPos);

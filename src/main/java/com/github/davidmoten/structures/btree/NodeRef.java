@@ -43,6 +43,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		try {
 			System.out.println("loading");
 			CountingInputStream cis = new CountingInputStream(is);
+			@SuppressWarnings("resource")
 			ObjectInputStream ois = new ObjectInputStream(cis);
 			int count = ois.readInt();
 			Optional<Key<T>> previous = absent();
