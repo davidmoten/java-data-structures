@@ -120,10 +120,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		this.positionManager = new PositionManager(file);
 
 		if (file.isPresent() && file.get().exists()) {
-			Header header = readHeader();
-			degree = header.degree;
-			keySizeBytes = header.keySizeBytes;
-			root = new NodeRef<T>(this, of(header.rootPosition));
+			Metadata metadata = readMetadata();
+			degree = metadata.degree;
+			keySizeBytes = metadata.keySizeBytes;
+			root = new NodeRef<T>(this, of(metadata.rootPosition));
 		} else {
 			this.degree = builder.degree.get();
 			keySizeBytes = builder.keySizeBytes.get();
@@ -131,7 +131,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			addToSaveQueue(root);
 			flushSaves();
 			if (file.isPresent())
-				writeHeader();
+				writeMetadata();
 		}
 	}
 
@@ -140,7 +140,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			nodeCache.get().put(position, node);
 	}
 
-	private Optional<File> getHeaderFile() {
+	private Optional<File> getMetadataFile() {
 		if (file.isPresent())
 			return of(new File(file.get().getParentFile(), file.get().getName()
 					+ ".metadata"));
@@ -148,12 +148,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			return absent();
 	}
 
-	private static class Header {
+	private static class Metadata {
 		long rootPosition;
 		int degree;
 		int keySizeBytes;
 
-		public Header(long rootPosition, int degree, int keySizeBytes) {
+		public Metadata(long rootPosition, int degree, int keySizeBytes) {
 			super();
 			this.rootPosition = rootPosition;
 			this.degree = degree;
@@ -162,12 +162,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	/**
-	 * Reads the header information from the file including the position of the
-	 * root node.
+	 * Reads the metadata information from the file including the position of
+	 * the root node.
 	 */
-	private Header readHeader() {
+	private Metadata readMetadata() {
 		try {
-			RandomAccessFile f = new RandomAccessFile(getHeaderFile().get(),
+			RandomAccessFile f = new RandomAccessFile(getMetadataFile().get(),
 					"r");
 			byte[] bytes = new byte[(int) METADATA_LENGTH];
 			f.seek(0);
@@ -179,7 +179,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			int degree = ois.readInt();
 			int keySizeBytes = ois.readInt();
 			ois.close();
-			return new Header(rootPosition, degree, keySizeBytes);
+			return new Metadata(rootPosition, degree, keySizeBytes);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
@@ -188,21 +188,21 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	/**
-	 * Writes the header information to the file including the position of the
+	 * Writes the metadata information to the file including the position of the
 	 * root node.
 	 */
-	private synchronized void writeHeader() {
+	private synchronized void writeMetadata() {
 		try {
 			if (!file.get().exists())
 				file.get().createNewFile();
-			RandomAccessFile f = new RandomAccessFile(getHeaderFile().get(),
+			RandomAccessFile f = new RandomAccessFile(getMetadataFile().get(),
 					"rw");
-			byte[] header = composeHeader();
+			byte[] bytes = composeMetadata();
 
 			f.seek(0);
-			f.write(header);
-			if (header.length < METADATA_LENGTH) {
-				byte[] more = new byte[(int) METADATA_LENGTH - header.length];
+			f.write(bytes);
+			if (bytes.length < METADATA_LENGTH) {
+				byte[] more = new byte[(int) METADATA_LENGTH - bytes.length];
 				f.write(more);
 			}
 			f.close();
@@ -214,20 +214,20 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	/**
-	 * Returns the bytes containing the header information for this BTree.
+	 * Returns the bytes containing the metadata information for this BTree.
 	 * 
 	 * @return
 	 * @throws IOException
 	 */
-	private byte[] composeHeader() throws IOException {
-		ByteArrayOutputStream header = new ByteArrayOutputStream(
+	private byte[] composeMetadata() throws IOException {
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream(
 				(int) METADATA_LENGTH);
-		ObjectOutputStream oos = new ObjectOutputStream(header);
+		ObjectOutputStream oos = new ObjectOutputStream(bytes);
 		oos.writeLong(root.getPosition().get());
 		oos.writeInt(degree);
 		oos.writeInt(keySizeBytes);
 		oos.close();
-		return header.toByteArray();
+		return bytes.toByteArray();
 	}
 
 	/**
@@ -358,7 +358,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			flushSaves();
 			root = node;
 			if (file.isPresent())
-				writeHeader();
+				writeMetadata();
 		}
 	}
 
@@ -395,7 +395,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				loaded(node.getPosition().get(), node);
 			}
 			saveToFile(allBytes, startPos);
-		}
+		} else
+			saveQueue.clear();
 	}
 
 	/**
@@ -518,8 +519,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * @param node
 	 */
 	void addToSaveQueue(NodeRef<T> node) {
-		if (file.isPresent())
-			saveQueue.push(node);
+		saveQueue.push(node);
 	}
 
 	/**
