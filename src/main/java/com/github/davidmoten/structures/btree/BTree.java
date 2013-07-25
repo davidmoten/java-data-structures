@@ -50,11 +50,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private final Optional<File> file;
 
 	/**
-	 * Where node storage starts in the file.
-	 */
-	private final static long METADATA_LENGTH = 1000;
-
-	/**
 	 * Manages allocation of file positions for nodes.
 	 */
 	private final Optional<Storage> storage;
@@ -131,84 +126,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
-	void loaded(long position, NodeRef<T> node) {
-		if (nodeCache.isPresent())
-			nodeCache.get().put(position, node);
-	}
-
-	private Optional<File> getMetadataFile() {
-		if (file.isPresent())
-			return of(new File(file.get().getParentFile(), file.get().getName()
-					+ ".metadata"));
-		else
-			return absent();
-	}
-
-	private static class Metadata {
-		long rootPosition;
-		int degree;
-
-		public Metadata(long rootPosition, int degree) {
-			super();
-			this.rootPosition = rootPosition;
-			this.degree = degree;
-		}
-	}
-
-	/**
-	 * Reads the metadata information from the file including the position of
-	 * the root node.
-	 */
-	private Metadata readMetadata() {
-		try {
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-					getMetadataFile().get()));
-			Long rootPosition = ois.readLong();
-			int degree = ois.readInt();
-			ois.close();
-			return new Metadata(rootPosition, degree);
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Writes the metadata information to the file including the position of the
-	 * root node.
-	 */
-	private synchronized void writeMetadata() {
-		try {
-			if (!file.get().exists())
-				file.get().createNewFile();
-			FileOutputStream fos = new FileOutputStream(getMetadataFile().get());
-			byte[] bytes = composeMetadata();
-			fos.write(bytes);
-			fos.close();
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Returns the bytes containing the metadata information for this BTree.
-	 * 
-	 * @return
-	 * @throws IOException
-	 */
-	private byte[] composeMetadata() throws IOException {
-		ByteArrayOutputStream bytes = new ByteArrayOutputStream(
-				(int) METADATA_LENGTH);
-		ObjectOutputStream oos = new ObjectOutputStream(bytes);
-		oos.writeLong(root.getPosition().get());
-		oos.writeInt(degree);
-		oos.close();
-		return bytes.toByteArray();
-	}
-
 	/**
 	 * Builder for a {@link BTree}.
 	 * 
@@ -282,6 +199,83 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		public BTree<R> build() {
 			return new BTree<R>(this);
 		}
+	}
+
+	void loaded(long position, NodeRef<T> node) {
+		if (nodeCache.isPresent())
+			nodeCache.get().put(position, node);
+	}
+
+	private Optional<File> getMetadataFile() {
+		if (file.isPresent())
+			return of(new File(file.get().getParentFile(), file.get().getName()
+					+ ".metadata"));
+		else
+			return absent();
+	}
+
+	private static class Metadata {
+		long rootPosition;
+		int degree;
+
+		public Metadata(long rootPosition, int degree) {
+			super();
+			this.rootPosition = rootPosition;
+			this.degree = degree;
+		}
+	}
+
+	/**
+	 * Reads the metadata information from the file including the position of
+	 * the root node.
+	 */
+	private Metadata readMetadata() {
+		try {
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
+					getMetadataFile().get()));
+			Long rootPosition = ois.readLong();
+			int degree = ois.readInt();
+			ois.close();
+			return new Metadata(rootPosition, degree);
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Writes the metadata information to the file including the position of the
+	 * root node.
+	 */
+	private synchronized void writeMetadata() {
+		try {
+			if (!file.get().exists())
+				file.get().createNewFile();
+			FileOutputStream fos = new FileOutputStream(getMetadataFile().get());
+			byte[] bytes = composeMetadata();
+			fos.write(bytes);
+			fos.close();
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Returns the bytes containing the metadata information for this BTree.
+	 * 
+	 * @return
+	 * @throws IOException
+	 */
+	private byte[] composeMetadata() throws IOException {
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(bytes);
+		oos.writeLong(root.getPosition().get());
+		oos.writeInt(degree);
+		oos.close();
+		return bytes.toByteArray();
 	}
 
 	/**
