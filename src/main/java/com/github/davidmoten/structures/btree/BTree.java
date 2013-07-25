@@ -42,7 +42,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	/**
 	 * The maximum number of keys in a node plus one.
 	 */
-	private final int degree;
+	private int degree;
 
 	/**
 	 * The file the btree is persisted to.
@@ -52,7 +52,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	/**
 	 * The maximum number of bytes required to serialize T.
 	 */
-	private final int keySize;
+	private int keySizeBytes;
 
 	/**
 	 * Where node storage starts in the file.
@@ -74,24 +74,47 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private final Object writeMonitor = new Object();
 
-	private final NodeCache<T> nodeCache;
+	private final Optional<NodeCache<T>> nodeCache;
 
 	/**
-	 * Constructor.
-	 * 
+	 * @param cls
 	 * @param degree
+	 *            will be overriden by value in metadata file if exists
+	 * @param file
+	 *            is used as base file name
+	 * @param keySizeBytes
+	 *            will be overriden by value in metadata file if exists
+	 * @param cacheSize
+	 *            - if absent not cache used
 	 */
-	private BTree(Class<T> cls, int degree, Optional<File> file, int keySize,
-			long cacheSize) {
-
-		Preconditions.checkArgument(degree >= 2, "degree must be >=2");
-		Preconditions.checkArgument(keySize > 0, "keySize must be >0");
+	private BTree(Class<T> cls, Optional<Integer> degree, Optional<File> file,
+			Optional<Integer> keySizeBytes, Optional<Long> cacheSize) {
 		Preconditions.checkNotNull(file, "file cannot be null");
-		this.degree = degree;
+		Preconditions.checkNotNull(degree, "degree cannot be null");
+		Preconditions.checkNotNull(keySizeBytes, "keySize cannot be null");
+		Preconditions.checkNotNull(cacheSize, "cacheSize cannot be null");
+		Preconditions.checkArgument(degree.isPresent() || file.isPresent()
+				&& file.get().exists(),
+				"must specify degree or use an existing file");
+		Preconditions.checkArgument(
+				keySizeBytes.isPresent() || file.isPresent()
+						&& file.get().exists(),
+				"must specify keySize or use an existing file");
+		Preconditions.checkArgument(!degree.isPresent() || degree.get() >= 2,
+				"degree must be >=2");
+		Preconditions.checkArgument(
+				!keySizeBytes.isPresent() || keySizeBytes.get() > 0,
+				"keySize must be >0");
+		if (degree.isPresent())
+			this.degree = degree.get();
+		if (keySizeBytes.isPresent())
+			this.keySizeBytes = keySizeBytes.get();
 		this.file = file;
 		this.positionManager = new PositionManager(file);
-		this.keySize = keySize;
-		nodeCache = new NodeCache<T>(cacheSize);
+		if (cacheSize.isPresent())
+			nodeCache = of(new NodeCache<T>(cacheSize.get()));
+		else
+			nodeCache = absent();
 		if (file.isPresent() && file.get().exists()) {
 			readHeader();
 			root = new NodeRef<T>(this, rootPosition);
@@ -103,7 +126,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	void loaded(long position, NodeRef<T> node) {
-		nodeCache.put(position, node);
+		if (nodeCache.isPresent())
+			nodeCache.get().put(position, node);
 	}
 
 	private Optional<File> getHeaderFile() {
@@ -129,6 +153,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			ObjectInputStream ois = new ObjectInputStream(
 					new ByteArrayInputStream(header));
 			rootPosition = Optional.of(ois.readLong());
+			degree = ois.readInt();
+			keySizeBytes = ois.readInt();
 			ois.close();
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
@@ -151,7 +177,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 					(int) METADATA_LENGTH);
 			ObjectOutputStream oos = new ObjectOutputStream(header);
 			oos.writeLong(rootPosition.get());
+			oos.writeInt(degree);
+			oos.writeInt(keySizeBytes);
 			oos.close();
+
 			f.seek(0);
 			f.write(header.toByteArray());
 			if (header.size() < METADATA_LENGTH) {
@@ -174,11 +203,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * @param <R>
 	 */
 	public static class Builder<R extends Serializable & Comparable<R>> {
-		private int degree = 100;
+		private Optional<Integer> degree = of(100);
 		private Optional<File> file = absent();
-		private int keySize = 1000;
+		private Optional<Integer> keySizeBytes = of(100);
 		private final Class<R> cls;
-		private long cacheSize = 100;
+		private Optional<Long> cacheSize = of(100L);
 
 		/**
 		 * Constructor.
@@ -196,7 +225,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		 * @return
 		 */
 		public Builder<R> degree(int degree) {
-			this.degree = degree;
+			this.degree = of(degree);
 			return this;
 		}
 
@@ -214,11 +243,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		/**
 		 * Sets the keySize.
 		 * 
-		 * @param keySize
+		 * @param keySizeBytes
 		 * @return
 		 */
-		public Builder<R> keySize(int keySize) {
-			this.keySize = keySize;
+		public Builder<R> keySizeBytes(int keySizeBytes) {
+			this.keySizeBytes = of(keySizeBytes);
 			return this;
 		}
 
@@ -230,7 +259,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		 * @return
 		 */
 		public Builder<R> cacheSize(long cacheSize) {
-			this.cacheSize = cacheSize;
+			this.cacheSize = of(cacheSize);
 			return this;
 		}
 
@@ -240,7 +269,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		 * @return
 		 */
 		public BTree<R> build() {
-			return new BTree<R>(cls, degree, file, keySize, cacheSize);
+			return new BTree<R>(cls, degree, file, keySizeBytes, cacheSize);
 		}
 	}
 
@@ -310,11 +339,18 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 				try {
 					allBytes.write(bytes.toByteArray());
+					int remainingBytes = nodeLengthBytes() - bytes.size();
+					if (remainingBytes < 0)
+						throw new RuntimeException(
+								"max node length not big enough for its keys");
+					else if (remainingBytes > 0)
+						// write blank bytes
+						allBytes.write(new byte[remainingBytes]);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
 
-				pos += bytes.size();
+				pos += nodeLengthBytes();
 
 				loaded(node.getPosition().get(), node);
 			}
@@ -403,7 +439,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * @return
 	 */
 	public int getKeySize() {
-		return keySize;
+		return keySizeBytes;
 	}
 
 	/**
@@ -465,12 +501,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 	private void writeBytes(RandomAccessFile f, ByteArrayOutputStream bytes)
 			throws IOException {
-		int remainingBytes = nodeLengthBytes() - bytes.size();
-		if (remainingBytes < 0)
-			throw new RuntimeException(
-					"not enough bytes per key have been allocated");
 		f.write(bytes.toByteArray());
-		f.write(new byte[remainingBytes]);
 	}
 
 	public void displayFile() {
@@ -479,12 +510,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			System.out.println(getFile().get());
 			System.out.println("length=" + getFile().get().length());
 			RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
-			// {
-			// ObjectInputStream ois = new ObjectInputStream(getStream(f, 0,
-			// NODE_STORAGE_START));
-			// long rootPosition = ois.readLong();
-			// System.out.println("rootPosition = " + rootPosition);
-			// }
 			int pos = 0;
 			while (pos < file.get().length()) {
 				InputStream is = getStream(f, pos, nodeLengthBytes());

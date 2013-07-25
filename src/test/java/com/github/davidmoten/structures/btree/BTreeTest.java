@@ -592,7 +592,7 @@ public class BTreeTest {
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
 
-		builder(Integer.class).degree(100).file(f).keySize(100).build()
+		builder(Integer.class).degree(100).file(f).keySizeBytes(100).build()
 				.add(values);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
 		checkEquals(t2, values);
