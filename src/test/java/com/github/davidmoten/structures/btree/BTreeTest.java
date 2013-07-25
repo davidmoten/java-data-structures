@@ -600,6 +600,20 @@ public class BTreeTest {
 	}
 
 	@Test
+	public void testSaveManyItemsWithSmallNodeCache() {
+		File f = new File("target/test7.index");
+		f.delete();
+		Integer[] values = new Integer[MANY_VALUES];
+		for (int i = 0; i < values.length; i++)
+			values[i] = i + 1;
+
+		builder(Integer.class).degree(100).file(f).keySizeBytes(100)
+				.cacheSize(10).build().add(values);
+		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		checkEquals(t2, values);
+	}
+
+	@Test
 	public void testConcurrencyDoesNotProvokeException()
 			throws InterruptedException {
 		File f = new File("target/testConcurrency1.index");

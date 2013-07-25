@@ -40,7 +40,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	void load(InputStream is, NodeActual<T> node) {
 		try {
-
+			System.out.println("loading");
 			ObjectInputStream ois = new ObjectInputStream(is);
 			int count = ois.readInt();
 			Optional<Key<T>> previous = absent();
@@ -136,6 +136,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 	}
 
 	public void unload() {
+		System.out.println("unloaded");
 		node = absent();
 	}
 

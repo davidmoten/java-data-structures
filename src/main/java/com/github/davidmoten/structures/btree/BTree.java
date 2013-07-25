@@ -241,7 +241,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		private Optional<Integer> degree = of(100);
 		private Optional<File> file = absent();
 		private Optional<Integer> keySizeBytes = of(100);
-		private Optional<Long> cacheSize = of(100L);
+		private Optional<Long> cacheSize = absent();
 
 		/**
 		 * Constructor.
