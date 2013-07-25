@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
@@ -598,7 +599,7 @@ public class BTreeTest {
 		checkEquals(t2, values);
 	}
 
-	// @Test
+	@Test
 	public void testConcurrencyDoesNotProvokeException()
 			throws InterruptedException {
 		File f = new File("target/testConcurrency1.index");
@@ -607,22 +608,32 @@ public class BTreeTest {
 		final AtomicBoolean continue2 = new AtomicBoolean(true);
 		final BTree<Integer> tree = builder(Integer.class).degree(3).file(f)
 				.build();
+		final AtomicInteger count = new AtomicInteger();
+		final int MAX_COUNT = 1000;
 		Thread t1 = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				int i = 1;
-				while (continue1.get()) {
-					tree.add(i++);
+
+				while (continue1.get() && count.incrementAndGet() < MAX_COUNT) {
+					tree.add(count.get());
+					System.out.print(" add ");
+					Thread.yield();
 				}
 			}
 		});
 		Thread t2 = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				while (continue2.get()) {
-					for (Integer key : tree)
+				while (continue2.get() && count.get() < MAX_COUNT) {
+					Optional<Integer> previous = Optional.absent();
+					for (Integer key : tree) {
 						System.out.print(key + ",");
-					System.out.println();
+						if (previous.isPresent() && key - previous.get() != 1)
+							throw new RuntimeException("out of order!");
+						previous = Optional.of(key);
+					}
+					System.out.println("iterated");
+					Thread.yield();
 				}
 			}
 		});
