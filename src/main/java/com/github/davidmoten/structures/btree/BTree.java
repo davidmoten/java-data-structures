@@ -388,7 +388,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			f.seek(startPos);
 			writeBytes(f, allBytes);
 			f.close();
-
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
