@@ -51,11 +51,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private final Optional<File> file;
 
 	/**
-	 * The maximum number of bytes required to serialize T.
-	 */
-	private final int keySizeBytes;
-
-	/**
 	 * Where node storage starts in the file.
 	 */
 	private final static long METADATA_LENGTH = 1000;
@@ -123,11 +118,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		if (file.isPresent() && file.get().exists()) {
 			Metadata metadata = readMetadata();
 			degree = metadata.degree;
-			keySizeBytes = metadata.keySizeBytes;
 			root = new NodeRef<T>(this, of(metadata.rootPosition));
 		} else {
 			this.degree = builder.degree.get();
-			keySizeBytes = builder.keySizeBytes.get();
 			root = new NodeRef<T>(this, Optional.<Long> absent());
 			addToSaveQueue(root);
 			flushSaves();
@@ -152,13 +145,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private static class Metadata {
 		long rootPosition;
 		int degree;
-		int keySizeBytes;
 
-		public Metadata(long rootPosition, int degree, int keySizeBytes) {
+		public Metadata(long rootPosition, int degree) {
 			super();
 			this.rootPosition = rootPosition;
 			this.degree = degree;
-			this.keySizeBytes = keySizeBytes;
 		}
 	}
 
@@ -178,9 +169,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 					new ByteArrayInputStream(bytes));
 			Long rootPosition = ois.readLong();
 			int degree = ois.readInt();
-			int keySizeBytes = ois.readInt();
 			ois.close();
-			return new Metadata(rootPosition, degree, keySizeBytes);
+			return new Metadata(rootPosition, degree);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
@@ -226,7 +216,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		ObjectOutputStream oos = new ObjectOutputStream(bytes);
 		oos.writeLong(root.getPosition().get());
 		oos.writeInt(degree);
-		oos.writeInt(keySizeBytes);
 		oos.close();
 		return bytes.toByteArray();
 	}
@@ -482,15 +471,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	/**
-	 * Returns the key size in bytes.
-	 * 
-	 * @return
-	 */
-	public int getKeySize() {
-		return keySizeBytes;
-	}
-
-	/**
 	 * Returns the {@link PositionManager} for this btree.
 	 * 
 	 * @return
@@ -541,15 +521,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				throw new RuntimeException(e);
 			}
 		}
-	}
-
-	/**
-	 * Returns the maximum node length in bytes.
-	 * 
-	 * @return
-	 */
-	private int maxNodeLengthBytes() {
-		return getDegree() * getKeySize();
 	}
 
 	/**
