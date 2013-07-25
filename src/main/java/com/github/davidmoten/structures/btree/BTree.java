@@ -40,11 +40,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private NodeRef<T> root;
 
 	/**
-	 * The current position in the file of the root node.
-	 */
-	private Optional<Long> rootPosition;
-
-	/**
 	 * The maximum number of keys in a node plus one.
 	 */
 	private final int degree;
@@ -123,15 +118,13 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			Header header = readHeader();
 			degree = header.degree;
 			keySizeBytes = header.keySizeBytes;
-			rootPosition = of(header.rootPosition);
-			root = new NodeRef<T>(this, rootPosition);
+			root = new NodeRef<T>(this, of(header.rootPosition));
 		} else {
 			this.degree = builder.degree.get();
 			keySizeBytes = builder.keySizeBytes.get();
 			root = new NodeRef<T>(this, Optional.<Long> absent());
 			saveQueue.add(root);
 			flushSaves();
-			rootPosition = root.getPosition();
 			if (file.isPresent())
 				writeHeader();
 		}
@@ -225,7 +218,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		ByteArrayOutputStream header = new ByteArrayOutputStream(
 				(int) METADATA_LENGTH);
 		ObjectOutputStream oos = new ObjectOutputStream(header);
-		oos.writeLong(rootPosition.get());
+		oos.writeLong(root.getPosition().get());
 		oos.writeInt(degree);
 		oos.writeInt(keySizeBytes);
 		oos.close();
@@ -354,7 +347,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			}
 			flushSaves();
 			root = node;
-			rootPosition = root.getPosition();
 			if (file.isPresent())
 				writeHeader();
 		}
