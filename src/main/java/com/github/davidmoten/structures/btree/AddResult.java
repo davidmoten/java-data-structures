@@ -5,6 +5,13 @@ import java.io.Serializable;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 
+/**
+ * The result of adding a value to a node.
+ * 
+ * @author dxm
+ * 
+ * @param <T>
+ */
 class AddResult<T extends Serializable & Comparable<T>> {
 
 	// either

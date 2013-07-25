@@ -76,6 +76,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private final Optional<NodeCache<T>> nodeCache;
 
 	/**
+	 * Queues nodes for saving.
+	 */
+	private final LinkedList<NodeRef<T>> saveQueue = new LinkedList<NodeRef<T>>();
+
+	/**
 	 * @param cls
 	 * @param degree
 	 *            will be overriden by value in metadata file if exists
@@ -332,6 +337,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		return this;
 	}
 
+	/**
+	 * Add one value t to the BTree.
+	 * 
+	 * @param t
+	 */
 	private void addOne(T t) {
 		synchronized (writeMonitor) {
 			AddResult<T> result = root.add(t);
@@ -352,6 +362,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	/**
+	 * Flushes queued saves to disk if file present.
+	 */
 	private void flushSaves() {
 		if (getFile().isPresent()) {
 			ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
@@ -366,7 +379,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 				try {
 					allBytes.write(bytes.toByteArray());
-					int remainingBytes = nodeLengthBytes() - bytes.size();
+					int remainingBytes = maxNodeLengthBytes() - bytes.size();
 					if (remainingBytes < 0)
 						throw new RuntimeException(
 								"max node length not big enough for its keys");
@@ -377,7 +390,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 					throw new RuntimeException(e);
 				}
 
-				pos += nodeLengthBytes();
+				pos += maxNodeLengthBytes();
 
 				loaded(node.getPosition().get(), node);
 			}
@@ -385,6 +398,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	/**
+	 * Saves byte array to the startpos given in the file.
+	 * 
+	 * @param allBytes
+	 * @param startPos
+	 */
 	private void saveToFile(ByteArrayOutputStream allBytes, long startPos) {
 		try {
 			RandomAccessFile f = new RandomAccessFile(file.get(), "rw");
@@ -493,20 +512,28 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		return root.iterator();
 	}
 
-	private final LinkedList<NodeRef<T>> saveQueue = new LinkedList<NodeRef<T>>();
-
+	/**
+	 * Adds a node to the save queue.
+	 * 
+	 * @param node
+	 */
 	void addToSaveQueue(NodeRef<T> node) {
 		if (file.isPresent())
 			saveQueue.push(node);
 	}
 
+	/**
+	 * Loads a node from disk.
+	 * 
+	 * @param node
+	 */
 	void load(NodeRef<T> node) {
 		if (getFile().isPresent()) {
 			try {
 
 				RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
 				f.seek(node.getPosition().get());
-				int numBytes = nodeLengthBytes();
+				int numBytes = maxNodeLengthBytes();
 				byte[] b = new byte[numBytes];
 				f.read(b);
 				f.close();
@@ -522,15 +549,30 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
-	private int nodeLengthBytes() {
+	/**
+	 * Returns the maximum node length in bytes.
+	 * 
+	 * @return
+	 */
+	private int maxNodeLengthBytes() {
 		return getDegree() * getKeySize();
 	}
 
+	/**
+	 * Writes bytes to a random acces file at the current position.
+	 * 
+	 * @param f
+	 * @param bytes
+	 * @throws IOException
+	 */
 	private void writeBytes(RandomAccessFile f, ByteArrayOutputStream bytes)
 			throws IOException {
 		f.write(bytes.toByteArray());
 	}
 
+	/**
+	 * Writes information about the current file to stdout.
+	 */
 	public void displayFile() {
 		try {
 			System.out.println("------------ File contents ----------------");
@@ -539,12 +581,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			RandomAccessFile f = new RandomAccessFile(getFile().get(), "r");
 			int pos = 0;
 			while (pos < file.get().length()) {
-				InputStream is = getStream(f, pos, nodeLengthBytes());
+				InputStream is = getStream(f, pos, maxNodeLengthBytes());
 				NodeRef<T> ref = new NodeRef<T>(this, Optional.<Long> absent());
 				NodeActual<T> node = new NodeActual<T>(this, ref);
 				ref.load(is, node);
 				displayNode(pos, node);
-				pos += nodeLengthBytes();
+				pos += maxNodeLengthBytes();
 			}
 			System.out.println("------------");
 		} catch (IOException e) {
@@ -552,6 +594,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	/**
+	 * Writes information about the given node to stdout.
+	 * 
+	 * @param pos
+	 * @param node
+	 */
 	private void displayNode(long pos, NodeActual<T> node) {
 		System.out.println("node position=" + pos);
 		for (Key<T> key : node.keys()) {
@@ -570,6 +618,14 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	/**
+	 * Returns a byte stream referring to section of a file.
+	 * 
+	 * @param f
+	 * @param pos
+	 * @param numBytes
+	 * @return
+	 */
 	private ByteArrayInputStream getStream(RandomAccessFile f, long pos,
 			long numBytes) {
 		try {
