@@ -58,7 +58,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	/**
 	 * Manages allocation of file positions for nodes.
 	 */
-	private final PositionManager positionManager;
+	private final Optional<Storage> storage;
 
 	/**
 	 * This object is synchronized on to ensure that adds and deletes happen one
@@ -113,7 +113,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 		this.file = builder.file;
 
-		this.positionManager = new PositionManager(file);
+		if (file.isPresent())
+			this.storage = of(new Storage(file.get()));
+		else
+			this.storage = absent();
 
 		if (file.isPresent() && file.get().exists()) {
 			Metadata metadata = readMetadata();
@@ -343,9 +346,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * Flushes queued saves to disk if file present.
 	 */
 	private void flushSaves() {
-		if (getFile().isPresent()) {
+		if (storage.isPresent()) {
 			ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
-			long startPos = positionManager.nextPosition();
+			long startPos = storage.get().nextPosition();
 			long pos = startPos;
 			while (!saveQueue.isEmpty()) {
 				NodeRef<T> node = saveQueue.removeLast();
@@ -371,7 +374,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 				loaded(node.getPosition().get(), node);
 			}
-			saveToFile(allBytes, startPos);
+			saveToFile(allBytes.toByteArray(), startPos);
 		} else
 			saveQueue.clear();
 	}
@@ -379,14 +382,14 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	/**
 	 * Saves byte array to the startpos given in the file.
 	 * 
-	 * @param allBytes
+	 * @param bytes
 	 * @param startPos
 	 */
-	private void saveToFile(ByteArrayOutputStream allBytes, long startPos) {
+	private void saveToFile(byte[] bytes, long startPos) {
 		try {
 			RandomAccessFile f = new RandomAccessFile(file.get(), "rw");
 			f.seek(startPos);
-			writeBytes(f, allBytes);
+			f.write(bytes);
 			f.close();
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
@@ -457,15 +460,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	/**
-	 * Returns the {@link PositionManager} for this btree.
-	 * 
-	 * @return
-	 */
-	PositionManager getPositionManager() {
-		return positionManager;
-	}
-
-	/**
 	 * Returns the keys as a {@link List}.
 	 * 
 	 * @return
@@ -507,18 +501,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				throw new RuntimeException(e);
 			}
 		}
-	}
-
-	/**
-	 * Writes bytes to a random acces file at the current position.
-	 * 
-	 * @param f
-	 * @param bytes
-	 * @throws IOException
-	 */
-	private void writeBytes(RandomAccessFile f, ByteArrayOutputStream bytes)
-			throws IOException {
-		f.write(bytes.toByteArray());
 	}
 
 	/**
