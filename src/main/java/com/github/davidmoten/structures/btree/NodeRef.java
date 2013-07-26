@@ -9,10 +9,10 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.google.common.io.CountingInputStream;
 
 public class NodeRef<T extends Serializable & Comparable<T>> {
@@ -154,8 +154,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node().addToNonLeafNode(t);
 	}
 
-	public AddResult<T> add(Key<T> key) {
-		return node().add(key, Lists.<NodeRef<T>> newLinkedList());
+	public AddResult<T> add(Key<T> key, LinkedList<NodeRef<T>> saveQueue) {
+		return node().add(key, saveQueue);
 	}
 
 	public Iterable<Key<T>> keys() {

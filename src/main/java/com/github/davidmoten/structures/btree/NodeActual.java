@@ -48,7 +48,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	public AddResult<T> add(T t) {
 		AddResult<T> result;
 		if (isLeafNode()) {
-			result = copy().add(new Key<T>(t));
+			result = copy().add(new Key<T>(t), new LinkedList<NodeRef<T>>());
 		} else
 			result = copy().addToNonLeafNode(t);
 		if (result.getNode().isPresent()) {
