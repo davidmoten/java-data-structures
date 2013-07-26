@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.common.io.CountingInputStream;
 
 public class NodeRef<T extends Serializable & Comparable<T>> {
@@ -154,7 +155,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 	}
 
 	public AddResult<T> add(Key<T> key) {
-		return node().add(key);
+		return node().add(key, Lists.<NodeRef<T>> newLinkedList());
 	}
 
 	public Iterable<Key<T>> keys() {

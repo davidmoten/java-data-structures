@@ -114,7 +114,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			this.degree = builder.degree.get();
 			root = new NodeRef<T>(this, Optional.<Long> absent());
 			addToSaveQueue(root);
-			flushSaves();
+			flushSaves(saveQueue);
 			if (metadataFile.isPresent())
 				writeMetadata();
 		}
@@ -285,8 +285,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * @param t
 	 */
 	public BTree<T> add(T... values) {
-		for (T t : values)
+		for (T t : values) {
 			addOne(t);
+		}
 		return this;
 	}
 
@@ -303,12 +304,16 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				node = new NodeRef<T>(this, Optional.<Long> absent());
 				node.setFirst(result.getSplitKey());
 				addToSaveQueue(node);
+				result.getSaveQueue().add(node);
 			} else {
 				// note that new node has already been saved so don't need to
 				// call save here
 				node = result.getNode().get();
 			}
-			flushSaves();
+			// System.out.println("good save queue=" + this.saveQueue);
+			// System.out.println("soso save queue=" + result.getSaveQueue());
+			// flushSaves(result.getSaveQueue());
+			flushSaves(saveQueue);
 			root = node;
 			if (metadataFile.isPresent())
 				writeMetadata();
@@ -317,8 +322,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 	/**
 	 * Flushes queued saves to disk if storage present.
+	 * 
+	 * @param saveQueue2
 	 */
-	private void flushSaves() {
+	private void flushSaves(LinkedList<NodeRef<T>> saveQueue) {
 		if (storage.isPresent()) {
 			storage.get().save(saveQueue);
 		}

@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -50,8 +51,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			result = copy().add(new Key<T>(t));
 		} else
 			result = copy().addToNonLeafNode(t);
-		if (result.getNode().isPresent())
+		if (result.getNode().isPresent()) {
 			btree.addToSaveQueue(result.getNode().get());
+			// result.getSaveQueue().add(result.getNode().get());
+		}
 		return result;
 	}
 
@@ -75,10 +78,12 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 				result = key.getLeft().get().add(t);
 				if (result.getSplitKey().isPresent()) {
 					// add a split key to this node
-					result = add(result.getSplitKey().get());
+					result = add(result.getSplitKey().get(),
+							result.getSaveQueue());
 				} else {
 					key.setLeft(result.getNode());
-					result = AddResult.createFromNonSplitNode(ref);
+					result = AddResult.createFromNonSplitNode(ref,
+							result.getSaveQueue());
 				}
 				added = true;
 				break;
@@ -91,10 +96,11 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			// of b-tree
 			result = last.get().getRight().get().add(t);
 			if (result.getSplitKey().isPresent()) {
-				result = add(result.getSplitKey().get());
+				result = add(result.getSplitKey().get(), result.getSaveQueue());
 			} else {
 				last.get().setRight(result.getNode());
-				result = AddResult.createFromNonSplitNode(ref);
+				result = AddResult.createFromNonSplitNode(ref,
+						result.getSaveQueue());
 			}
 		}
 		Preconditions.checkNotNull(result);
@@ -108,11 +114,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * node does not need to be split then returns the new node.
 	 * 
 	 * @param key
-	 * @param stack
 	 * @return
 	 */
-
-	public AddResult<T> add(Key<T> key) {
+	public AddResult<T> add(Key<T> key, LinkedList<NodeRef<T>> saveQueue) {
 
 		key.setNode(of(ref));
 
@@ -120,7 +124,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 		int keyCount = countKeys();
 
-		return performSplitIfRequired(keyCount);
+		return performSplitIfRequired(keyCount, saveQueue);
 	}
 
 	/**
@@ -173,12 +177,17 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		return result;
 	}
 
-	private AddResult<T> performSplitIfRequired(int keyCount) {
+	private AddResult<T> performSplitIfRequired(int keyCount,
+			LinkedList<NodeRef<T>> saveQueue) {
 		final AddResult<T> result;
-		if (keyCount == btree.getDegree())
-			result = createFromSplitKey(splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount));
-		else {
-			result = createFromNonSplitNode(ref);
+		if (keyCount == btree.getDegree()) {
+			Key<T> key = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount);
+			saveQueue.add(key.getLeft().get());
+			saveQueue.add(key.getRight().get());
+			result = createFromSplitKey(key, saveQueue);
+		} else {
+			saveQueue.add(ref);
+			result = createFromNonSplitNode(ref, saveQueue);
 		}
 		return result;
 	}
