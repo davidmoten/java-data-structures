@@ -102,7 +102,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 		if (!builder.storage.isPresent() && metadataFile.isPresent())
 			this.storage = of(new Storage(metadataFile.get().getParentFile(),
-					"storage"));
+					metadataFile.get().getName() + ".storage"));
 		else
 			this.storage = absent();
 
@@ -194,14 +194,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			nodeCache.get().put(position, node);
 	}
 
-	private Optional<File> getMetadataFile() {
-		if (metadataFile.isPresent())
-			return of(new File(metadataFile.get().getParentFile(), metadataFile
-					.get().getName() + ".metadata"));
-		else
-			return absent();
-	}
-
 	private static class Metadata {
 		long rootPosition;
 		int degree;
@@ -220,7 +212,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private Metadata readMetadata() {
 		try {
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-					getMetadataFile().get()));
+					metadataFile.get()));
 			Long rootPosition = ois.readLong();
 			int degree = ois.readInt();
 			ois.close();
@@ -240,7 +232,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		try {
 			if (!metadataFile.get().exists())
 				metadataFile.get().createNewFile();
-			FileOutputStream fos = new FileOutputStream(getMetadataFile().get());
+			FileOutputStream fos = new FileOutputStream(metadataFile.get());
 			byte[] bytes = composeMetadata();
 			fos.write(bytes);
 			fos.close();

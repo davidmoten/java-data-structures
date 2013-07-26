@@ -533,7 +533,7 @@ public class BTreeTest {
 	@Test
 	public void testSaveOneItem() {
 		File f = new File("target/test1.index");
-		f.delete();
+		clear(f);
 		BTree<Integer> t = builder(Integer.class).degree(3).metadata(f).build();
 		t.add(1);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
@@ -544,7 +544,7 @@ public class BTreeTest {
 	@Test
 	public void testSaveTwoItems() {
 		File f = new File("target/test2.index");
-		f.delete();
+		clear(f);
 		BTree<Integer> t = builder(Integer.class).degree(3).metadata(f).build();
 		t.add(1);
 		t.add(2);
@@ -557,7 +557,7 @@ public class BTreeTest {
 	@Test
 	public void testSaveThreeItemsDepthTwo() {
 		File f = new File("target/test3.index");
-		f.delete();
+		clear(f);
 		builder(Integer.class).degree(3).metadata(f).build().add(1, 2, 3);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
@@ -567,7 +567,7 @@ public class BTreeTest {
 	@Test
 	public void testSaveFourItemsDepthTwo() {
 		File f = new File("target/test4.index");
-		f.delete();
+		clear(f);
 		BTree<Integer> t = builder(Integer.class).degree(3).metadata(f).build()
 				.add(1, 2, 3, 4);
 		System.out.println(t);
@@ -582,7 +582,7 @@ public class BTreeTest {
 	@Test
 	public void testSaveSevenItemsDepthThree() {
 		File f = new File("target/test5.index");
-		f.delete();
+		clear(f);
 		builder(Integer.class).degree(3).metadata(f).build()
 				.add(1, 2, 3, 4, 5, 6, 7);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
@@ -593,7 +593,7 @@ public class BTreeTest {
 	@Test
 	public void testSaveManyItems() {
 		File f = new File("target/test6.index");
-		f.delete();
+		clear(f);
 		Integer[] values = new Integer[MANY_VALUES];
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
@@ -607,7 +607,7 @@ public class BTreeTest {
 	@Test
 	public void testSaveManyItemsWithSmallNodeCache() {
 		File f = new File("target/test7.index");
-		f.delete();
+		clear(f);
 		Integer[] values = new Integer[MANY_VALUES];
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
@@ -619,11 +619,16 @@ public class BTreeTest {
 		checkEquals(t2, values);
 	}
 
+	private void clear(File f) {
+		f.delete();
+		new File(f.getAbsolutePath() + ".storage").delete();
+	}
+
 	@Test
 	public void testConcurrencyDoesNotProvokeException()
 			throws InterruptedException {
 		File f = new File("target/testConcurrency1.index");
-		f.delete();
+		clear(f);
 		final AtomicBoolean continue1 = new AtomicBoolean(true);
 		final AtomicBoolean continue2 = new AtomicBoolean(true);
 		final BTree<Integer> tree = builder(Integer.class).degree(3)
