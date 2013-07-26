@@ -14,8 +14,12 @@ public class Storage {
 
 	private final File file;
 
-	public Storage(File file) {
-		this.file = file;
+	public File getFile() {
+		return file;
+	}
+
+	public Storage(File directory, String name) {
+		this.file = new File(directory, name);
 	}
 
 	private long nextPosition() {

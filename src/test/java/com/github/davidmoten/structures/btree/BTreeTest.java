@@ -534,9 +534,10 @@ public class BTreeTest {
 	public void testSaveOneItem() {
 		File f = new File("target/test1.index");
 		f.delete();
-		BTree<Integer> t = builder(Integer.class).degree(3).file(f).build();
+		BTree<Integer> t = builder(Integer.class).degree(3).metadata(f).build();
 		t.add(1);
-		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
+				.build();
 		assertTrue(t2.find(1).isPresent());
 	}
 
@@ -544,10 +545,11 @@ public class BTreeTest {
 	public void testSaveTwoItems() {
 		File f = new File("target/test2.index");
 		f.delete();
-		BTree<Integer> t = builder(Integer.class).degree(3).file(f).build();
+		BTree<Integer> t = builder(Integer.class).degree(3).metadata(f).build();
 		t.add(1);
 		t.add(2);
-		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
+				.build();
 		assertTrue(t2.find(1).isPresent());
 		assertTrue(t2.find(2).isPresent());
 	}
@@ -556,8 +558,9 @@ public class BTreeTest {
 	public void testSaveThreeItemsDepthTwo() {
 		File f = new File("target/test3.index");
 		f.delete();
-		builder(Integer.class).degree(3).file(f).build().add(1, 2, 3);
-		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		builder(Integer.class).degree(3).metadata(f).build().add(1, 2, 3);
+		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
+				.build();
 		checkEquals(t2, 1, 2, 3);
 	}
 
@@ -565,11 +568,12 @@ public class BTreeTest {
 	public void testSaveFourItemsDepthTwo() {
 		File f = new File("target/test4.index");
 		f.delete();
-		BTree<Integer> t = builder(Integer.class).degree(3).file(f).build()
+		BTree<Integer> t = builder(Integer.class).degree(3).metadata(f).build()
 				.add(1, 2, 3, 4);
 		System.out.println(t);
 		t.displayFile();
-		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
+				.build();
 		System.out.println(t2);
 		// System.out.println(Lists.newArrayList(t2));
 		checkEquals(t2, 1, 2, 3, 4);
@@ -579,9 +583,10 @@ public class BTreeTest {
 	public void testSaveSevenItemsDepthThree() {
 		File f = new File("target/test5.index");
 		f.delete();
-		builder(Integer.class).degree(3).file(f).build()
+		builder(Integer.class).degree(3).metadata(f).build()
 				.add(1, 2, 3, 4, 5, 6, 7);
-		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
+				.build();
 		checkEquals(t2, 1, 2, 3, 4, 5, 6, 7);
 	}
 
@@ -593,9 +598,9 @@ public class BTreeTest {
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
 
-		builder(Integer.class).degree(100).file(f).keySizeBytes(100).build()
-				.add(values);
-		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		builder(Integer.class).degree(100).metadata(f).build().add(values);
+		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
+				.build();
 		checkEquals(t2, values);
 	}
 
@@ -607,9 +612,10 @@ public class BTreeTest {
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
 
-		builder(Integer.class).degree(100).file(f).keySizeBytes(100)
-				.cacheSize(10).build().add(values);
-		BTree<Integer> t2 = builder(Integer.class).degree(3).file(f).build();
+		builder(Integer.class).degree(100).metadata(f).cacheSize(10).build()
+				.add(values);
+		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
+				.build();
 		checkEquals(t2, values);
 	}
 
@@ -620,8 +626,8 @@ public class BTreeTest {
 		f.delete();
 		final AtomicBoolean continue1 = new AtomicBoolean(true);
 		final AtomicBoolean continue2 = new AtomicBoolean(true);
-		final BTree<Integer> tree = builder(Integer.class).degree(3).file(f)
-				.build();
+		final BTree<Integer> tree = builder(Integer.class).degree(3)
+				.metadata(f).build();
 		final AtomicInteger count = new AtomicInteger();
 		final int MAX_COUNT = 1000;
 		Thread t1 = new Thread(new Runnable() {
@@ -657,8 +663,8 @@ public class BTreeTest {
 		continue1.set(false);
 		continue2.set(false);
 
-		final BTree<Integer> tree2 = builder(Integer.class).degree(3).file(f)
-				.build();
+		final BTree<Integer> tree2 = builder(Integer.class).degree(3)
+				.metadata(f).build();
 		for (Integer key : tree2)
 			System.out.print(key + ",");
 		System.out.println();

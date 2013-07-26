@@ -47,7 +47,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	/**
 	 * The file the btree is persisted to.
 	 */
-	private final Optional<File> file;
+	private final Optional<File> metadataFile;
 
 	/**
 	 * Manages allocation of file positions for nodes.
@@ -82,37 +82,31 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 *            - if absent not cache used
 	 */
 	private BTree(Builder<T> builder) {
-		Preconditions.checkNotNull(builder.file, "file cannot be null");
+		Preconditions.checkNotNull(builder.metadataFile, "file cannot be null");
 		Preconditions.checkNotNull(builder.degree, "degree cannot be null");
-		Preconditions.checkNotNull(builder.keySizeBytes,
-				"keySize cannot be null");
 		Preconditions.checkNotNull(builder.cacheSize,
 				"cacheSize cannot be null");
-		Preconditions.checkArgument(
-				builder.degree.isPresent() || builder.file.isPresent()
-						&& builder.file.get().exists(),
+		Preconditions.checkArgument(builder.degree.isPresent()
+				|| builder.metadataFile.isPresent()
+				&& builder.metadataFile.get().exists(),
 				"must specify degree or use an existing file");
-		Preconditions.checkArgument(builder.keySizeBytes.isPresent()
-				|| builder.file.isPresent() && builder.file.get().exists(),
-				"must specify keySize or use an existing file");
 		Preconditions.checkArgument(!builder.degree.isPresent()
 				|| builder.degree.get() >= 2, "degree must be >=2");
-		Preconditions.checkArgument(!builder.keySizeBytes.isPresent()
-				|| builder.keySizeBytes.get() > 0, "keySize must be >0");
 
 		if (builder.cacheSize.isPresent())
 			nodeCache = of(new NodeCache<T>(builder.cacheSize.get()));
 		else
 			nodeCache = absent();
 
-		this.file = builder.file;
+		this.metadataFile = builder.metadataFile;
 
-		if (file.isPresent())
-			this.storage = of(new Storage(file.get()));
+		if (!builder.storage.isPresent() && metadataFile.isPresent())
+			this.storage = of(new Storage(metadataFile.get().getParentFile(),
+					"storage"));
 		else
 			this.storage = absent();
 
-		if (file.isPresent() && file.get().exists()) {
+		if (metadataFile.isPresent() && metadataFile.get().exists()) {
 			Metadata metadata = readMetadata();
 			degree = metadata.degree;
 			root = new NodeRef<T>(this, of(metadata.rootPosition));
@@ -121,7 +115,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			root = new NodeRef<T>(this, Optional.<Long> absent());
 			addToSaveQueue(root);
 			flushSaves();
-			if (file.isPresent())
+			if (metadataFile.isPresent())
 				writeMetadata();
 		}
 	}
@@ -135,9 +129,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	public static class Builder<R extends Serializable & Comparable<R>> {
 		private Optional<Integer> degree = of(100);
-		private Optional<File> file = absent();
-		private Optional<Integer> keySizeBytes = of(100);
+		private Optional<File> metadataFile = absent();
 		private Optional<Long> cacheSize = absent();
+		private Optional<Storage> storage = absent();
 
 		/**
 		 * Constructor.
@@ -163,19 +157,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		 * @param file
 		 * @return
 		 */
-		public Builder<R> file(File file) {
-			this.file = of(file);
-			return this;
-		}
-
-		/**
-		 * Sets the keySize.
-		 * 
-		 * @param keySizeBytes
-		 * @return
-		 */
-		public Builder<R> keySizeBytes(int keySizeBytes) {
-			this.keySizeBytes = of(keySizeBytes);
+		public Builder<R> metadata(File file) {
+			this.metadataFile = of(file);
 			return this;
 		}
 
@@ -188,6 +171,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		 */
 		public Builder<R> cacheSize(long cacheSize) {
 			this.cacheSize = of(cacheSize);
+			return this;
+		}
+
+		public Builder<R> storage(Storage storage) {
+			this.storage = of(storage);
 			return this;
 		}
 
@@ -207,9 +195,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	private Optional<File> getMetadataFile() {
-		if (file.isPresent())
-			return of(new File(file.get().getParentFile(), file.get().getName()
-					+ ".metadata"));
+		if (metadataFile.isPresent())
+			return of(new File(metadataFile.get().getParentFile(), metadataFile
+					.get().getName() + ".metadata"));
 		else
 			return absent();
 	}
@@ -250,8 +238,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private synchronized void writeMetadata() {
 		try {
-			if (!file.get().exists())
-				file.get().createNewFile();
+			if (!metadataFile.get().exists())
+				metadataFile.get().createNewFile();
 			FileOutputStream fos = new FileOutputStream(getMetadataFile().get());
 			byte[] bytes = composeMetadata();
 			fos.write(bytes);
@@ -330,7 +318,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			}
 			flushSaves();
 			root = node;
-			if (file.isPresent())
+			if (metadataFile.isPresent())
 				writeMetadata();
 		}
 	}
@@ -397,16 +385,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	/**
-	 * Returns the file the btree is being persisted to. Returns
-	 * Optional.absent() if none defined.
-	 * 
-	 * @return
-	 */
-	public Optional<File> getFile() {
-		return file;
-	}
-
-	/**
 	 * Returns the keys as a {@link List}.
 	 * 
 	 * @return
@@ -436,9 +414,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * @param node
 	 */
 	void load(NodeRef<T> node) {
-		if (getFile().isPresent()) {
+		if (storage.isPresent()) {
 			try {
-				FileInputStream fis = new FileInputStream(getFile().get());
+				FileInputStream fis = new FileInputStream(storage.get()
+						.getFile());
 				fis.skip(node.getPosition().get());
 				BufferedInputStream bis = new BufferedInputStream(fis, 1024);
 				node.load(bis);
@@ -456,10 +435,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	public void displayFile() {
 		try {
 			System.out.println("------------ File contents ----------------");
-			System.out.println(getFile().get());
-			long length = getFile().get().length();
+			System.out.println(storage.get().getFile());
+			long length = storage.get().getFile().length();
 			System.out.println("length=" + length);
-			FileInputStream fis = new FileInputStream(getFile().get());
+			FileInputStream fis = new FileInputStream(storage.get().getFile());
 			int pos = 0;
 			while (pos < length) {
 				NodeRef<T> ref = new NodeRef<T>(this, Optional.<Long> absent());
