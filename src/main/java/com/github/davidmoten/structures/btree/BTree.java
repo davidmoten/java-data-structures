@@ -316,7 +316,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	/**
-	 * Flushes queued saves to disk if file present.
+	 * Flushes queued saves to disk if storage present.
 	 */
 	private void flushSaves() {
 		if (storage.isPresent()) {
