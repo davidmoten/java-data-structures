@@ -28,9 +28,10 @@ import com.google.common.collect.Lists;
 class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
 	private Optional<Key<T>> first = Optional.absent();
-	private final BTree<T> btree;
+	private final NodeListener<T> btree;
 
 	private final NodeRef<T> ref;
+	private final int degree;
 
 	/**
 	 * Constructor.
@@ -40,9 +41,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * @param degree
 	 * @param parent
 	 */
-	NodeActual(BTree<T> btree, NodeRef<T> ref) {
+	NodeActual(NodeListener<T> btree, NodeRef<T> ref, int degree) {
 		this.btree = btree;
 		this.ref = ref;
+		this.degree = degree;
 	}
 
 	public AddResult<T> add(T t) {
@@ -59,7 +61,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	}
 
 	private NodeRef<T> copy() {
-		NodeRef<T> node = new NodeRef<T>(btree, Optional.<Long> absent());
+		NodeRef<T> node = new NodeRef<T>(btree, Optional.<Long> absent(),
+				degree);
 		node.setFirst(copy(first));
 		return node;
 	}
@@ -180,7 +183,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	private AddResult<T> performSplitIfRequired(int keyCount,
 			LinkedList<NodeRef<T>> saveQueue) {
 		final AddResult<T> result;
-		if (keyCount == btree.getDegree()) {
+		if (keyCount == degree) {
 			Key<T> key = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount);
 			saveQueue.add(key.getLeft().get());
 			saveQueue.add(key.getRight().get());
@@ -224,13 +227,15 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
-		NodeRef<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent());
+		NodeRef<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent(),
+				degree);
 		child1.setFirst(list);
 		btree.addToSaveQueue(child1);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
-		NodeRef<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent());
+		NodeRef<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent(),
+				degree);
 		child2.setFirst(key.get().next());
 		btree.addToSaveQueue(child2);
 
