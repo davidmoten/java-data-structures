@@ -338,7 +338,23 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	private void addOne2(T t) {
-		KeyNodes keyNodes = root.add(KeyNodes.create(new Key<T>(t)));
+		KeyNodes<T> keyNodes = root.add(KeyNodes.create(new Key<T>(t)));
+		for (NodeRef<T> node : keyNodes.getSaveQueue()) {
+			saveQueue.add(node);
+		}
+		NodeRef<T> node;
+		if (keyNodes.getKey().isPresent()) {
+			node = new NodeRef<T>(nodeListener, Optional.<Long> absent(),
+					degree);
+			node.setFirst(of(keyNodes.getKey().get().node(node)));
+			saveQueue.add(node);
+		} else
+			node = keyNodes.getSaveQueue().getLast();
+
+		flushSaves(saveQueue);
+		root = node;
+		if (metadataFile.isPresent())
+			writeMetadata();
 	}
 
 	/**

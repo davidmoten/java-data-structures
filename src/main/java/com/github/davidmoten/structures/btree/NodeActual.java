@@ -77,7 +77,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		if (node.countKeys() == degree) {
 			return node.split(keyNodes);
 		} else
-			return keyNodes.push(node);
+			return keyNodes.add(node);
 	}
 
 	NodeRef<T> insert(Key<T> key) {
@@ -166,7 +166,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			NodeRef<T> node = replace(key, side, lastNodeAddedToSaveQueue);
 			// The key has definitely been added to node so put it on the
 			// saveQueue
-			result = addResult.push(node);
+			result = addResult.add(node);
 		}
 		return result;
 	}
@@ -430,7 +430,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		medianKey.setLeft(Optional.of(child1));
 		medianKey.setRight(Optional.of(child2));
 
-		return keyNodes.push(child1).push(child2).key(medianKey);
+		return keyNodes.add(child1).add(child2).key(medianKey);
 	}
 
 	/**
