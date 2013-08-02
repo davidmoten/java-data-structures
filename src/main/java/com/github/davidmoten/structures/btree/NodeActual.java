@@ -75,7 +75,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		NodeRef<T> node = insert(keyNodes.getKey().get());
 
 		if (node.countKeys() == degree) {
-			return node.split();
+			return node.split(keyNodes);
 		} else
 			return keyNodes.push(node);
 	}
@@ -164,6 +164,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			NodeRef<T> lastNodeAddedToSaveQueue = addResult.getSaveQueue()
 					.peek();
 			NodeRef<T> node = replace(key, side, lastNodeAddedToSaveQueue);
+			// The key has definitely been added to node so put it on the
+			// saveQueue
 			result = addResult.push(node);
 		}
 		return result;
@@ -196,8 +198,15 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 	private NodeRef<T> replace(Key<T> key, Side side,
 			NodeRef<T> lastNodeAddedToSaveQueue) {
-		// TODO Auto-generated method stub
-		return null;
+		int i = indexOf(key).get();
+		NodeRef<T> node = copy();
+		node.replaceKeySide(i, side, lastNodeAddedToSaveQueue);
+		return node;
+	}
+
+	void replaceKeySide(int keyIndex, Side side, NodeRef<T> replaceWith) {
+		Key<T> k = key(keyIndex);
+		k.setSide(side, of(replaceWith));
 	}
 
 	private NodeRef<T> copy() {
@@ -381,6 +390,47 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		medianKey.setRight(Optional.of(child2));
 
 		return medianKey;
+	}
+
+	public KeyNodes<T> split(KeyNodes<T> keyNodes) {
+		int medianNumber = getMedianNumber(countKeys());
+
+		// get the median key and the preceding key
+		int count = 1;
+
+		// for thread safety make a copy of the keys
+		Optional<Key<T>> list = copy(first);
+
+		Optional<Key<T>> key = list;
+		Optional<Key<T>> previous = absent();
+		while (count < medianNumber) {
+			previous = key;
+			key = key.get().next();
+			count++;
+		}
+		Key<T> medianKey = key.get();
+
+		previous.get().setNext(Optional.<Key<T>> absent());
+
+		// create child1 of first ->..->previous
+		// this child will request a new file position
+		NodeRef<T> child1 = new NodeRef<T>(btree, Optional.<Long> absent(),
+				degree);
+		child1.setFirst(list);
+
+		// create child2 of medianKey.next ->..->last
+		// this child will request a new file position
+		NodeRef<T> child2 = new NodeRef<T>(btree, Optional.<Long> absent(),
+				degree);
+		child2.setFirst(key.get().next());
+
+		// set the links on medianKey to the next key in the same node and to
+		// its children
+		medianKey.setNext(Optional.<Key<T>> absent());
+		medianKey.setLeft(Optional.of(child1));
+		medianKey.setRight(Optional.of(child2));
+
+		return keyNodes.push(child1).push(child2).key(medianKey);
 	}
 
 	/**
@@ -608,11 +658,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 	public void unload() {
 		throw new RuntimeException("not expected here");
-	}
-
-	public KeyNodes<T> split() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

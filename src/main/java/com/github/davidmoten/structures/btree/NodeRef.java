@@ -156,6 +156,11 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node().add(keyNodes);
 	}
 
+	void replaceKeySide(int keyIndex, Side side,
+			NodeRef<T> lastNodeAddedToSaveQueue) {
+		node().replaceKeySide(keyIndex, side, lastNodeAddedToSaveQueue);
+	}
+
 	public AddResult<T> addToNonLeafNode(T t) {
 		return node().addToNonLeafNode(t);
 	}
@@ -180,8 +185,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node().countKeys();
 	}
 
-	public KeyNodes<T> split() {
-		return node().split();
+	public KeyNodes<T> split(KeyNodes<T> keyNodes) {
+		return node().split(keyNodes);
 	}
 
 	public void insertHere(Key<T> key) {

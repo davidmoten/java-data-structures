@@ -35,6 +35,10 @@ class KeyNodes<T extends Serializable & Comparable<T>> {
 		return saveQueue;
 	}
 
+	KeyNodes<T> key(Key<T> key) {
+		return new KeyNodes<T>(Optional.of(key), saveQueue);
+	}
+
 	KeyNodes<T> push(NodeRef<T> node) {
 		LinkedList<NodeRef<T>> list = Lists.newLinkedList(saveQueue);
 		list.push(node);
