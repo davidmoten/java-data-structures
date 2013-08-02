@@ -337,6 +337,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	private void addOne2(T t) {
+		KeyNodes keyNodes = root.add(KeyNodes.create(new Key<T>(t)));
+	}
+
 	/**
 	 * Flushes queued saves to disk if storage present.
 	 * 

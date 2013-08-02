@@ -50,14 +50,154 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	public AddResult<T> add(T t) {
 		AddResult<T> result;
 		if (isLeafNode()) {
-			result = copy().add(new Key<T>(t), new LinkedList<NodeRef<T>>());
+			result = copy().add(new Key<T>(t));
 		} else
 			result = copy().addToNonLeafNode(t);
 		if (result.getNode().isPresent()) {
 			btree.addToSaveQueue(result.getNode().get());
-			// result.getSaveQueue().add(result.getNode().get());
 		}
 		return result;
+	}
+
+	public KeyNodes<T> add(KeyNodes<T> keyNodes) {
+		Preconditions.checkArgument(keyNodes.getKey().isPresent(),
+				"key must be present");
+		KeyNodes<T> result;
+		if (isLeafNode())
+			result = addToLeafNode(keyNodes);
+		else
+			result = addToNonLeafNode(keyNodes);
+		return result;
+	}
+
+	private KeyNodes<T> addToLeafNode(KeyNodes<T> keyNodes) {
+
+		NodeRef<T> node = insert(keyNodes.getKey().get());
+
+		if (node.countKeys() == degree) {
+			return node.split();
+		} else
+			return keyNodes.push(node);
+	}
+
+	NodeRef<T> insert(Key<T> key) {
+		NodeRef<T> node = copy();
+		node.insertHere(key);
+		return node;
+	}
+
+	// TODO unit test this
+	void insertHere(Key<T> key) {
+		if (!first.isPresent())
+			first = of(key.node(ref));
+		else {
+			Optional<Key<T>> k = first;
+			Optional<Key<T>> previous = absent();
+			boolean added = false;
+			while (k.isPresent()) {
+				if (key.value().compareTo(k.get().value()) < 0) {
+					Key<T> newKey = k.get().nodeNext(ref, k);
+					if (previous.isPresent()) {
+						previous.get().setNext(of(newKey));
+					}
+					added = true;
+					break;
+				}
+				previous = k;
+			}
+			if (!added) {
+				// add as last key
+
+				// k must be present because first was present
+				k.get().setNext(of(k.get().node(ref)));
+			}
+		}
+	}
+
+	private KeyNodes<T> addToNonLeafNode(KeyNodes<T> keyNodes) {
+
+		Preconditions.checkArgument(keyNodes.getKey().isPresent(),
+				"key must be present");
+		Preconditions.checkArgument(first.isPresent(), "first must be present");
+		// Note that first will be present because if is internal (non-leaf)
+		// node then it must have some keys
+		KeyNodes<T> result = null;
+		boolean added = false;
+		Optional<Key<T>> last = first;
+		T t = keyNodes.getKey().get().value();
+		for (Key<T> key : keys()) {
+			if (t.compareTo(key.value()) < 0) {
+				// don't need to check that left is present because of
+				// properties of b-tree
+				final KeyNodes<T> addToLeftResult = key.getLeft().get()
+						.add(keyNodes);
+				result = processAddToChildResult(key, Side.LEFT,
+						addToLeftResult);
+				added = true;
+				break;
+			}
+			last = of(key);
+		}
+
+		if (!added) {
+			// don't need to check that left is present because of properties
+			// of b-tree non leaf node
+			final KeyNodes<T> addToRightResult = last.get().getRight().get()
+					.add(keyNodes);
+			result = processAddToChildResult(last.get(), Side.RIGHT,
+					addToRightResult);
+		}
+		Preconditions.checkNotNull(result);
+		return result;
+
+	}
+
+	private KeyNodes<T> processAddToChildResult(Key<T> key, Side side,
+			final KeyNodes<T> addResult) {
+		KeyNodes<T> result;
+		if (addResult.getKey().isPresent()) {
+			// add a split key to this node that came from key on side
+			result = clearChild(key, side).add(addResult);
+		} else {
+			// create a new node based on this with key changed to point
+			// to the last node on the list
+			NodeRef<T> lastNodeAddedToSaveQueue = addResult.getSaveQueue()
+					.peek();
+			NodeRef<T> node = replace(key, side, lastNodeAddedToSaveQueue);
+			result = addResult.push(node);
+		}
+		return result;
+	}
+
+	private NodeRef<T> clearChild(Key<T> key, Side side) {
+		int i = indexOf(key).get();
+		NodeRef<T> node = copy();
+		node.key(i).setSide(side, Optional.<NodeRef<T>> absent());
+		return node;
+	}
+
+	private Optional<Integer> indexOf(Key<T> key) {
+		Optional<Key<T>> k = first;
+		int index = 0;
+		while (k.isPresent()) {
+			if (k.get() == key)
+				return of(index);
+			index++;
+		}
+		return absent();
+	}
+
+	Key<T> key(int index) {
+		Optional<Key<T>> k = first;
+		for (int i = 0; i < index; i++)
+			k = k.get().next();
+		return k.get();
+	}
+
+	private NodeRef<T> replace(Key<T> key, Side side,
+			NodeRef<T> lastNodeAddedToSaveQueue) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	private NodeRef<T> copy() {
@@ -81,8 +221,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 				result = key.getLeft().get().add(t);
 				if (result.getSplitKey().isPresent()) {
 					// add a split key to this node
-					result = add(result.getSplitKey().get(),
-							result.getSaveQueue());
+					result = add(result.getSplitKey().get());
 				} else {
 					key.setLeft(result.getNode());
 					result = AddResult.createFromNonSplitNode(ref,
@@ -99,7 +238,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			// of b-tree
 			result = last.get().getRight().get().add(t);
 			if (result.getSplitKey().isPresent()) {
-				result = add(result.getSplitKey().get(), result.getSaveQueue());
+				result = add(result.getSplitKey().get());
 			} else {
 				last.get().setRight(result.getNode());
 				result = AddResult.createFromNonSplitNode(ref,
@@ -119,7 +258,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * @param key
 	 * @return
 	 */
-	public AddResult<T> add(Key<T> key, LinkedList<NodeRef<T>> saveQueue) {
+	public AddResult<T> add(Key<T> key) {
 
 		key.setNode(of(ref));
 
@@ -127,7 +266,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 		int keyCount = countKeys();
 
-		return performSplitIfRequired(keyCount, saveQueue);
+		return performSplitIfRequired(keyCount);
 	}
 
 	/**
@@ -180,17 +319,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		return result;
 	}
 
-	private AddResult<T> performSplitIfRequired(int keyCount,
-			LinkedList<NodeRef<T>> saveQueue) {
+	private AddResult<T> performSplitIfRequired(int keyCount) {
 		final AddResult<T> result;
 		if (keyCount == degree) {
 			Key<T> key = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount);
-			saveQueue.add(key.getLeft().get());
-			saveQueue.add(key.getRight().get());
-			result = createFromSplitKey(key, saveQueue);
+			result = createFromSplitKey(key, new LinkedList<NodeRef<T>>());
 		} else {
-			saveQueue.add(ref);
-			result = createFromNonSplitNode(ref, saveQueue);
+			result = createFromNonSplitNode(ref, new LinkedList<NodeRef<T>>());
 		}
 		return result;
 	}
@@ -265,7 +400,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * 
 	 * @return
 	 */
-	private int countKeys() {
+	int countKeys() {
 		int count = 0;
 		Optional<Key<T>> k = first;
 		while (k.isPresent()) {
@@ -473,6 +608,11 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 	public void unload() {
 		throw new RuntimeException("not expected here");
+	}
+
+	public KeyNodes<T> split() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

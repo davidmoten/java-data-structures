@@ -9,7 +9,6 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.google.common.base.Optional;
@@ -153,12 +152,16 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node().add(t);
 	}
 
+	public KeyNodes<T> add(KeyNodes<T> keyNodes) {
+		return node().add(keyNodes);
+	}
+
 	public AddResult<T> addToNonLeafNode(T t) {
 		return node().addToNonLeafNode(t);
 	}
 
-	public AddResult<T> add(Key<T> key, LinkedList<NodeRef<T>> saveQueue) {
-		return node().add(key, saveQueue);
+	public AddResult<T> add(Key<T> key) {
+		return node().add(key);
 	}
 
 	public Iterable<Key<T>> keys() {
@@ -173,4 +176,19 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		this.position = position;
 	}
 
+	public int countKeys() {
+		return node().countKeys();
+	}
+
+	public KeyNodes<T> split() {
+		return node().split();
+	}
+
+	public void insertHere(Key<T> key) {
+		node().insertHere(key);
+	}
+
+	public Key<T> key(int i) {
+		return node().key(i);
+	}
 }

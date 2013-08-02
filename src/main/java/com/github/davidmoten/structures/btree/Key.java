@@ -26,6 +26,16 @@ class Key<T extends Serializable & Comparable<T>> {
 		return deleted;
 	}
 
+	Key(T t, Optional<NodeRef<T>> left, Optional<NodeRef<T>> right,
+			boolean deleted, Optional<NodeRef<T>> node, Optional<Key<T>> next) {
+		this.t = t;
+		this.left = left;
+		this.right = right;
+		this.deleted = deleted;
+		this.node = node;
+		this.next = next;
+	}
+
 	void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
@@ -106,4 +116,35 @@ class Key<T extends Serializable & Comparable<T>> {
 	Optional<NodeRef<T>> getNode() {
 		return node;
 	}
+
+	void setSide(Side side, Optional<NodeRef<T>> nd) {
+		Preconditions.checkArgument(!Side.TOP.equals(side),
+				"side cannot be TOP");
+		if (Side.LEFT.equals(side))
+			left = nd;
+		else
+			right = nd;
+	}
+
+	Key<T> side(Side side, Optional<NodeRef<T>> nd) {
+		Preconditions.checkArgument(!Side.TOP.equals(side),
+				"side cannot be TOP");
+		if (Side.LEFT.equals(side))
+			return new Key<T>(t, nd, right, deleted, node, next);
+		else
+			return new Key<T>(t, left, nd, deleted, node, next);
+	}
+
+	Key<T> node(NodeRef<T> node) {
+		return new Key<T>(t, left, right, deleted, Optional.of(node), next);
+	}
+
+	Key<T> nodeNext(NodeRef<T> node, Optional<Key<T>> next) {
+		return new Key<T>(t, left, right, deleted, Optional.of(node), next);
+	}
+
+	Key<T> left(NodeRef<T> node, Optional<NodeRef<T>> left) {
+		return new Key<T>(t, left, right, deleted, Optional.of(node), next);
+	}
+
 }
