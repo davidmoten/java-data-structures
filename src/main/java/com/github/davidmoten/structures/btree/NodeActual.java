@@ -104,12 +104,14 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 					break;
 				}
 				previous = k;
+				k = k.get().next();
 			}
+
 			if (!added) {
 				// add as last key
 
 				// k must be present because first was present
-				k.get().setNext(of(k.get().node(ref)));
+				previous.get().setNext(of(k.get().node(ref)));
 			}
 		}
 	}
@@ -185,6 +187,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			if (k.get() == key)
 				return of(index);
 			index++;
+			k = k.get().next();
 		}
 		return absent();
 	}

@@ -302,7 +302,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	public BTree<T> add(T... values) {
 		for (T t : values) {
-			addOne(t);
+			addOne2(t);
 		}
 		return this;
 	}
