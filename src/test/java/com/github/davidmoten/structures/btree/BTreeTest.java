@@ -125,8 +125,10 @@ public class BTreeTest {
 	@Test
 	public void test4() {
 		BTree<Integer> t = builder(Integer.class).degree(3).build()
-				.add(1, 2, 3, 0);
+				.add(1, 2, 3);
+		t.add(0);
 		Key<Integer> top = t.getKeys().get(0);
+		System.out.println(t);
 		assertEquals(0, (int) top.getLeft().get().getKeys().get(0).value());
 	}
 
@@ -161,6 +163,7 @@ public class BTreeTest {
 	public void test6() {
 		BTree<Integer> t = builder(Integer.class).degree(3).build()
 				.add(10, 20, 30, 0, 5);
+		System.out.println(t);
 		assertKeyValuesAre(t.getKeys(), 5, 20);
 		assertKeyValuesAre(t.getKeys().get(0).getLeft().get().getKeys(), 0);
 		assertKeyValuesAre(t.getKeys().get(0).getRight().get().getKeys(), 10);

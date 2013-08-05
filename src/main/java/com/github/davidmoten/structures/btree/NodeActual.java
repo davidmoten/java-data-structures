@@ -96,7 +96,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			boolean added = false;
 			while (k.isPresent()) {
 				if (key.value().compareTo(k.get().value()) < 0) {
-					Key<T> newKey = k.get().nodeNext(ref, k);
+					Key<T> newKey = key.nodeNext(ref, k);
+					if (k == first)
+						first = of(newKey);
 					if (previous.isPresent()) {
 						previous.get().setNext(of(newKey));
 					}
@@ -111,7 +113,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 				// add as last key
 
 				// k must be present because first was present
-				previous.get().setNext(of(k.get().node(ref)));
+				previous.get().setNext(of(key.node(ref)));
 			}
 		}
 	}
@@ -130,7 +132,9 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		for (Key<T> key : keys()) {
 			if (t.compareTo(key.value()) < 0) {
 				// don't need to check that left is present because of
-				// properties of b-tree
+				// properties of b-tree non-leaf node
+				Preconditions.checkArgument(key.getLeft().isPresent(),
+						"left must be present on non-leaf node " + key);
 				final KeyNodes<T> addToLeftResult = key.getLeft().get()
 						.add(keyNodes);
 				result = processAddToChildResult(key, Side.LEFT,
