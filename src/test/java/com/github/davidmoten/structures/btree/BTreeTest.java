@@ -151,12 +151,12 @@ public class BTreeTest {
 	}
 
 	/**
-	 * Given an empty BTree<String> of degree 3 with inserted values 1,2,3,0 in
-	 * order.
+	 * Given an empty BTree<String> of degree 3 with inserted values 10,20,30,0
+	 * in order.
 	 * 
-	 * When I insert 0.5
+	 * When I insert 5
 	 * 
-	 * Then the root=0.5,2.0, node.left=0, node.right=1
+	 * Then the root=5,20, node.left=0, node.right=10
 	 * 
 	 */
 	@Test
