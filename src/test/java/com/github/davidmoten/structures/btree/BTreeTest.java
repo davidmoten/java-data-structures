@@ -438,6 +438,15 @@ public class BTreeTest {
 	}
 
 	@Test
+	public void testIteratorOnBTreeWith14Values() {
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+		t.add(11);
+		System.out.println(t);
+		checkEquals(t, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
+	}
+
+	@Test
 	public void testIteratorOnBTreeWith6Values() {
 		BTree<Integer> t = builder(Integer.class).degree(4).build();
 		t.add(1, 2, 3, 4, 5, 6);
