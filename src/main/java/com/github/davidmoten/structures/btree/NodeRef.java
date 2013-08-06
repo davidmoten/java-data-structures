@@ -21,12 +21,12 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 	private Optional<Long> position;
 
 	private Optional<NodeActual<T>> node = Optional.absent();
-	private final NodeListener<T> btree;
+	private final NodeListener<T> nodeListener;
 
 	private final int degree;
 
-	public NodeRef(NodeListener<T> btree, Optional<Long> position, int degree) {
-		this.btree = btree;
+	public NodeRef(NodeListener<T> nodeListener, Optional<Long> position, int degree) {
+		this.nodeListener = nodeListener;
 		this.position = position;
 		this.degree = degree;
 	}
@@ -36,7 +36,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 			if (position.isPresent()) {
 				load();
 			} else {
-				node = of(new NodeActual<T>(btree, this, degree));
+				node = of(new NodeActual<T>(nodeListener, this, degree));
 			}
 		}
 		return node.get();
@@ -59,9 +59,9 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 				boolean deleted = ois.readBoolean();
 				Key<T> key = new Key<T>(t);
 				if (left != CHILD_ABSENT)
-					key.setLeft(of(new NodeRef<T>(btree, of(left), degree)));
+					key.setLeft(of(new NodeRef<T>(nodeListener, of(left), degree)));
 				if (right != CHILD_ABSENT)
-					key.setRight(of(new NodeRef<T>(btree, of(right), degree)));
+					key.setRight(of(new NodeRef<T>(nodeListener, of(right), degree)));
 				key.setDeleted(deleted);
 				key.setNode(of(this));
 				key.setNext(Optional.<Key<T>> absent());
@@ -87,8 +87,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 	}
 
 	private void load() {
-		node = of(new NodeActual<T>(btree, this, degree));
-		btree.load(this);
+		node = of(new NodeActual<T>(nodeListener, this, degree));
+		nodeListener.load(this);
 	}
 
 	public Optional<T> find(T t) {
