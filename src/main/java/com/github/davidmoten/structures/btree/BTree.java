@@ -70,15 +70,15 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private final LinkedList<NodeRef<T>> saveQueue = new LinkedList<NodeRef<T>>();
 
-	private final NodeListener<T> nodeListener = new NodeListener() {
+	private final NodeListener<T> nodeListener = new NodeListener<T>() {
 
 		@Override
-		public void addToSaveQueue(NodeRef node) {
+		public void addToSaveQueue(NodeRef<T> node) {
 			BTree.this.addToSaveQueue(node);
 		}
 
 		@Override
-		public void load(NodeRef node) {
+		public void load(NodeRef<T> node) {
 			BTree.this.load(node);
 		}
 
