@@ -1,7 +1,9 @@
 package com.github.davidmoten.structures.btree;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -58,6 +60,19 @@ public class Storage {
 			// loaded(node.getPosition().get(), node);
 		}
 		saveToFile(allBytes.toByteArray(), startPos);
+	}
+
+	public <T extends Serializable & Comparable<T>> void load(NodeRef<T> node) {
+		try {
+			FileInputStream fis = new FileInputStream(file);
+			fis.skip(node.getPosition().get());
+			BufferedInputStream bis = new BufferedInputStream(fis, 1024);
+			node.load(bis);
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**

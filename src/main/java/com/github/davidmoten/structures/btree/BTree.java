@@ -3,7 +3,6 @@ package com.github.davidmoten.structures.btree;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -118,12 +117,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		if (metadataFile.isPresent() && metadataFile.get().exists()) {
 			Metadata metadata = readMetadata();
 			degree = metadata.degree;
-			root = new NodeRef<T>(loader, of(metadata.rootPosition),
-					degree);
+			root = new NodeRef<T>(loader, of(metadata.rootPosition), degree);
 		} else {
 			this.degree = builder.degree.get();
-			root = new NodeRef<T>(loader, Optional.<Long> absent(),
-					degree);
+			root = new NodeRef<T>(loader, Optional.<Long> absent(), degree);
 			addToSaveQueue(root);
 			flushSaves(saveQueue);
 			if (metadataFile.isPresent())
@@ -309,8 +306,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 		NodeRef<T> node;
 		if (keyNodes.getKey().isPresent()) {
-			node = new NodeRef<T>(loader, Optional.<Long> absent(),
-					degree);
+			node = new NodeRef<T>(loader, Optional.<Long> absent(), degree);
 			node.setFirst(of(keyNodes.getKey().get().node(node)));
 			saveQueue.add(node);
 		} else
@@ -416,17 +412,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private void load(NodeRef<T> node) {
 		if (storage.isPresent()) {
-			try {
-				FileInputStream fis = new FileInputStream(storage.get()
-						.getFile());
-				fis.skip(node.getPosition().get());
-				BufferedInputStream bis = new BufferedInputStream(fis, 1024);
-				node.load(bis);
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+			storage.get().load(node);
 		}
 	}
 
@@ -444,8 +430,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			while (pos < length) {
 				NodeRef<T> ref = new NodeRef<T>(loader,
 						Optional.<Long> absent(), degree);
-				NodeActual<T> node = new NodeActual<T>(loader, ref,
-						degree);
+				NodeActual<T> node = new NodeActual<T>(loader, ref, degree);
 				long size = ref.load(fis, node);
 				displayNode(pos, node);
 				pos += size;
