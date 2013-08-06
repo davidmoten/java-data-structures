@@ -430,7 +430,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			while (pos < length) {
 				NodeRef<T> ref = new NodeRef<T>(loader,
 						Optional.<Long> absent(), degree);
-				NodeActual<T> node = new NodeActual<T>(loader, ref, degree);
+				Node<T> node = new Node<T>(loader, ref, degree);
 				long size = ref.load(fis, node);
 				displayNode(pos, node);
 				pos += size;
@@ -448,7 +448,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * @param pos
 	 * @param node
 	 */
-	private void displayNode(long pos, NodeActual<T> node) {
+	private void displayNode(long pos, Node<T> node) {
 		System.out.println("node position=" + pos);
 		for (Key<T> key : node.keys()) {
 			String left;

@@ -20,7 +20,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	private Optional<Long> position;
 
-	private Optional<NodeActual<T>> node = Optional.absent();
+	private Optional<Node<T>> node = Optional.absent();
 	private final NodeLoader<T> loader;
 
 	private final int degree;
@@ -32,18 +32,18 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		this.degree = degree;
 	}
 
-	synchronized NodeActual<T> node() {
+	synchronized Node<T> node() {
 		if (!node.isPresent()) {
 			if (position.isPresent()) {
 				load();
 			} else {
-				node = of(new NodeActual<T>(loader, this, degree));
+				node = of(new Node<T>(loader, this, degree));
 			}
 		}
 		return node.get();
 	}
 
-	long load(InputStream is, NodeActual<T> node) {
+	long load(InputStream is, Node<T> node) {
 		try {
 			System.out.println("loading");
 			CountingInputStream cis = new CountingInputStream(is);
@@ -90,7 +90,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 	}
 
 	private void load() {
-		node = of(new NodeActual<T>(loader, this, degree));
+		node = of(new Node<T>(loader, this, degree));
 		loader.load(this);
 	}
 

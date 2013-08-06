@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
  * 
  * @param <T>
  */
-class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> {
+class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
 	private Optional<Key<T>> first = Optional.absent();
 	private final NodeLoader<T> loader;
@@ -38,7 +38,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * @param degree
 	 * @param parent
 	 */
-	NodeActual(NodeLoader<T> nodeListener, NodeRef<T> ref, int degree) {
+	Node(NodeLoader<T> nodeListener, NodeRef<T> ref, int degree) {
 		this.loader = nodeListener;
 		this.ref = ref;
 		this.degree = degree;

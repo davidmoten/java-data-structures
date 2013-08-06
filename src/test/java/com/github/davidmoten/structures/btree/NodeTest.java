@@ -1,6 +1,6 @@
 package com.github.davidmoten.structures.btree;
 
-import static com.github.davidmoten.structures.btree.NodeActual.getMedianNumber;
+import static com.github.davidmoten.structures.btree.Node.getMedianNumber;
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import com.google.common.base.Optional;
 
-public class NodeActualTest {
+public class NodeTest {
 
 	/**
 	 * Given an empty node, degree 3
