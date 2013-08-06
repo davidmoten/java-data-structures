@@ -25,7 +25,7 @@ import com.google.common.collect.Lists;
 class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
 	private Optional<Key<T>> first = Optional.absent();
-	private final NodeListener<T> nodeListener;
+	private final NodeLoader<T> loader;
 
 	private final NodeRef<T> ref;
 	private final int degree;
@@ -38,8 +38,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * @param degree
 	 * @param parent
 	 */
-	NodeActual(NodeListener<T> nodeListener, NodeRef<T> ref, int degree) {
-		this.nodeListener = nodeListener;
+	NodeActual(NodeLoader<T> nodeListener, NodeRef<T> ref, int degree) {
+		this.loader = nodeListener;
 		this.ref = ref;
 		this.degree = degree;
 	}
@@ -211,7 +211,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	}
 
 	private NodeRef<T> copy() {
-		NodeRef<T> node = new NodeRef<T>(nodeListener,
+		NodeRef<T> node = new NodeRef<T>(loader,
 				Optional.<Long> absent(), degree);
 		node.setFirst(copy(first));
 		return node;
@@ -247,13 +247,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
-		NodeRef<T> child1 = new NodeRef<T>(nodeListener,
+		NodeRef<T> child1 = new NodeRef<T>(loader,
 				Optional.<Long> absent(), degree);
 		child1.setFirst(list);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
-		NodeRef<T> child2 = new NodeRef<T>(nodeListener,
+		NodeRef<T> child2 = new NodeRef<T>(loader,
 				Optional.<Long> absent(), degree);
 		child2.setFirst(key.get().next());
 

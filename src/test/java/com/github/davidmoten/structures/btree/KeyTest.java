@@ -11,7 +11,7 @@ public class KeyTest {
 
 	@Test
 	public void testHasChild() {
-		NodeListener<Double> n = new NodeListener<Double>() {
+		NodeLoader<Double> n = new NodeLoader<Double>() {
 
 			@Override
 			public void load(NodeRef<Double> node) {

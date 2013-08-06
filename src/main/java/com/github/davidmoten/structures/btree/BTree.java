@@ -70,7 +70,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private final LinkedList<NodeRef<T>> saveQueue = new LinkedList<NodeRef<T>>();
 
-	private final NodeListener<T> nodeListener = new NodeListener<T>() {
+	private final NodeLoader<T> loader = new NodeLoader<T>() {
 
 		@Override
 		public void load(NodeRef<T> node) {
@@ -118,11 +118,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		if (metadataFile.isPresent() && metadataFile.get().exists()) {
 			Metadata metadata = readMetadata();
 			degree = metadata.degree;
-			root = new NodeRef<T>(nodeListener, of(metadata.rootPosition),
+			root = new NodeRef<T>(loader, of(metadata.rootPosition),
 					degree);
 		} else {
 			this.degree = builder.degree.get();
-			root = new NodeRef<T>(nodeListener, Optional.<Long> absent(),
+			root = new NodeRef<T>(loader, Optional.<Long> absent(),
 					degree);
 			addToSaveQueue(root);
 			flushSaves(saveQueue);
@@ -309,7 +309,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 		NodeRef<T> node;
 		if (keyNodes.getKey().isPresent()) {
-			node = new NodeRef<T>(nodeListener, Optional.<Long> absent(),
+			node = new NodeRef<T>(loader, Optional.<Long> absent(),
 					degree);
 			node.setFirst(of(keyNodes.getKey().get().node(node)));
 			saveQueue.add(node);
@@ -442,9 +442,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			FileInputStream fis = new FileInputStream(storage.get().getFile());
 			int pos = 0;
 			while (pos < length) {
-				NodeRef<T> ref = new NodeRef<T>(nodeListener,
+				NodeRef<T> ref = new NodeRef<T>(loader,
 						Optional.<Long> absent(), degree);
-				NodeActual<T> node = new NodeActual<T>(nodeListener, ref,
+				NodeActual<T> node = new NodeActual<T>(loader, ref,
 						degree);
 				long size = ref.load(fis, node);
 				displayNode(pos, node);

@@ -160,7 +160,7 @@ public class NodeActualTest {
 	}
 
 	private NodeRef<Integer> createNode() {
-		NodeListener<Integer> listener = new NodeListener<Integer>() {
+		NodeLoader<Integer> listener = new NodeLoader<Integer>() {
 
 			@Override
 			public void load(NodeRef<Integer> node) {
