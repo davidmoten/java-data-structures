@@ -16,7 +16,6 @@ class Key<T extends Serializable & Comparable<T>> {
 
 	// fields not to be serialized
 	private transient Optional<Key<T>> next = absent();
-	private transient Optional<NodeRef<T>> node = absent();
 
 	Key(T t) {
 		this.t = t;
@@ -31,12 +30,11 @@ class Key<T extends Serializable & Comparable<T>> {
 	}
 
 	Key(T t, Optional<NodeRef<T>> left, Optional<NodeRef<T>> right,
-			boolean deleted, Optional<NodeRef<T>> node, Optional<Key<T>> next) {
+			boolean deleted, Optional<Key<T>> next) {
 		this.t = t;
 		this.left = left;
 		this.right = right;
 		this.deleted = deleted;
-		this.node = node;
 		this.next = next;
 	}
 
@@ -77,14 +75,6 @@ class Key<T extends Serializable & Comparable<T>> {
 		return toString("  ");
 	}
 
-	Optional<NodeRef<T>> getParent() {
-		return node;
-	}
-
-	void setNode(Optional<NodeRef<T>> node) {
-		this.node = node;
-	}
-
 	Optional<Key<T>> next() {
 		return next;
 	}
@@ -97,10 +87,6 @@ class Key<T extends Serializable & Comparable<T>> {
 		StringBuilder builder = new StringBuilder();
 		builder.append("\n" + space + "Key [t=");
 		builder.append(t);
-		if (node.isPresent()) {
-			builder.append(", node=");
-			builder.append(node.get().keysAsString());
-		}
 		if (left.isPresent()) {
 			builder.append("\n" + space + "  left=");
 			builder.append(left.get().toString(space + "    "));
@@ -115,10 +101,6 @@ class Key<T extends Serializable & Comparable<T>> {
 		}
 		builder.append("]");
 		return builder.toString();
-	}
-
-	Optional<NodeRef<T>> getNode() {
-		return node;
 	}
 
 	void setSide(Side side, Optional<NodeRef<T>> nd) {
@@ -138,21 +120,17 @@ class Key<T extends Serializable & Comparable<T>> {
 		Preconditions.checkArgument(!Side.TOP.equals(side),
 				"side cannot be TOP");
 		if (Side.LEFT.equals(side))
-			return new Key<T>(t, nd, right, deleted, node, next);
+			return new Key<T>(t, nd, right, deleted, next);
 		else
-			return new Key<T>(t, left, nd, deleted, node, next);
-	}
-
-	Key<T> node(NodeRef<T> node) {
-		return new Key<T>(t, left, right, deleted, Optional.of(node), next);
+			return new Key<T>(t, left, nd, deleted, next);
 	}
 
 	Key<T> nodeNext(NodeRef<T> node, Optional<Key<T>> next) {
-		return new Key<T>(t, left, right, deleted, Optional.of(node), next);
+		return new Key<T>(t, left, right, deleted, next);
 	}
 
 	Key<T> left(NodeRef<T> node, Optional<NodeRef<T>> left) {
-		return new Key<T>(t, left, right, deleted, Optional.of(node), next);
+		return new Key<T>(t, left, right, deleted, next);
 	}
 
 }

@@ -307,7 +307,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		NodeRef<T> node;
 		if (keyNodes.getKey().isPresent()) {
 			node = new NodeRef<T>(loader, Optional.<Long> absent(), degree);
-			node.setFirst(of(keyNodes.getKey().get().node(node)));
+			node.setFirst(of(keyNodes.getKey().get()));
 			saveQueue.add(node);
 		} else
 			node = keyNodes.getSaveQueue().getLast();

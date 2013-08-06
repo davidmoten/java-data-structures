@@ -60,13 +60,10 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 				boolean deleted = ois.readBoolean();
 				Key<T> key = new Key<T>(t);
 				if (left != CHILD_ABSENT)
-					key.setLeft(of(new NodeRef<T>(loader, of(left),
-							degree)));
+					key.setLeft(of(new NodeRef<T>(loader, of(left), degree)));
 				if (right != CHILD_ABSENT)
-					key.setRight(of(new NodeRef<T>(loader, of(right),
-							degree)));
+					key.setRight(of(new NodeRef<T>(loader, of(right), degree)));
 				key.setDeleted(deleted);
-				key.setNode(of(this));
 				key.setNext(Optional.<Key<T>> absent());
 				if (!first.isPresent())
 					first = of(key);

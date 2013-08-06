@@ -74,7 +74,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 	// TODO unit test this
 	void insertHere(Key<T> key) {
 		if (!first.isPresent())
-			first = of(key.node(ref));
+			first = of(key);
 		else {
 			Optional<Key<T>> k = first;
 			Optional<Key<T>> previous = absent();
@@ -101,7 +101,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 				// add as last key
 
 				// k must be present because first was present
-				previous.get().setNext(of(key.node(ref)));
+				previous.get().setNext(of(key));
 				// key overrides the right child of previous
 				previous.get().setRight(key.getLeft());
 			}
@@ -211,8 +211,8 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 	}
 
 	private NodeRef<T> copy() {
-		NodeRef<T> node = new NodeRef<T>(loader,
-				Optional.<Long> absent(), degree);
+		NodeRef<T> node = new NodeRef<T>(loader, Optional.<Long> absent(),
+				degree);
 		node.setFirst(copy(first));
 		return node;
 	}
@@ -247,14 +247,14 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
-		NodeRef<T> child1 = new NodeRef<T>(loader,
-				Optional.<Long> absent(), degree);
+		NodeRef<T> child1 = new NodeRef<T>(loader, Optional.<Long> absent(),
+				degree);
 		child1.setFirst(list);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
-		NodeRef<T> child2 = new NodeRef<T>(loader,
-				Optional.<Long> absent(), degree);
+		NodeRef<T> child2 = new NodeRef<T>(loader, Optional.<Long> absent(),
+				degree);
 		child2.setFirst(key.get().next());
 
 		// set the links on medianKey to the next key in the same node and to
@@ -314,14 +314,6 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			key = key.get().next();
 		}
 		return result;
-	}
-
-	private void updateNode() {
-		Optional<Key<T>> key = first;
-		while (key.isPresent()) {
-			key.get().setNode(of(ref));
-			key = key.get().next();
-		}
 	}
 
 	/**
@@ -406,7 +398,6 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 	public void setFirst(Optional<Key<T>> first) {
 		Preconditions.checkNotNull(first);
 		this.first = first;
-		updateNode();
 	}
 
 	public Optional<Key<T>> getFirst() {
