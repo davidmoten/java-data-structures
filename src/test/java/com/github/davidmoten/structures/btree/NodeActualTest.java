@@ -111,10 +111,10 @@ public class NodeActualTest {
 	}
 
 	@Test
-	public void testSplit1() {
+	public void testSplitHere1() {
 		NodeRef<Integer> node = createNode();
 		insert(node, 1, 2, 3);
-		KeyNodes<Integer> result = node.split(KeyNodes.<Integer> create());
+		KeyNodes<Integer> result = node.splitHere(KeyNodes.<Integer> create());
 		checkEquals(node, 2);
 		assertEquals(result.getSaveQueue().size(), 2);
 		checkEquals(result.getSaveQueue().getFirst(), 1);
@@ -122,14 +122,32 @@ public class NodeActualTest {
 	}
 
 	@Test
-	public void testSplit2() {
+	public void testSplitHere2() {
 		NodeRef<Integer> node = createNode();
 		insert(node, 1, 2, 3, 4);
-		KeyNodes<Integer> result = node.split(KeyNodes.<Integer> create());
+		KeyNodes<Integer> result = node.splitHere(KeyNodes.<Integer> create());
 		checkEquals(node, 2);
+		assertEquals(2, (int) result.getKey().get().value());
 		assertEquals(result.getSaveQueue().size(), 2);
 		checkEquals(result.getSaveQueue().getFirst(), 1);
 		checkEquals(result.getSaveQueue().getLast(), 3, 4);
+	}
+
+	@Test
+	public void testAdd5Values() {
+		NodeRef<Integer> node = createNode();
+		insert(node, 2);
+		NodeRef<Integer> node2 = createNode();
+		insert(node2, 1);
+		NodeRef<Integer> node3 = createNode();
+		insert(node3, 3, 4);
+		node.getFirst().get().setLeft(Optional.of(node2));
+		node.getFirst().get().setRight(Optional.of(node3));
+		System.out.println(node);
+
+		KeyNodes<Integer> result = node.add(KeyNodes.create(5));
+		System.out.println(result);
+
 	}
 
 	private void checkEquals(NodeRef<Integer> node, Integer... values) {

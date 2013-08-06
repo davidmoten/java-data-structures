@@ -64,13 +64,13 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 				"key must be present");
 		KeyNodes<T> result;
 		if (isLeafNode())
-			result = addToLeafNode(keyNodes);
+			result = addToThisLevel(keyNodes);
 		else
 			result = addToNonLeafNode(keyNodes);
 		return result;
 	}
 
-	private KeyNodes<T> addToLeafNode(KeyNodes<T> keyNodes) {
+	KeyNodes<T> addToThisLevel(KeyNodes<T> keyNodes) {
 
 		NodeRef<T> node = insert(keyNodes.getKey().get());
 
@@ -101,7 +101,10 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 						first = of(newKey);
 					if (previous.isPresent()) {
 						previous.get().setNext(of(newKey));
+						// key overrides the right child of previous
+						previous.get().setRight(newKey.getLeft());
 					}
+					k.get().setLeft(newKey.getRight());
 					added = true;
 					break;
 				}
@@ -114,6 +117,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 				// k must be present because first was present
 				previous.get().setNext(of(key.node(ref)));
+				// key overrides the right child of previous
+				previous.get().setRight(key.getLeft());
 			}
 		}
 	}
@@ -146,7 +151,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		}
 
 		if (!added) {
-			// don't need to check that left is present because of properties
+			// don't need to check that right is present because of properties
 			// of b-tree non leaf node
 			final KeyNodes<T> addToRightResult = last.get().getRight().get()
 					.add(keyNodes);
@@ -163,7 +168,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		KeyNodes<T> result;
 		if (addResult.getKey().isPresent()) {
 			// add a split key to this node that came from key on side
-			result = clearChild(key, side).add(addResult);
+			result = clearChild(key, side).addToThisLevel(addResult);
 		} else {
 			// create a new node based on this with key changed to point
 			// to the last node on the list
@@ -180,7 +185,11 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	private NodeRef<T> clearChild(Key<T> key, Side side) {
 		int i = indexOf(key).get();
 		NodeRef<T> node = copy();
-		node.key(i).setSide(side, Optional.<NodeRef<T>> absent());
+		node.key(i).clear(side);
+		if (side.equals(Side.LEFT) && i > 0)
+			node.key(i - 1).clear(Side.RIGHT);
+		else if (side.equals(Side.RIGHT) && i < countKeys() - 1)
+			node.key(i + 1).clear(Side.LEFT);
 		return node;
 	}
 
@@ -400,6 +409,14 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	}
 
 	KeyNodes<T> split(KeyNodes<T> keyNodes) {
+		return copy().splitHere(keyNodes);
+	}
+
+	/**
+	 * @param keyNodes
+	 * @return
+	 */
+	KeyNodes<T> splitHere(KeyNodes<T> keyNodes) {
 		int medianNumber = getMedianNumber(countKeys());
 
 		// get the median key and the preceding key

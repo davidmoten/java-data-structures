@@ -25,7 +25,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	private final int degree;
 
-	public NodeRef(NodeListener<T> nodeListener, Optional<Long> position, int degree) {
+	public NodeRef(NodeListener<T> nodeListener, Optional<Long> position,
+			int degree) {
 		this.nodeListener = nodeListener;
 		this.position = position;
 		this.degree = degree;
@@ -59,9 +60,11 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 				boolean deleted = ois.readBoolean();
 				Key<T> key = new Key<T>(t);
 				if (left != CHILD_ABSENT)
-					key.setLeft(of(new NodeRef<T>(nodeListener, of(left), degree)));
+					key.setLeft(of(new NodeRef<T>(nodeListener, of(left),
+							degree)));
 				if (right != CHILD_ABSENT)
-					key.setRight(of(new NodeRef<T>(nodeListener, of(right), degree)));
+					key.setRight(of(new NodeRef<T>(nodeListener, of(right),
+							degree)));
 				key.setDeleted(deleted);
 				key.setNode(of(this));
 				key.setNext(Optional.<Key<T>> absent());
@@ -165,6 +168,10 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node().addToNonLeafNode(t);
 	}
 
+	KeyNodes<T> addToThisLevel(KeyNodes<T> keyNodes) {
+		return node().addToThisLevel(keyNodes);
+	}
+
 	public AddResult<T> add(Key<T> key) {
 		return node().add(key);
 	}
@@ -187,6 +194,10 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	public KeyNodes<T> split(KeyNodes<T> keyNodes) {
 		return node().split(keyNodes);
+	}
+
+	KeyNodes<T> splitHere(KeyNodes<T> keyNodes) {
+		return node().splitHere(keyNodes);
 	}
 
 	public void insertHere(Key<T> key) {

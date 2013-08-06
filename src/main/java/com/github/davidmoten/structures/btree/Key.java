@@ -130,6 +130,10 @@ class Key<T extends Serializable & Comparable<T>> {
 			right = nd;
 	}
 
+	void clear(Side side) {
+		setSide(side, Optional.<NodeRef<T>> absent());
+	}
+
 	Key<T> side(Side side, Optional<NodeRef<T>> nd) {
 		Preconditions.checkArgument(!Side.TOP.equals(side),
 				"side cannot be TOP");

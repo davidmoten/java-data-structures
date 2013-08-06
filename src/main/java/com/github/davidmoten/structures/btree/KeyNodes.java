@@ -56,6 +56,11 @@ class KeyNodes<T extends Serializable & Comparable<T>> {
 				Lists.<NodeRef<R>> newLinkedList());
 	}
 
+	static <R extends Serializable & Comparable<R>> KeyNodes<R> create(R value) {
+		return new KeyNodes<R>(Optional.of(Key.create(value)),
+				Lists.<NodeRef<R>> newLinkedList());
+	}
+
 	@Override
 	public String toString() {
 		return "KeyNodes[key=" + key + ", saveQueue=" + saveQueue + "]";
