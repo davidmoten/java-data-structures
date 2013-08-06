@@ -307,36 +307,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		return this;
 	}
 
-	/**
-	 * Add one value t to the BTree.
-	 * 
-	 * @param t
-	 */
-	private void addOne(T t) {
-		synchronized (writeMonitor) {
-			AddResult<T> result = root.add(t);
-			final NodeRef<T> node;
-			if (result.getSplitKey().isPresent()) {
-				node = new NodeRef<T>(nodeListener, Optional.<Long> absent(),
-						degree);
-				node.setFirst(result.getSplitKey());
-				addToSaveQueue(node);
-				result.getSaveQueue().add(node);
-			} else {
-				// note that new node has already been saved so don't need to
-				// call save here
-				node = result.getNode().get();
-			}
-			// System.out.println("good save queue=" + this.saveQueue);
-			// System.out.println("soso save queue=" + result.getSaveQueue());
-			// flushSaves(result.getSaveQueue());
-			flushSaves(saveQueue);
-			root = node;
-			if (metadataFile.isPresent())
-				writeMetadata();
-		}
-	}
-
 	private void addOne2(T t) {
 		KeyNodes<T> keyNodes = root.add(KeyNodes.create(new Key<T>(t)));
 		for (NodeRef<T> node : keyNodes.getSaveQueue()) {

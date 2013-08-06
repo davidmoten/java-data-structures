@@ -1,7 +1,5 @@
 package com.github.davidmoten.structures.btree;
 
-import static com.github.davidmoten.structures.btree.AddResult.createFromNonSplitNode;
-import static com.github.davidmoten.structures.btree.AddResult.createFromSplitKey;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
@@ -10,7 +8,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -45,18 +42,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		this.nodeListener = nodeListener;
 		this.ref = ref;
 		this.degree = degree;
-	}
-
-	public AddResult<T> add(T t) {
-		AddResult<T> result;
-		if (isLeafNode()) {
-			result = copy().add(new Key<T>(t));
-		} else
-			result = copy().addToNonLeafNode(t);
-		if (result.getNode().isPresent()) {
-			nodeListener.addToSaveQueue(result.getNode().get());
-		}
-		return result;
 	}
 
 	public KeyNodes<T> add(KeyNodes<T> keyNodes) {
@@ -232,68 +217,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		return node;
 	}
 
-	public AddResult<T> addToNonLeafNode(T t) {
-
-		// Note that first will be present because if is internal (non-leaf)
-		// node then it must have some keys
-		AddResult<T> result = null;
-		boolean added = false;
-		Optional<Key<T>> last = first;
-		for (Key<T> key : keys()) {
-			if (t.compareTo(key.value()) < 0) {
-				// don't need to check that left is present because of
-				// properties of b-tree
-				result = key.getLeft().get().add(t);
-				if (result.getSplitKey().isPresent()) {
-					// add a split key to this node
-					result = add(result.getSplitKey().get());
-				} else {
-					key.setLeft(result.getNode());
-					result = AddResult.createFromNonSplitNode(ref,
-							result.getSaveQueue());
-				}
-				added = true;
-				break;
-			}
-			last = of(key);
-		}
-
-		if (!added) {
-			// don't need to check that left is present because of properties
-			// of b-tree
-			result = last.get().getRight().get().add(t);
-			if (result.getSplitKey().isPresent()) {
-				result = add(result.getSplitKey().get());
-			} else {
-				last.get().setRight(result.getNode());
-				result = AddResult.createFromNonSplitNode(ref,
-						result.getSaveQueue());
-			}
-		}
-		Preconditions.checkNotNull(result);
-		return result;
-	}
-
-	/**
-	 * 
-	 * Adds the given key to the current node. If this node needs to be split
-	 * then returns the new node that is the parent of the split keys. If the
-	 * node does not need to be split then returns the new node.
-	 * 
-	 * @param key
-	 * @return
-	 */
-	public AddResult<T> add(Key<T> key) {
-
-		key.setNode(of(ref));
-
-		first = of(add(first, key));
-
-		int keyCount = countKeys();
-
-		return performSplitIfRequired(keyCount);
-	}
-
 	/**
 	 * Inserts key into the list of keys in sorted order. The inserted key has
 	 * priority in terms of its children become the children of its neighbours
@@ -340,17 +263,6 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		}
 		if (next.isPresent()) {
 			next.get().setLeft(key.getRight());
-		}
-		return result;
-	}
-
-	private AddResult<T> performSplitIfRequired(int keyCount) {
-		final AddResult<T> result;
-		if (keyCount == degree) {
-			Key<T> key = splitKeysEitherSideOfMedianIntoTwoChildrenOfParent(keyCount);
-			result = createFromSplitKey(key, new LinkedList<NodeRef<T>>());
-		} else {
-			result = createFromNonSplitNode(ref, new LinkedList<NodeRef<T>>());
 		}
 		return result;
 	}

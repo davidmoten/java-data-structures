@@ -151,10 +151,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		node = absent();
 	}
 
-	public AddResult<T> add(T t) {
-		return node().add(t);
-	}
-
 	public KeyNodes<T> add(KeyNodes<T> keyNodes) {
 		return node().add(keyNodes);
 	}
@@ -164,16 +160,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		node().replaceKeySide(keyIndex, side, lastNodeAddedToSaveQueue);
 	}
 
-	public AddResult<T> addToNonLeafNode(T t) {
-		return node().addToNonLeafNode(t);
-	}
-
 	KeyNodes<T> addToThisLevel(KeyNodes<T> keyNodes) {
 		return node().addToThisLevel(keyNodes);
-	}
-
-	public AddResult<T> add(Key<T> key) {
-		return node().add(key);
 	}
 
 	public Iterable<Key<T>> keys() {
