@@ -437,6 +437,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		medianKey.setLeft(Optional.of(child1));
 		medianKey.setRight(Optional.of(child2));
 
+		first = of(medianKey);
 		return keyNodes.add(child1).add(child2).key(medianKey);
 	}
 

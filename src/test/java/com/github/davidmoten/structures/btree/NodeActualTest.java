@@ -115,7 +115,21 @@ public class NodeActualTest {
 		NodeRef<Integer> node = createNode();
 		insert(node, 1, 2, 3);
 		KeyNodes<Integer> result = node.split(KeyNodes.<Integer> create());
-		checkEquals(result.getSaveQueue().getLast(), 2);
+		checkEquals(node, 2);
+		assertEquals(result.getSaveQueue().size(), 2);
+		checkEquals(result.getSaveQueue().getFirst(), 1);
+		checkEquals(result.getSaveQueue().getLast(), 3);
+	}
+
+	@Test
+	public void testSplit2() {
+		NodeRef<Integer> node = createNode();
+		insert(node, 1, 2, 3, 4);
+		KeyNodes<Integer> result = node.split(KeyNodes.<Integer> create());
+		checkEquals(node, 2);
+		assertEquals(result.getSaveQueue().size(), 2);
+		checkEquals(result.getSaveQueue().getFirst(), 1);
+		checkEquals(result.getSaveQueue().getLast(), 3, 4);
 	}
 
 	private void checkEquals(NodeRef<Integer> node, Integer... values) {
