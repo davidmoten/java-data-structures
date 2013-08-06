@@ -173,7 +173,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 			// create a new node based on this with key changed to point
 			// to the last node on the list
 			NodeRef<T> lastNodeAddedToSaveQueue = addResult.getSaveQueue()
-					.peek();
+					.getLast();
 			NodeRef<T> node = replace(key, side, lastNodeAddedToSaveQueue);
 			// The key has definitely been added to node so put it on the
 			// saveQueue

@@ -18,7 +18,7 @@ import com.google.common.collect.Iterables;
 
 public class BTreeTest {
 
-	private static final int MANY_VALUES = 1000;
+	private static final int MANY_VALUES = 100;
 
 	/**
 	 * Given nothing
@@ -438,14 +438,6 @@ public class BTreeTest {
 	}
 
 	@Test
-	public void testIteratorOnBTreeWith14Values() {
-		BTree<Integer> t = builder(Integer.class).degree(3).build();
-		t.add(1, 2, 3, 4, 5, 6, 7, 8);
-		System.out.println(t.abbr());
-		checkEquals(t, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
-	}
-
-	@Test
 	public void testIteratorOnBTreeWith6Values() {
 		BTree<Integer> t = builder(Integer.class).degree(4).build();
 		t.add(1, 2, 3, 4, 5, 6);
@@ -502,6 +494,14 @@ public class BTreeTest {
 		t.add(1, 2, 3, 4, 5, 6, 7, 8);
 		System.out.println(t.abbr());
 		assertEquals("4L[2L[1]R[3]]R[6L[5]R[7,8]]", t.abbr());
+	}
+
+	@Test
+	public void testStructure9Items() {
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1, 2, 3, 4, 5, 6, 7, 8, 9);
+		System.out.println(t.abbr());
+		assertEquals("4L[2L[1]R[3]]R[6L[5]R[7],8L[7]R[9]]", t.abbr());
 	}
 
 	/**
