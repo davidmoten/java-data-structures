@@ -22,6 +22,10 @@ class Key<T extends Serializable & Comparable<T>> {
 		this.t = t;
 	}
 
+	static <R extends Serializable & Comparable<R>> Key<R> create(R r) {
+		return new Key<R>(r);
+	}
+
 	boolean isDeleted() {
 		return deleted;
 	}

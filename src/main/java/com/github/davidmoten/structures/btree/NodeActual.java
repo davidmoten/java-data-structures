@@ -217,8 +217,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	}
 
 	private NodeRef<T> copy() {
-		NodeRef<T> node = new NodeRef<T>(nodeListener, Optional.<Long> absent(),
-				degree);
+		NodeRef<T> node = new NodeRef<T>(nodeListener,
+				Optional.<Long> absent(), degree);
 		node.setFirst(copy(first));
 		return node;
 	}
@@ -378,15 +378,15 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
-		NodeRef<T> child1 = new NodeRef<T>(nodeListener, Optional.<Long> absent(),
-				degree);
+		NodeRef<T> child1 = new NodeRef<T>(nodeListener,
+				Optional.<Long> absent(), degree);
 		child1.setFirst(list);
 		nodeListener.addToSaveQueue(child1);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
-		NodeRef<T> child2 = new NodeRef<T>(nodeListener, Optional.<Long> absent(),
-				degree);
+		NodeRef<T> child2 = new NodeRef<T>(nodeListener,
+				Optional.<Long> absent(), degree);
 		child2.setFirst(key.get().next());
 		nodeListener.addToSaveQueue(child2);
 
@@ -399,7 +399,7 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		return medianKey;
 	}
 
-	public KeyNodes<T> split(KeyNodes<T> keyNodes) {
+	KeyNodes<T> split(KeyNodes<T> keyNodes) {
 		int medianNumber = getMedianNumber(countKeys());
 
 		// get the median key and the preceding key
@@ -421,14 +421,14 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
-		NodeRef<T> child1 = new NodeRef<T>(nodeListener, Optional.<Long> absent(),
-				degree);
+		NodeRef<T> child1 = new NodeRef<T>(nodeListener,
+				Optional.<Long> absent(), degree);
 		child1.setFirst(list);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
-		NodeRef<T> child2 = new NodeRef<T>(nodeListener, Optional.<Long> absent(),
-				degree);
+		NodeRef<T> child2 = new NodeRef<T>(nodeListener,
+				Optional.<Long> absent(), degree);
 		child2.setFirst(key.get().next());
 
 		// set the links on medianKey to the next key in the same node and to
@@ -503,7 +503,8 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 	 * @param keyCount
 	 * @return
 	 */
-	private int getMedianNumber(int keyCount) {
+	static int getMedianNumber(int keyCount) {
+		Preconditions.checkArgument(keyCount >= 3);
 		int medianNumber;
 		if (keyCount % 2 == 1)
 			medianNumber = keyCount / 2 + 1;

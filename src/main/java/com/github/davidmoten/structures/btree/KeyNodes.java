@@ -61,4 +61,9 @@ class KeyNodes<T extends Serializable & Comparable<T>> {
 		return "KeyNodes[key=" + key + ", saveQueue=" + saveQueue + "]";
 	}
 
+	static <R extends Serializable & Comparable<R>> KeyNodes<R> create() {
+		return new KeyNodes<R>(Optional.<Key<R>> absent(),
+				Lists.<NodeRef<R>> newLinkedList());
+	}
+
 }
