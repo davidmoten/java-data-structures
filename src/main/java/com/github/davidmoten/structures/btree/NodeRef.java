@@ -207,4 +207,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 	public Key<T> key(int i) {
 		return node().key(i);
 	}
+
+	public String abbr() {
+		return node().abbr();
+	}
 }

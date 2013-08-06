@@ -672,12 +672,38 @@ class NodeActual<T extends Serializable & Comparable<T>> implements Iterable<T> 
 		}
 	}
 
-	String abbr() {
+	String abbr2() {
 		StringBuffer s = new StringBuffer();
 		for (Key<T> key : keys()) {
 			if (s.length() > 0)
 				s.append(",");
 			s.append(key.value());
+		}
+		return s.toString();
+	}
+
+	String abbr() {
+		StringBuffer s = new StringBuffer();
+		for (Key<T> key : keys()) {
+			if (s.length() > 0)
+				s.append(",");
+			s.append(abbr(key));
+		}
+		return s.toString();
+	}
+
+	private String abbr(Key<T> key) {
+		StringBuffer s = new StringBuffer();
+		s.append(key.value());
+		if (key.getLeft().isPresent()) {
+			s.append("L[");
+			s.append(key.getLeft().get().abbr());
+			s.append("]");
+		}
+		if (key.getRight().isPresent()) {
+			s.append("R[");
+			s.append(key.getRight().get().abbr());
+			s.append("]");
 		}
 		return s.toString();
 	}

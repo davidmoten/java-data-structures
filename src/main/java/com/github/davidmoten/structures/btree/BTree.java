@@ -525,4 +525,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		return builder.toString();
 	}
 
+	public String abbr() {
+		return root.abbr();
+	}
+
 }

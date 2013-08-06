@@ -440,9 +440,8 @@ public class BTreeTest {
 	@Test
 	public void testIteratorOnBTreeWith14Values() {
 		BTree<Integer> t = builder(Integer.class).degree(3).build();
-		t.add(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-		t.add(11);
-		System.out.println(t);
+		t.add(1, 2, 3, 4, 5, 6, 7, 8);
+		System.out.println(t.abbr());
 		checkEquals(t, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
 	}
 
@@ -452,6 +451,57 @@ public class BTreeTest {
 		t.add(1, 2, 3, 4, 5, 6);
 		System.out.println(t);
 		checkEquals(t, 1, 2, 3, 4, 5, 6);
+	}
+
+	@Test
+	public void testStructure2Items() {
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1, 2);
+		assertEquals("1,2", t.abbr());
+	}
+
+	@Test
+	public void testStructure3Items() {
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1, 2, 3);
+		assertEquals("2L[1]R[3]", t.abbr());
+	}
+
+	@Test
+	public void testStructure4Items() {
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1, 2, 3, 4);
+		assertEquals("2L[1]R[3,4]", t.abbr());
+	}
+
+	@Test
+	public void testStructure5Items() {
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1, 2, 3, 4, 5);
+		assertEquals("2L[1]R[3],4L[3]R[5]", t.abbr());
+	}
+
+	@Test
+	public void testStructure6Items() {
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1, 2, 3, 4, 5, 6);
+		assertEquals("2L[1]R[3],4L[3]R[5,6]", t.abbr());
+	}
+
+	@Test
+	public void testStructure7Items() {
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1, 2, 3, 4, 5, 6, 7);
+		System.out.println(t.abbr());
+		assertEquals("4L[2L[1]R[3]]R[6L[5]R[7]]", t.abbr());
+	}
+
+	@Test
+	public void testStructure8Items() {
+		BTree<Integer> t = builder(Integer.class).degree(3).build();
+		t.add(1, 2, 3, 4, 5, 6, 7, 8);
+		System.out.println(t.abbr());
+		assertEquals("4L[2L[1]R[3]]R[6L[5]R[7,8]]", t.abbr());
 	}
 
 	/**
