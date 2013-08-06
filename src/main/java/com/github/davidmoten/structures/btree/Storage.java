@@ -40,7 +40,7 @@ public class Storage {
 		long startPos = nextPosition();
 		long pos = startPos;
 		while (!saveQueue.isEmpty()) {
-			NodeRef<T> node = saveQueue.removeLast();
+			NodeRef<T> node = saveQueue.pop();
 
 			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 			node.save(bytes);

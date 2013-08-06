@@ -559,12 +559,17 @@ public class BTreeTest {
 
 	@Test
 	public void testSaveThreeItemsDepthTwo() {
-		File f = new File("target/test3.index");
-		clear(f);
+		File f = createFile("target/test3.index");
 		builder(Integer.class).degree(3).metadata(f).build().add(1, 2, 3);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		checkEquals(t2, 1, 2, 3);
+	}
+
+	private static File createFile(String filename) {
+		File f = new File(filename);
+		clear(f);
+		return f;
 	}
 
 	@Test
@@ -622,7 +627,7 @@ public class BTreeTest {
 		checkEquals(t2, values);
 	}
 
-	private void clear(File f) {
+	private static void clear(File f) {
 		f.delete();
 		new File(f.getAbsolutePath() + ".storage").delete();
 	}
