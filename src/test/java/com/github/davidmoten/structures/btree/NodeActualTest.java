@@ -163,12 +163,6 @@ public class NodeActualTest {
 		NodeListener<Integer> listener = new NodeListener<Integer>() {
 
 			@Override
-			public void addToSaveQueue(NodeRef<Integer> node) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
 			public void load(NodeRef<Integer> node) {
 				// TODO Auto-generated method stub
 

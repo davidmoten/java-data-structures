@@ -73,11 +73,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private final NodeListener<T> nodeListener = new NodeListener<T>() {
 
 		@Override
-		public void addToSaveQueue(NodeRef<T> node) {
-			BTree.this.addToSaveQueue(node);
-		}
-
-		@Override
 		public void load(NodeRef<T> node) {
 			BTree.this.load(node);
 		}

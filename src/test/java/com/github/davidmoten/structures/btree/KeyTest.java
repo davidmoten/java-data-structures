@@ -14,11 +14,6 @@ public class KeyTest {
 		NodeListener<Double> n = new NodeListener<Double>() {
 
 			@Override
-			public void addToSaveQueue(NodeRef<Double> node) {
-
-			}
-
-			@Override
 			public void load(NodeRef<Double> node) {
 
 			}
