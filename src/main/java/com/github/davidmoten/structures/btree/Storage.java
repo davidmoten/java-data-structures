@@ -14,9 +14,12 @@ import java.util.List;
 
 public class Storage {
 
-	private static final long maxFileSize = 100000000L;
+	private static final long maxFileSize = 5000000L;
 
 	private File file;
+	/**
+	 * The number of the file being written to currently.
+	 */
 	private long fileNumber;
 
 	private final File directory;
@@ -49,6 +52,8 @@ public class Storage {
 			if (file.length() >= maxFileSize) {
 				fileNumber++;
 				file = getFile(fileNumber);
+				if (file.exists())
+					file.delete();
 				file.createNewFile();
 			}
 			return new Position(fileNumber, file.length());
@@ -82,7 +87,8 @@ public class Storage {
 
 	public <T extends Serializable & Comparable<T>> void load(NodeRef<T> node) {
 		try {
-			FileInputStream fis = new FileInputStream(file);
+			FileInputStream fis = new FileInputStream(getFile(node
+					.getPosition().get().getFileNumber()));
 			// TODO use position.fileNumber
 			fis.skip(node.getPosition().get().getPosition());
 			BufferedInputStream bis = new BufferedInputStream(fis, 1024);

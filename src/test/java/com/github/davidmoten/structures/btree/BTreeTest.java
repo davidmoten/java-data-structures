@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 
 public class BTreeTest {
 
@@ -668,6 +669,7 @@ public class BTreeTest {
 		builder(Integer.class).degree(100).metadata(f).build().add(values);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
+		System.out.println(Iterators.toString(t2.iterator()));
 		checkEquals(t2, values);
 	}
 
