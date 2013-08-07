@@ -13,10 +13,11 @@ public class NodeCache<T extends Serializable & Comparable<T>> {
 
 	public NodeCache(long maxNodesInMemory) {
 		nodeCache = createNodeCache(maxNodesInMemory);
+		System.out.println("built NodeCache of size " + maxNodesInMemory);
 	}
 
-	private Cache<Long, NodeRef<T>> createNodeCache(long cacheSize) {
-		return CacheBuilder.newBuilder().maximumSize(cacheSize)
+	private Cache<Long, NodeRef<T>> createNodeCache(long maxNodesInMemory) {
+		return CacheBuilder.newBuilder().maximumSize(maxNodesInMemory)
 				.removalListener(createRemovalListener()).build();
 	}
 

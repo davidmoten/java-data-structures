@@ -143,7 +143,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 	}
 
 	public void unload() {
-		System.out.println("unloaded");
+		// System.out.println("unloaded " + position);
 		node = absent();
 	}
 

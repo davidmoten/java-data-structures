@@ -330,6 +330,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private void flushSaves(LinkedList<NodeRef<T>> saveQueue) {
 		if (storage.isPresent()) {
 			storage.get().save(saveQueue);
+			for (NodeRef<T> node : saveQueue)
+				loaded(node.getPosition().get(), node);
 		}
 		saveQueue.clear();
 	}
@@ -417,6 +419,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private void load(NodeRef<T> node) {
 		if (storage.isPresent()) {
 			storage.get().load(node);
+			loaded(node.getPosition().get(), node);
 		}
 	}
 

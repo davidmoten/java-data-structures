@@ -572,12 +572,7 @@ public class BTreeTest {
 	@Test
 	public void testIteratorOnBTreeWithNValuesAddedInReverseOrder() {
 		for (int n = 1; n <= MANY_VALUES; n++) {
-			System.out.println("adding " + n + " items in reverse order");
 			BTree<Integer> t = builder(Integer.class).degree(4).build();
-			System.out.println("used="
-					+ (Runtime.getRuntime().totalMemory() - Runtime
-							.getRuntime().freeMemory()) + ",free="
-					+ Runtime.getRuntime().freeMemory());
 			for (int i = n; i >= 1; i--) {
 				t.add(i);
 			}
@@ -707,6 +702,23 @@ public class BTreeTest {
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		checkEquals(t2, values);
+	}
+
+	@Test
+	public void testSaveManyItemsWithoutCache() {
+
+		File f = new File("target/test8.index");
+		clear(f);
+		Integer[] values = new Integer[10000];
+		for (int i = 0; i < values.length; i++)
+			values[i] = i + 1;
+		long t = System.currentTimeMillis();
+		builder(Integer.class).degree(100).metadata(f).build().add(values);
+		System.out
+				.println("addsPerSecond="
+						+ (values.length
+								/ (double) (System.currentTimeMillis() - t) * 1000)
+						+ " adds/s");
 	}
 
 	private static void clear(File f) {
