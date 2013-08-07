@@ -23,8 +23,8 @@ Aims:
 * &#10004; enable snapshots/transactions
 * &#10004; tuneable memory use (can use disk when required)
 
-General programming aims not specific to this project
-------------------------------------------------------
+General programming aims
+------------------------
 Code should be
 * Elegant
 * Concise
