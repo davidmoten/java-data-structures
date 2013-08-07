@@ -17,10 +17,10 @@ Aims:
 * &#10004; thread-safe with minimal locking
 * &#10004; persist to disk and load from disk efficiently
 * &#10004; use log structure storage (LSS)
-* use multiple files for LSS
+* &#10004; use multiple files for LSS
 * recover unused LSS storage
 * &#10004; append only batched writes
-* &#10004; enable snapshots/transactions
+* enable snapshots/transactions
 * &#10004; tuneable memory use (can use disk when required)
 
 General programming aims
