@@ -117,17 +117,34 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 		this.metadataFile = builder.metadataFile;
 
-		if (!builder.storage.isPresent() && metadataFile.isPresent())
-			this.storage = of(new Storage(metadataFile.get().getParentFile(),
-					metadataFile.get().getName() + ".storage"));
-		else
-			this.storage = absent();
+		if (metadataFile.isPresent()) {
+			if (metadataFile.get().exists()) {
 
-		if (metadataFile.isPresent() && metadataFile.get().exists()) {
-			Metadata metadata = readMetadata();
-			degree = metadata.degree;
-			root = new NodeRef<T>(loader, of(metadata.rootPosition), degree);
+				Metadata metadata = readMetadata(builder.degree);
+				degree = metadata.degree;
+				root = new NodeRef<T>(loader, of(metadata.rootPosition), degree);
+
+				if (!builder.storage.isPresent())
+					this.storage = of(new Storage(metadataFile.get()
+							.getParentFile(), metadataFile.get().getName()
+							+ ".storage", metadata.fileNumber));
+				else {
+					this.storage = builder.storage;
+				}
+			} else {
+				degree = builder.degree.get();
+				root = new NodeRef<T>(loader, Optional.<Position> absent(),
+						degree);
+				if (!builder.storage.isPresent())
+					this.storage = of(new Storage(metadataFile.get()
+							.getParentFile(), metadataFile.get().getName()
+							+ ".storage", 0));
+				else {
+					this.storage = builder.storage;
+				}
+			}
 		} else {
+			this.storage = absent();
 			this.degree = builder.degree.get();
 			root = new NodeRef<T>(loader, Optional.<Position> absent(), degree);
 			addToSaveQueue(root);
@@ -223,8 +240,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * 
 	 */
 	private static class Metadata {
-		Position rootPosition;
-		int degree;
+		final Position rootPosition;
+		final int degree;
+		final long fileNumber;
 
 		/**
 		 * Constructor.
@@ -232,10 +250,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		 * @param rootPosition
 		 * @param degree
 		 */
-		public Metadata(Position rootPosition, int degree) {
+		public Metadata(Position rootPosition, int degree, long fileNumber) {
 			super();
 			this.rootPosition = rootPosition;
 			this.degree = degree;
+			this.fileNumber = fileNumber;
 		}
 	}
 
@@ -243,16 +262,17 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * Reads the metadata information from the file including the position of
 	 * the root node.
 	 */
-	private Metadata readMetadata() {
+	private Metadata readMetadata(Optional<Integer> defaultDegree) {
 		try {
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
 					metadataFile.get()));
-			Long rootFileNumber = ois.readLong();
-			Long rootPosition = ois.readLong();
+			long fileNumber = ois.readLong();
+			long rootFileNumber = ois.readLong();
+			long rootPosition = ois.readLong();
 			int degree = ois.readInt();
 			ois.close();
 			return new Metadata(new Position(rootFileNumber, rootPosition),
-					degree);
+					degree, fileNumber);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
@@ -290,6 +310,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private byte[] composeMetadata() throws IOException {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(bytes);
+		oos.writeLong(storage.get().getFileNumber());
 		oos.writeLong(root.getPosition().get().getFileNumber());
 		oos.writeLong(root.getPosition().get().getPosition());
 		oos.writeInt(degree);

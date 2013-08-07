@@ -14,21 +14,44 @@ import java.util.List;
 
 public class Storage {
 
-	private final File file;
+	private static final long maxFileSize = 100000000L;
+
+	private File file;
+	private long fileNumber;
+
+	private final File directory;
+
+	private final String name;
+
+	public Storage(File directory, String name, long fileNumber) {
+		this.directory = directory;
+		this.name = name;
+		this.fileNumber = fileNumber;
+		this.file = getFile(fileNumber);
+	}
+
+	public long getFileNumber() {
+		return fileNumber;
+	}
 
 	public File getFile() {
 		return file;
 	}
 
-	public Storage(File directory, String name) {
-		this.file = new File(directory, name);
+	private File getFile(long fileNumber) {
+		return new File(directory, name + "." + fileNumber);
 	}
 
-	private long nextPosition() {
+	private Position nextPosition() {
 		try {
 			if (!file.exists())
 				file.createNewFile();
-			return file.length();
+			if (file.length() >= maxFileSize) {
+				fileNumber++;
+				file = getFile(fileNumber);
+				file.createNewFile();
+			}
+			return new Position(fileNumber, file.length());
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
@@ -39,12 +62,12 @@ public class Storage {
 	public synchronized <T extends Serializable & Comparable<T>> void save(
 			List<NodeRef<T>> saveQueue) {
 		ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
-		long startPos = nextPosition();
-		long pos = startPos;
+		Position startPos = nextPosition();
+		long pos = startPos.getPosition();
 		for (NodeRef<T> node : saveQueue) {
 			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 			node.save(bytes);
-			node.setPosition(of(new Position(0, pos)));
+			node.setPosition(of(new Position(startPos.getFileNumber(), pos)));
 
 			try {
 				allBytes.write(bytes.toByteArray());
@@ -53,9 +76,6 @@ public class Storage {
 			}
 
 			pos += bytes.size();
-
-			// TODO does node cache work without this line?
-			// loaded(node.getPosition().get(), node);
 		}
 		saveToFile(allBytes.toByteArray(), startPos);
 	}
@@ -81,10 +101,11 @@ public class Storage {
 	 * @param bytes
 	 * @param pos
 	 */
-	private void saveToFile(byte[] bytes, long pos) {
+	private void saveToFile(byte[] bytes, Position pos) {
 		try {
-			RandomAccessFile f = new RandomAccessFile(file, "rw");
-			f.seek(pos);
+			RandomAccessFile f = new RandomAccessFile(
+					getFile(pos.getFileNumber()), "rw");
+			f.seek(pos.getPosition());
 			f.write(bytes);
 			f.close();
 		} catch (FileNotFoundException e) {
@@ -93,5 +114,4 @@ public class Storage {
 			throw new RuntimeException(e);
 		}
 	}
-
 }
