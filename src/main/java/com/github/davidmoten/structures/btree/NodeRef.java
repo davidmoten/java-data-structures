@@ -52,6 +52,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 			@SuppressWarnings("resource")
 			ObjectInputStream ois = new ObjectInputStream(cis);
 			node.setIsRoot(ois.readBoolean());
+			// used for can delete for space recovery by LSS
+			ois.readBoolean();
 			int count = ois.readInt();
 			Optional<Key<T>> previous = absent();
 			Optional<Key<T>> first = absent();

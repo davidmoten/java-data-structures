@@ -448,6 +448,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(os);
 			oos.writeBoolean(isRoot);
+			oos.writeBoolean(false);
 			oos.writeInt(countKeys());
 			for (Key<T> key : keys()) {
 				oos.writeObject(key.value());
