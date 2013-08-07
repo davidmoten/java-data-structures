@@ -71,6 +71,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private final LinkedList<NodeRef<T>> saveQueue = new LinkedList<NodeRef<T>>();
 
+	/**
+	 * Loads the node pointed to by the NodeRef from persistent storage.
+	 */
 	private final NodeLoader<T> loader = new NodeLoader<T>() {
 
 		@Override
@@ -199,15 +202,32 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	/**
+	 * Notifies the nodeCache that a node has been loaded (or saved for the
+	 * first time).
+	 * 
+	 * @param position
+	 * @param node
+	 */
 	void loaded(long position, NodeRef<T> node) {
 		if (nodeCache.isPresent())
 			nodeCache.get().put(position, node);
 	}
 
+	/**
+	 * Metdata for the btree.
+	 * 
+	 */
 	private static class Metadata {
 		long rootPosition;
 		int degree;
 
+		/**
+		 * Constructor.
+		 * 
+		 * @param rootPosition
+		 * @param degree
+		 */
 		public Metadata(long rootPosition, int degree) {
 			super();
 			this.rootPosition = rootPosition;
@@ -289,12 +309,18 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	public BTree<T> add(T... values) {
 		for (T t : values) {
-			addOne2(t);
+			addOne(t);
 		}
 		return this;
 	}
 
-	private void addOne2(T t) {
+	/**
+	 * Adds a value to the root node and replaces the root node and updates
+	 * metadata file if present.
+	 * 
+	 * @param t
+	 */
+	private void addOne(T t) {
 		KeyNodes<T> keyNodes = root.add(KeyNodes.create(new Key<T>(t)));
 		for (NodeRef<T> node : keyNodes.getSaveQueue()) {
 			saveQueue.add(node);
@@ -473,6 +499,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		return builder.toString();
 	}
 
+	/**
+	 * Returns an abbreviated string representation of the btree.
+	 * 
+	 * @return
+	 */
 	public String abbr() {
 		return root.abbr();
 	}
