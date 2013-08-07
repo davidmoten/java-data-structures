@@ -13,6 +13,7 @@ Aims:
 * &#10004;  iterate
 * &#10004; find
 * delete
+* rebalance
 * &#10004; thread-safe with minimal locking
 * &#10004; persist to disk and load from disk efficiently
 * &#10004; use log structure storage (LSS)
