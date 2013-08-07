@@ -18,7 +18,7 @@ import com.google.common.collect.Iterables;
 
 public class BTreeTest {
 
-	private static final int MANY_VALUES = 100;
+	private static final int MANY_VALUES = 1000;
 
 	/**
 	 * Given nothing
@@ -572,7 +572,12 @@ public class BTreeTest {
 	@Test
 	public void testIteratorOnBTreeWithNValuesAddedInReverseOrder() {
 		for (int n = 1; n <= MANY_VALUES; n++) {
+			System.out.println("adding " + n + " items in reverse order");
 			BTree<Integer> t = builder(Integer.class).degree(4).build();
+			System.out.println("used="
+					+ (Runtime.getRuntime().totalMemory() - Runtime
+							.getRuntime().freeMemory()) + ",free="
+					+ Runtime.getRuntime().freeMemory());
 			for (int i = n; i >= 1; i--) {
 				t.add(i);
 			}
@@ -666,6 +671,24 @@ public class BTreeTest {
 			values[i] = i + 1;
 
 		builder(Integer.class).degree(100).metadata(f).build().add(values);
+		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
+				.build();
+		checkEquals(t2, values);
+	}
+
+	@Test
+	public void testSaveManyItemsReversed() {
+		File f = new File("target/test6.index");
+		clear(f);
+		Integer[] values = new Integer[MANY_VALUES];
+		for (int i = 0; i < values.length; i++)
+			values[i] = i + 1;
+		Integer[] valuesReversed = new Integer[MANY_VALUES];
+		for (int i = 0; i < valuesReversed.length; i++)
+			valuesReversed[i] = MANY_VALUES - i;
+
+		builder(Integer.class).degree(100).metadata(f).build()
+				.add(valuesReversed);
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		checkEquals(t2, values);

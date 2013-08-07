@@ -45,7 +45,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	long load(InputStream is, Node<T> node) {
 		try {
-			System.out.println("loading");
 			CountingInputStream cis = new CountingInputStream(is);
 			@SuppressWarnings("resource")
 			ObjectInputStream ois = new ObjectInputStream(cis);

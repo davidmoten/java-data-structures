@@ -124,7 +124,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 				// don't need to check that left is present because of
 				// properties of b-tree non-leaf node
 				Preconditions.checkArgument(key.getLeft().isPresent(),
-						"left must be present on non-leaf node " + key);
+						"left must be present on non-leaf node");
 				final KeyNodes<T> addToLeftResult = key.getLeft().get()
 						.add(keyNodes);
 				result = processAddToChildResult(key, Side.LEFT,

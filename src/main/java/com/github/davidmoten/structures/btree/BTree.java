@@ -59,6 +59,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private final Object writeMonitor = new Object();
 
+	private final Object metadataMonitor = new Object();
+
 	/**
 	 * Allows reduction in memory usage for large btrees.
 	 */
@@ -236,18 +238,20 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * Writes the metadata information to the file including the position of the
 	 * root node.
 	 */
-	private synchronized void writeMetadata() {
-		try {
-			if (!metadataFile.get().exists())
-				metadataFile.get().createNewFile();
-			FileOutputStream fos = new FileOutputStream(metadataFile.get());
-			byte[] bytes = composeMetadata();
-			fos.write(bytes);
-			fos.close();
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+	private void writeMetadata() {
+		synchronized (metadataMonitor) {
+			try {
+				if (!metadataFile.get().exists())
+					metadataFile.get().createNewFile();
+				FileOutputStream fos = new FileOutputStream(metadataFile.get());
+				byte[] bytes = composeMetadata();
+				fos.write(bytes);
+				fos.close();
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 

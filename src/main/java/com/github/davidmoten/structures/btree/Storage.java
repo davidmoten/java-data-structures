@@ -1,5 +1,7 @@
 package com.github.davidmoten.structures.btree;
 
+import static com.google.common.base.Optional.of;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -8,9 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.util.LinkedList;
-
-import com.google.common.base.Optional;
+import java.util.List;
 
 public class Storage {
 
@@ -37,16 +37,14 @@ public class Storage {
 	}
 
 	public synchronized <T extends Serializable & Comparable<T>> void save(
-			LinkedList<NodeRef<T>> saveQueue) {
+			List<NodeRef<T>> saveQueue) {
 		ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
 		long startPos = nextPosition();
 		long pos = startPos;
-		while (!saveQueue.isEmpty()) {
-			NodeRef<T> node = saveQueue.pop();
-
+		for (NodeRef<T> node : saveQueue) {
 			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 			node.save(bytes);
-			node.setPosition(Optional.of(pos));
+			node.setPosition(of(pos));
 
 			try {
 				allBytes.write(bytes.toByteArray());
@@ -67,6 +65,7 @@ public class Storage {
 			FileInputStream fis = new FileInputStream(file);
 			fis.skip(node.getPosition().get());
 			BufferedInputStream bis = new BufferedInputStream(fis, 1024);
+			System.out.println("loading node from " + node.getPosition().get());
 			node.load(bis);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
