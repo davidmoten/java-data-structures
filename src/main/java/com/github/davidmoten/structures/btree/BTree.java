@@ -394,6 +394,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		return root.find(t);
 	}
 
+	public Iterable<T> findAll(T t) {
+		return root.findAll(t);
+	}
+
 	/**
 	 * Returns the result of a range query.
 	 * 
@@ -403,7 +407,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * @param op2
 	 * @return
 	 */
-	public Iterable<Optional<T>> find(T t1, T t2, ComparisonOperator op1,
+	public Iterable<T> find(T t1, T t2, ComparisonOperator op1,
 			ComparisonOperator op2) {
 		throw new RuntimeException("not implemented");
 	}
@@ -486,7 +490,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				NodeRef<T> ref = new NodeRef<T>(loader,
 						Optional.<Position> absent(), degree, false);
 				Node<T> node = new Node<T>(loader, ref, false);
-				long size = ref.load(fis, node);
+				long size = node.load(fis);
 				displayNode(pos, node);
 				pos += size;
 				System.out.println("pos=" + pos);

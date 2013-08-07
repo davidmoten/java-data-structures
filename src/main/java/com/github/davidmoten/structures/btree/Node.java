@@ -4,6 +4,8 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -14,6 +16,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.io.CountingInputStream;
 
 /**
  * A leaf or non-leaf (internal) node on a B-Tree.
@@ -24,6 +27,7 @@ import com.google.common.collect.Lists;
  */
 class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
+	static final int CHILD_ABSENT = -1;
 	private Optional<Key<T>> first = Optional.absent();
 	private final NodeLoader<T> loader;
 
@@ -364,6 +368,10 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			return absent();
 	}
 
+	public Iterable<T> findAll(T t) {
+		throw new RuntimeException("not implemented");
+	}
+
 	public long delete(T t) {
 		int count = 0;
 		boolean isLeaf = isLeafNode();
@@ -443,6 +451,52 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		return builder.toString();
 	}
 
+	long load(InputStream is) {
+		try {
+			CountingInputStream cis = new CountingInputStream(is);
+			@SuppressWarnings("resource")
+			ObjectInputStream ois = new ObjectInputStream(cis);
+			isRoot = ois.readBoolean();
+			// used for can delete for space recovery by LSS
+			ois.readBoolean();
+			int count = ois.readInt();
+			Optional<Key<T>> previous = absent();
+			Optional<Key<T>> firstKey = absent();
+			for (int i = 0; i < count; i++) {
+				@SuppressWarnings("unchecked")
+				T t = (T) ois.readObject();
+				long leftFileNumber = ois.readLong();
+				long left = ois.readLong();
+				long rightFileNumber = ois.readLong();
+				long right = ois.readLong();
+				boolean deleted = ois.readBoolean();
+				Key<T> key = new Key<T>(t);
+				if (left != CHILD_ABSENT)
+					key.setLeft(of(new NodeRef<T>(loader, of(new Position(
+							leftFileNumber, left)), degree, false)));
+				if (right != CHILD_ABSENT)
+					key.setRight(of(new NodeRef<T>(loader, of(new Position(
+							rightFileNumber, right)), degree, false)));
+				key.setDeleted(deleted);
+				key.setNext(Optional.<Key<T>> absent());
+				if (!firstKey.isPresent())
+					firstKey = of(key);
+				if (previous.isPresent())
+					previous.get().setNext(of(key));
+				previous = of(key);
+			}
+
+			// don't close the input stream to avoid closing the underlying
+			// stream
+			first = firstKey;
+			return cis.getCount();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void save(OutputStream os) {
 
 		try {
@@ -458,8 +512,8 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 					oos.writeLong(key.getLeft().get().getPosition().get()
 							.getPosition());
 				} else {
-					oos.writeLong(NodeRef.CHILD_ABSENT);
-					oos.writeLong(NodeRef.CHILD_ABSENT);
+					oos.writeLong(CHILD_ABSENT);
+					oos.writeLong(CHILD_ABSENT);
 				}
 				if (key.getRight().isPresent()) {
 					oos.writeLong(key.getRight().get().getPosition().get()
@@ -467,8 +521,8 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 					oos.writeLong(key.getRight().get().getPosition().get()
 							.getPosition());
 				} else {
-					oos.writeLong(NodeRef.CHILD_ABSENT);
-					oos.writeLong(NodeRef.CHILD_ABSENT);
+					oos.writeLong(CHILD_ABSENT);
+					oos.writeLong(CHILD_ABSENT);
 				}
 				oos.writeBoolean(key.isDeleted());
 			}

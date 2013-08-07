@@ -3,20 +3,15 @@ package com.github.davidmoten.structures.btree;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Optional;
-import com.google.common.io.CountingInputStream;
 
 public class NodeRef<T extends Serializable & Comparable<T>> {
-
-	static final int CHILD_ABSENT = -1;
 
 	private Optional<Position> position;
 
@@ -46,54 +41,8 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node.get();
 	}
 
-	long load(InputStream is, Node<T> node) {
-		try {
-			CountingInputStream cis = new CountingInputStream(is);
-			@SuppressWarnings("resource")
-			ObjectInputStream ois = new ObjectInputStream(cis);
-			node.setIsRoot(ois.readBoolean());
-			// used for can delete for space recovery by LSS
-			ois.readBoolean();
-			int count = ois.readInt();
-			Optional<Key<T>> previous = absent();
-			Optional<Key<T>> first = absent();
-			for (int i = 0; i < count; i++) {
-				@SuppressWarnings("unchecked")
-				T t = (T) ois.readObject();
-				long leftFileNumber = ois.readLong();
-				long left = ois.readLong();
-				long rightFileNumber = ois.readLong();
-				long right = ois.readLong();
-				boolean deleted = ois.readBoolean();
-				Key<T> key = new Key<T>(t);
-				if (left != CHILD_ABSENT)
-					key.setLeft(of(new NodeRef<T>(loader, of(new Position(
-							leftFileNumber, left)), degree, false)));
-				if (right != CHILD_ABSENT)
-					key.setRight(of(new NodeRef<T>(loader, of(new Position(
-							rightFileNumber, right)), degree, false)));
-				key.setDeleted(deleted);
-				key.setNext(Optional.<Key<T>> absent());
-				if (!first.isPresent())
-					first = of(key);
-				if (previous.isPresent())
-					previous.get().setNext(of(key));
-				previous = of(key);
-			}
-
-			// don't close the input stream to avoid closing the underlying
-			// stream
-			node.setFirst(first);
-			return cis.getCount();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	void load(InputStream is) {
-		load(is, node.get());
+		node.get().load(is);
 	}
 
 	private void load() {
@@ -103,6 +52,10 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	public Optional<T> find(T t) {
 		return node().find(t);
+	}
+
+	public Iterable<T> findAll(T t) {
+		return node().findAll(t);
 	}
 
 	public long delete(T t) {

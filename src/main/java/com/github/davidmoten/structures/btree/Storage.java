@@ -55,22 +55,6 @@ public class Storage {
 		return new File(directory, name + "." + fileNumber);
 	}
 
-	private MappedByteBuffer getBuffer(Long fileNumber) {
-		synchronized (fileCache) {
-			MappedByteBuffer buffer = fileCache.getIfPresent(fileNumber);
-			if (buffer == null)
-				try {
-					buffer = new RandomAccessFile(getFile(fileNumber), "rw")
-							.getChannel().map(FileChannel.MapMode.READ_WRITE,
-									0, BUFFER_SIZE);
-					fileCache.put(fileNumber, buffer);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			return buffer;
-		}
-	}
-
 	private Position nextPosition() {
 		try {
 			if (!file.exists())
@@ -145,5 +129,18 @@ public class Storage {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		RandomAccessFile f = new RandomAccessFile("target/temp.txt", "rw");
+		FileChannel fc = f.getChannel();
+		MappedByteBuffer m = fc.map(FileChannel.MapMode.READ_WRITE, 0, 1024);
+		for (int i = 1; i <= 10000; i++) {
+			if (i % m.limit() == 0)
+				m.flip();
+			m.put((byte) 1);
+
+		}
+		f.close();
 	}
 }
