@@ -29,6 +29,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
 	private final NodeRef<T> ref;
 	private final int degree;
+	private boolean isRoot;
 
 	/**
 	 * Constructor.
@@ -38,10 +39,11 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 	 * @param degree
 	 * @param parent
 	 */
-	Node(NodeLoader<T> nodeListener, NodeRef<T> ref, int degree) {
+	Node(NodeLoader<T> nodeListener, NodeRef<T> ref, boolean isRoot) {
 		this.loader = nodeListener;
 		this.ref = ref;
-		this.degree = degree;
+		this.degree = ref.getDegree();
+		this.isRoot = isRoot;
 	}
 
 	public KeyNodes<T> add(KeyNodes<T> keyNodes) {
@@ -216,7 +218,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
 	private NodeRef<T> copy() {
 		NodeRef<T> node = new NodeRef<T>(loader, Optional.<Position> absent(),
-				degree);
+				degree, isRoot);
 		node.setFirst(copy(first));
 		return node;
 	}
@@ -252,13 +254,13 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		// create child1 of first ->..->previous
 		// this child will request a new file position
 		NodeRef<T> child1 = new NodeRef<T>(loader,
-				Optional.<Position> absent(), degree);
+				Optional.<Position> absent(), degree, false);
 		child1.setFirst(list);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
 		NodeRef<T> child2 = new NodeRef<T>(loader,
-				Optional.<Position> absent(), degree);
+				Optional.<Position> absent(), degree, false);
 		child2.setFirst(key.get().next());
 
 		// set the links on medianKey to the next key in the same node and to
@@ -445,6 +447,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(os);
+			oos.writeBoolean(isRoot);
 			oos.writeInt(countKeys());
 			for (Key<T> key : keys()) {
 				oos.writeObject(key.value());
@@ -508,6 +511,14 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			s.append("]");
 		}
 		return s.toString();
+	}
+
+	public void setIsRoot(boolean isRoot) {
+		this.isRoot = isRoot;
+	}
+
+	public boolean isRoot() {
+		return isRoot;
 	}
 
 }

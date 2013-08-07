@@ -25,11 +25,14 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	private final int degree;
 
+	private final boolean isRoot;
+
 	public NodeRef(NodeLoader<T> nodeListener, Optional<Position> position,
-			int degree) {
+			int degree, boolean isRoot) {
 		this.loader = nodeListener;
 		this.position = position;
 		this.degree = degree;
+		this.isRoot = isRoot;
 	}
 
 	synchronized Node<T> node() {
@@ -37,7 +40,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 			if (position.isPresent()) {
 				load();
 			} else {
-				node = of(new Node<T>(loader, this, degree));
+				node = of(new Node<T>(loader, this, isRoot));
 			}
 		}
 		return node.get();
@@ -48,6 +51,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 			CountingInputStream cis = new CountingInputStream(is);
 			@SuppressWarnings("resource")
 			ObjectInputStream ois = new ObjectInputStream(cis);
+			node.setIsRoot(ois.readBoolean());
 			int count = ois.readInt();
 			Optional<Key<T>> previous = absent();
 			Optional<Key<T>> first = absent();
@@ -62,10 +66,10 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 				Key<T> key = new Key<T>(t);
 				if (left != CHILD_ABSENT)
 					key.setLeft(of(new NodeRef<T>(loader, of(new Position(
-							leftFileNumber, left)), degree)));
+							leftFileNumber, left)), degree, false)));
 				if (right != CHILD_ABSENT)
 					key.setRight(of(new NodeRef<T>(loader, of(new Position(
-							rightFileNumber, right)), degree)));
+							rightFileNumber, right)), degree, false)));
 				key.setDeleted(deleted);
 				key.setNext(Optional.<Key<T>> absent());
 				if (!first.isPresent())
@@ -74,6 +78,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 					previous.get().setNext(of(key));
 				previous = of(key);
 			}
+
 			// don't close the input stream to avoid closing the underlying
 			// stream
 			node.setFirst(first);
@@ -90,7 +95,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 	}
 
 	private void load() {
-		node = of(new Node<T>(loader, this, degree));
+		node = of(new Node<T>(loader, this, isRoot));
 		loader.load(this);
 	}
 
@@ -194,5 +199,13 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	public String abbr() {
 		return node().abbr();
+	}
+
+	public boolean isRoot() {
+		return node().isRoot();
+	}
+
+	public int getDegree() {
+		return degree;
 	}
 }

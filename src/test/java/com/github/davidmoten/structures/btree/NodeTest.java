@@ -167,6 +167,7 @@ public class NodeTest {
 
 			}
 		};
-		return new NodeRef<Integer>(listener, Optional.<Position> absent(), 3);
+		return new NodeRef<Integer>(listener, Optional.<Position> absent(), 3,
+				false);
 	}
 }

@@ -122,7 +122,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 				Metadata metadata = readMetadata(builder.degree);
 				degree = metadata.degree;
-				root = new NodeRef<T>(loader, of(metadata.rootPosition), degree);
+				root = new NodeRef<T>(loader, of(metadata.rootPosition),
+						degree, true);
 
 				if (!builder.storage.isPresent())
 					this.storage = of(new Storage(metadataFile.get()
@@ -134,7 +135,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			} else {
 				degree = builder.degree.get();
 				root = new NodeRef<T>(loader, Optional.<Position> absent(),
-						degree);
+						degree, true);
 				if (!builder.storage.isPresent())
 					this.storage = of(new Storage(metadataFile.get()
 							.getParentFile(), metadataFile.get().getName()
@@ -146,7 +147,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		} else {
 			this.storage = absent();
 			this.degree = builder.degree.get();
-			root = new NodeRef<T>(loader, Optional.<Position> absent(), degree);
+			root = new NodeRef<T>(loader, Optional.<Position> absent(), degree,
+					true);
 			addToSaveQueue(root);
 			flushSaves(saveQueue);
 			if (metadataFile.isPresent())
@@ -355,7 +357,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 		NodeRef<T> node;
 		if (keyNodes.getKey().isPresent()) {
-			node = new NodeRef<T>(loader, Optional.<Position> absent(), degree);
+			node = new NodeRef<T>(loader, Optional.<Position> absent(), degree,
+					true);
 			node.setFirst(of(keyNodes.getKey().get()));
 			saveQueue.add(node);
 		} else
@@ -481,8 +484,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			int pos = 0;
 			while (pos < length) {
 				NodeRef<T> ref = new NodeRef<T>(loader,
-						Optional.<Position> absent(), degree);
-				Node<T> node = new Node<T>(loader, ref, degree);
+						Optional.<Position> absent(), degree, false);
+				Node<T> node = new Node<T>(loader, ref, false);
 				long size = ref.load(fis, node);
 				displayNode(pos, node);
 				pos += size;
