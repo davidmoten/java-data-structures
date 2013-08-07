@@ -402,7 +402,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	public Iterable<Optional<T>> find(T t1, T t2, ComparisonOperator op1,
 			ComparisonOperator op2) {
-		return null;
+		throw new RuntimeException("not implemented");
 	}
 
 	/**

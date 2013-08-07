@@ -115,7 +115,10 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		Preconditions.checkArgument(first.isPresent(), "first must be present");
 		// Note that first will be present because if is internal (non-leaf)
 		// node then it must have some keys
-		KeyNodes<T> result = null;
+
+		// using optional despite result always being present by the time this
+		// method returns
+		Optional<KeyNodes<T>> result = absent();
 		boolean added = false;
 		Optional<Key<T>> last = first;
 		T t = keyNodes.getKey().get().value();
@@ -127,8 +130,8 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 						"left must be present on non-leaf node");
 				final KeyNodes<T> addToLeftResult = key.getLeft().get()
 						.add(keyNodes);
-				result = processAddToChildResult(key, Side.LEFT,
-						addToLeftResult);
+				result = of(processAddToChildResult(key, Side.LEFT,
+						addToLeftResult));
 				added = true;
 				break;
 			}
@@ -140,11 +143,12 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			// of b-tree non leaf node
 			final KeyNodes<T> addToRightResult = last.get().getRight().get()
 					.add(keyNodes);
-			result = processAddToChildResult(last.get(), Side.RIGHT,
-					addToRightResult);
+			result = of(processAddToChildResult(last.get(), Side.RIGHT,
+					addToRightResult));
 		}
 		Preconditions.checkNotNull(result);
-		return result;
+		// result should always be present
+		return result.get();
 
 	}
 

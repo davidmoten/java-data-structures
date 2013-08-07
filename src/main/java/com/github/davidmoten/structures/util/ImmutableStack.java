@@ -25,10 +25,7 @@ public class ImmutableStack<T> {
 
 	public Optional<T> peek() {
 		T value = q.peek();
-		if (value == null)
-			return Optional.absent();
-		else
-			return Optional.of(value);
+		return Optional.fromNullable(value);
 	}
 
 	public ImmutableStack<T> pop() {
