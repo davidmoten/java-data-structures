@@ -44,7 +44,7 @@ public class Storage {
 		for (NodeRef<T> node : saveQueue) {
 			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 			node.save(bytes);
-			node.setPosition(of(pos));
+			node.setPosition(of(new Position(0, pos)));
 
 			try {
 				allBytes.write(bytes.toByteArray());
@@ -63,7 +63,8 @@ public class Storage {
 	public <T extends Serializable & Comparable<T>> void load(NodeRef<T> node) {
 		try {
 			FileInputStream fis = new FileInputStream(file);
-			fis.skip(node.getPosition().get());
+			// TODO use position.fileNumber
+			fis.skip(node.getPosition().get().getPosition());
 			BufferedInputStream bis = new BufferedInputStream(fis, 1024);
 			System.out.println("loading node from " + node.getPosition().get());
 			node.load(bis);

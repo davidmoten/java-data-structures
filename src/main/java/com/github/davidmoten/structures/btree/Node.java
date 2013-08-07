@@ -211,7 +211,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 	}
 
 	private NodeRef<T> copy() {
-		NodeRef<T> node = new NodeRef<T>(loader, Optional.<Long> absent(),
+		NodeRef<T> node = new NodeRef<T>(loader, Optional.<Position> absent(),
 				degree);
 		node.setFirst(copy(first));
 		return node;
@@ -247,14 +247,14 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 
 		// create child1 of first ->..->previous
 		// this child will request a new file position
-		NodeRef<T> child1 = new NodeRef<T>(loader, Optional.<Long> absent(),
-				degree);
+		NodeRef<T> child1 = new NodeRef<T>(loader,
+				Optional.<Position> absent(), degree);
 		child1.setFirst(list);
 
 		// create child2 of medianKey.next ->..->last
 		// this child will request a new file position
-		NodeRef<T> child2 = new NodeRef<T>(loader, Optional.<Long> absent(),
-				degree);
+		NodeRef<T> child2 = new NodeRef<T>(loader,
+				Optional.<Position> absent(), degree);
 		child2.setFirst(key.get().next());
 
 		// set the links on medianKey to the next key in the same node and to
@@ -444,14 +444,24 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			oos.writeInt(countKeys());
 			for (Key<T> key : keys()) {
 				oos.writeObject(key.value());
-				if (key.getLeft().isPresent())
-					oos.writeLong(key.getLeft().get().getPosition().get());
-				else
+				if (key.getLeft().isPresent()) {
+					oos.writeLong(key.getLeft().get().getPosition().get()
+							.getFileNumber());
+					oos.writeLong(key.getLeft().get().getPosition().get()
+							.getPosition());
+				} else {
 					oos.writeLong(NodeRef.CHILD_ABSENT);
-				if (key.getRight().isPresent())
-					oos.writeLong(key.getRight().get().getPosition().get());
-				else
 					oos.writeLong(NodeRef.CHILD_ABSENT);
+				}
+				if (key.getRight().isPresent()) {
+					oos.writeLong(key.getRight().get().getPosition().get()
+							.getFileNumber());
+					oos.writeLong(key.getRight().get().getPosition().get()
+							.getPosition());
+				} else {
+					oos.writeLong(NodeRef.CHILD_ABSENT);
+					oos.writeLong(NodeRef.CHILD_ABSENT);
+				}
 				oos.writeBoolean(key.isDeleted());
 			}
 			oos.close();

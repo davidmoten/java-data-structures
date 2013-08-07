@@ -18,14 +18,14 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	static final int CHILD_ABSENT = -1;
 
-	private Optional<Long> position;
+	private Optional<Position> position;
 
 	private Optional<Node<T>> node = Optional.absent();
 	private final NodeLoader<T> loader;
 
 	private final int degree;
 
-	public NodeRef(NodeLoader<T> nodeListener, Optional<Long> position,
+	public NodeRef(NodeLoader<T> nodeListener, Optional<Position> position,
 			int degree) {
 		this.loader = nodeListener;
 		this.position = position;
@@ -54,14 +54,18 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 			for (int i = 0; i < count; i++) {
 				@SuppressWarnings("unchecked")
 				T t = (T) ois.readObject();
+				long leftFileNumber = ois.readLong();
 				long left = ois.readLong();
+				long rightFileNumber = ois.readLong();
 				long right = ois.readLong();
 				boolean deleted = ois.readBoolean();
 				Key<T> key = new Key<T>(t);
 				if (left != CHILD_ABSENT)
-					key.setLeft(of(new NodeRef<T>(loader, of(left), degree)));
+					key.setLeft(of(new NodeRef<T>(loader, of(new Position(
+							leftFileNumber, left)), degree)));
 				if (right != CHILD_ABSENT)
-					key.setRight(of(new NodeRef<T>(loader, of(right), degree)));
+					key.setRight(of(new NodeRef<T>(loader, of(new Position(
+							rightFileNumber, right)), degree)));
 				key.setDeleted(deleted);
 				key.setNext(Optional.<Key<T>> absent());
 				if (!first.isPresent())
@@ -134,7 +138,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return builder.toString();
 	}
 
-	public Optional<Long> getPosition() {
+	public Optional<Position> getPosition() {
 		return position;
 	}
 
@@ -164,7 +168,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		node().save(os);
 	}
 
-	public void setPosition(Optional<Long> position) {
+	public void setPosition(Optional<Position> position) {
 		this.position = position;
 	}
 

@@ -22,10 +22,10 @@ public class KeyTest {
 		Optional<NodeRef<Double>> absent = Optional.absent();
 
 		Key<Double> k = new Key<Double>(1.0);
-		NodeRef<Double> left = new NodeRef<Double>(n, Optional.<Long> absent(),
-				3);
+		NodeRef<Double> left = new NodeRef<Double>(n,
+				Optional.<Position> absent(), 3);
 		NodeRef<Double> right = new NodeRef<Double>(n,
-				Optional.<Long> absent(), 3);
+				Optional.<Position> absent(), 3);
 
 		assertFalse(k.hasChild());
 		k.setLeft(Optional.of(left));

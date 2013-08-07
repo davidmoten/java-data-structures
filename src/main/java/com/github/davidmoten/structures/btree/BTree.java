@@ -59,6 +59,10 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 */
 	private final Object writeMonitor = new Object();
 
+	/**
+	 * This object is synchronized on to ensure that metadata writes happen one
+	 * at a time (synchronously).
+	 */
 	private final Object metadataMonitor = new Object();
 
 	/**
@@ -125,7 +129,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			root = new NodeRef<T>(loader, of(metadata.rootPosition), degree);
 		} else {
 			this.degree = builder.degree.get();
-			root = new NodeRef<T>(loader, Optional.<Long> absent(), degree);
+			root = new NodeRef<T>(loader, Optional.<Position> absent(), degree);
 			addToSaveQueue(root);
 			flushSaves(saveQueue);
 			if (metadataFile.isPresent())
@@ -219,7 +223,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * 
 	 */
 	private static class Metadata {
-		long rootPosition;
+		Position rootPosition;
 		int degree;
 
 		/**
@@ -228,7 +232,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		 * @param rootPosition
 		 * @param degree
 		 */
-		public Metadata(long rootPosition, int degree) {
+		public Metadata(Position rootPosition, int degree) {
 			super();
 			this.rootPosition = rootPosition;
 			this.degree = degree;
@@ -243,10 +247,12 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		try {
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
 					metadataFile.get()));
+			Long rootFileNumber = ois.readLong();
 			Long rootPosition = ois.readLong();
 			int degree = ois.readInt();
 			ois.close();
-			return new Metadata(rootPosition, degree);
+			return new Metadata(new Position(rootFileNumber, rootPosition),
+					degree);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
@@ -284,7 +290,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private byte[] composeMetadata() throws IOException {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(bytes);
-		oos.writeLong(root.getPosition().get());
+		oos.writeLong(root.getPosition().get().getFileNumber());
+		oos.writeLong(root.getPosition().get().getPosition());
 		oos.writeInt(degree);
 		oos.close();
 		return bytes.toByteArray();
@@ -327,7 +334,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 		NodeRef<T> node;
 		if (keyNodes.getKey().isPresent()) {
-			node = new NodeRef<T>(loader, Optional.<Long> absent(), degree);
+			node = new NodeRef<T>(loader, Optional.<Position> absent(), degree);
 			node.setFirst(of(keyNodes.getKey().get()));
 			saveQueue.add(node);
 		} else
@@ -348,7 +355,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		if (storage.isPresent()) {
 			storage.get().save(saveQueue);
 			for (NodeRef<T> node : saveQueue)
-				loaded(node.getPosition().get(), node);
+				loaded(node.getPosition().get().getPosition(), node);
 		}
 		saveQueue.clear();
 	}
@@ -436,7 +443,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private void load(NodeRef<T> node) {
 		if (storage.isPresent()) {
 			storage.get().load(node);
-			loaded(node.getPosition().get(), node);
+			loaded(node.getPosition().get().getPosition(), node);
 		}
 	}
 
@@ -453,7 +460,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			int pos = 0;
 			while (pos < length) {
 				NodeRef<T> ref = new NodeRef<T>(loader,
-						Optional.<Long> absent(), degree);
+						Optional.<Position> absent(), degree);
 				Node<T> node = new Node<T>(loader, ref, degree);
 				long size = ref.load(fis, node);
 				displayNode(pos, node);

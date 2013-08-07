@@ -32,6 +32,7 @@ public class NodeCache<T extends Serializable & Comparable<T>> {
 		};
 	}
 
+	// TODO use filenumber in position
 	public void put(long position, NodeRef<T> node) {
 		nodeCache.put(position, node);
 	}

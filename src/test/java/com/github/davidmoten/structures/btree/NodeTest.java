@@ -164,10 +164,9 @@ public class NodeTest {
 
 			@Override
 			public void load(NodeRef<Integer> node) {
-				// TODO Auto-generated method stub
 
 			}
 		};
-		return new NodeRef<Integer>(listener, Optional.<Long> absent(), 3);
+		return new NodeRef<Integer>(listener, Optional.<Position> absent(), 3);
 	}
 }
