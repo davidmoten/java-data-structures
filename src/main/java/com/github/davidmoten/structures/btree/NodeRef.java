@@ -11,7 +11,7 @@ import java.util.List;
 
 import com.google.common.base.Optional;
 
-public class NodeRef<T extends Serializable & Comparable<T>> {
+class NodeRef<T extends Serializable & Comparable<T>> {
 
 	private Optional<Position> position;
 
@@ -22,7 +22,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 
 	private final boolean isRoot;
 
-	public NodeRef(NodeLoader<T> nodeListener, Optional<Position> position,
+	NodeRef(NodeLoader<T> nodeListener, Optional<Position> position,
 			int degree, boolean isRoot) {
 		this.loader = nodeListener;
 		this.position = position;
@@ -50,35 +50,35 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		loader.load(this);
 	}
 
-	public Optional<T> find(T t) {
+	Optional<T> find(T t) {
 		return node().find(t);
 	}
 
-	public Iterable<T> findAll(T t) {
+	Iterable<T> findAll(T t) {
 		return node().findAll(t);
 	}
 
-	public long delete(T t) {
+	long delete(T t) {
 		return node().delete(t);
 	}
 
-	public List<? extends Key<T>> getKeys() {
+	List<? extends Key<T>> getKeys() {
 		return node().getKeys();
 	}
 
-	public void setFirst(Optional<Key<T>> first) {
+	void setFirst(Optional<Key<T>> first) {
 		node().setFirst(first);
 	}
 
-	public Optional<Key<T>> getFirst() {
+	Optional<Key<T>> getFirst() {
 		return node().getFirst();
 	}
 
-	public Iterator<T> iterator() {
+	Iterator<T> iterator() {
 		return node().iterator();
 	}
 
-	public String toString(String space) {
+	String toString(String space) {
 		return node().toString(space);
 	}
 
@@ -90,7 +90,7 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 			return asString();
 	}
 
-	public String asString() {
+	String asString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("NodeRef [position=");
 		builder.append(position);
@@ -98,16 +98,16 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return builder.toString();
 	}
 
-	public Optional<Position> getPosition() {
+	Optional<Position> getPosition() {
 		return position;
 	}
 
-	public void unload() {
+	void unload() {
 		// System.out.println("unloaded " + position);
 		node = absent();
 	}
 
-	public KeyNodes<T> add(KeyNodes<T> keyNodes) {
+	KeyNodes<T> add(KeyNodes<T> keyNodes) {
 		return node().add(keyNodes);
 	}
 
@@ -120,23 +120,23 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node().addToThisLevel(keyNodes);
 	}
 
-	public Iterable<Key<T>> keys() {
+	Iterable<Key<T>> keys() {
 		return node().keys();
 	}
 
-	public void save(OutputStream os) {
+	void save(OutputStream os) {
 		node().save(os);
 	}
 
-	public void setPosition(Optional<Position> position) {
+	void setPosition(Optional<Position> position) {
 		this.position = position;
 	}
 
-	public int countKeys() {
+	int countKeys() {
 		return node().countKeys();
 	}
 
-	public KeyNodes<T> split(KeyNodes<T> keyNodes) {
+	KeyNodes<T> split(KeyNodes<T> keyNodes) {
 		return node().split(keyNodes);
 	}
 
@@ -144,23 +144,23 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node().splitHere(keyNodes);
 	}
 
-	public void insertHere(Key<T> key) {
+	void insertHere(Key<T> key) {
 		node().insertHere(key);
 	}
 
-	public Key<T> key(int i) {
+	Key<T> key(int i) {
 		return node().key(i);
 	}
 
-	public String abbr() {
+	String abbr() {
 		return node().abbr();
 	}
 
-	public boolean isRoot() {
+	boolean isRoot() {
 		return node().isRoot();
 	}
 
-	public int getDegree() {
+	int getDegree() {
 		return degree;
 	}
 }

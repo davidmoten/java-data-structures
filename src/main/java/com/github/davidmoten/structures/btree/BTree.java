@@ -22,9 +22,13 @@ import com.google.common.base.Preconditions;
 
 /**
  * A standard BTree implementation as per wikipedia entry with some tweaks to
- * add in concurrency. In particular, iteration through the btree can be done
- * concurrently with addition/deletion with the side-effect that the iteration
- * might include changes to the tree since the iterator was created.
+ * add in concurrency and iteration.
+ * 
+ * In particular, iteration through the btree can be done concurrently with
+ * writes with no side-effects. Iteration was helped by each key having a
+ * pointer to the next key in the same node. The jump to the next key in order
+ * from the last key in a node is achieved using a stack (which will never have
+ * more than log(n) entries where n is the number of entries in the b-tree).
  * 
  * @author dxm
  * 
@@ -333,7 +337,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	/**
-	 * Adds one or more elements to the b-tree. May replace root.
+	 * Adds one or more elements to the b-tree. Will replace root.
 	 * 
 	 * @param t
 	 */

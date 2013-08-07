@@ -50,7 +50,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		this.isRoot = isRoot;
 	}
 
-	public KeyNodes<T> add(KeyNodes<T> keyNodes) {
+	KeyNodes<T> add(KeyNodes<T> keyNodes) {
 		Preconditions.checkArgument(keyNodes.getKey().isPresent(),
 				"key must be present");
 		KeyNodes<T> result;
@@ -342,7 +342,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		return medianNumber;
 	}
 
-	public Optional<T> find(T t) {
+	Optional<T> find(T t) {
 		boolean isLeaf = isLeafNode();
 		Optional<Key<T>> key = first;
 		Optional<Key<T>> last = first;
@@ -368,11 +368,11 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			return absent();
 	}
 
-	public Iterable<T> findAll(T t) {
+	Iterable<T> findAll(T t) {
 		throw new RuntimeException("not implemented");
 	}
 
-	public long delete(T t) {
+	long delete(T t) {
 		int count = 0;
 		boolean isLeaf = isLeafNode();
 		Optional<Key<T>> last = Optional.absent();
@@ -402,19 +402,19 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 	}
 
 	@VisibleForTesting
-	public List<? extends Key<T>> getKeys() {
+	List<? extends Key<T>> getKeys() {
 		List<Key<T>> list = Lists.newArrayList();
 		for (Key<T> key : keys())
 			list.add(key);
 		return list;
 	}
 
-	public void setFirst(Optional<Key<T>> first) {
+	void setFirst(Optional<Key<T>> first) {
 		Preconditions.checkNotNull(first);
 		this.first = first;
 	}
 
-	public Optional<Key<T>> getFirst() {
+	Optional<Key<T>> getFirst() {
 		return first;
 	}
 
@@ -423,11 +423,11 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		return new NodeIterator<T>(ref);
 	}
 
-	public Iterable<Key<T>> keys() {
+	Iterable<Key<T>> keys() {
 		return Util.keys(first);
 	}
 
-	public String toString(String space) {
+	String toString(String space) {
 		StringBuilder builder = new StringBuilder();
 
 		builder.append("\n" + space + "Node [");
@@ -497,7 +497,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		}
 	}
 
-	public void save(OutputStream os) {
+	void save(OutputStream os) {
 
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(os);
@@ -568,11 +568,11 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		return s.toString();
 	}
 
-	public void setIsRoot(boolean isRoot) {
+	void setIsRoot(boolean isRoot) {
 		this.isRoot = isRoot;
 	}
 
-	public boolean isRoot() {
+	boolean isRoot() {
 		return isRoot;
 	}
 
