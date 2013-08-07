@@ -10,11 +10,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.List;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 public class Storage {
 
 	private static final long maxFileSize = 5000000L;
+
+	private static final long BUFFER_SIZE = 0;
 
 	private File file;
 	/**
@@ -26,11 +33,14 @@ public class Storage {
 
 	private final String name;
 
+	private final Cache<Long, MappedByteBuffer> fileCache;
+
 	public Storage(File directory, String name, long fileNumber) {
 		this.directory = directory;
 		this.name = name;
 		this.fileNumber = fileNumber;
 		this.file = getFile(fileNumber);
+		fileCache = CacheBuilder.newBuilder().maximumSize(5).build();
 	}
 
 	public long getFileNumber() {
@@ -43,6 +53,22 @@ public class Storage {
 
 	private File getFile(long fileNumber) {
 		return new File(directory, name + "." + fileNumber);
+	}
+
+	private MappedByteBuffer getBuffer(Long fileNumber) {
+		synchronized (fileCache) {
+			MappedByteBuffer buffer = fileCache.getIfPresent(fileNumber);
+			if (buffer == null)
+				try {
+					buffer = new RandomAccessFile(getFile(fileNumber), "rw")
+							.getChannel().map(FileChannel.MapMode.READ_WRITE,
+									0, BUFFER_SIZE);
+					fileCache.put(fileNumber, buffer);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			return buffer;
+		}
 	}
 
 	private Position nextPosition() {

@@ -25,4 +25,28 @@ class Position {
 				+ "]";
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (fileNumber ^ (fileNumber >>> 32));
+		result = prime * result + (int) (position ^ (position >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Position other = (Position) obj;
+		if (fileNumber != other.fileNumber)
+			return false;
+		if (position != other.position)
+			return false;
+		return true;
+	}
 }
