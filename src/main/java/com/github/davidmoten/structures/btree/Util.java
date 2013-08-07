@@ -29,7 +29,7 @@ public class Util {
 
 					@Override
 					public void remove() {
-						// do nothing
+						throw new RuntimeException("remove not implemented");
 					}
 				};
 			}

@@ -114,10 +114,6 @@ public class NodeRef<T extends Serializable & Comparable<T>> {
 		return node().iterator();
 	}
 
-	public String keysAsString() {
-		return node().keysAsString();
-	}
-
 	public String toString(String space) {
 		return node().toString(space);
 	}

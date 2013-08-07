@@ -709,7 +709,7 @@ public class BTreeTest {
 
 		File f = new File("target/test8.index");
 		clear(f);
-		Integer[] values = new Integer[10000];
+		Integer[] values = new Integer[100];
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
 		long t = System.currentTimeMillis();

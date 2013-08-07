@@ -11,7 +11,7 @@ Aims:
 * 100% unit test coverage
 * add &#10004;
 * iterate &#10004;
-* find 
+* find &#10004;
 * delete
 * thread-safe with minimal locking &#10004;
 * persist to disk and load from disk efficiently &#10004;

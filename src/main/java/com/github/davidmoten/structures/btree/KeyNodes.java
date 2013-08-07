@@ -46,11 +46,6 @@ class KeyNodes<T extends Serializable & Comparable<T>> {
 	}
 
 	static <R extends Serializable & Comparable<R>> KeyNodes<R> create(
-			Key<R> key, LinkedList<NodeRef<R>> saveQueue) {
-		return new KeyNodes<R>(Optional.of(key), saveQueue);
-	}
-
-	static <R extends Serializable & Comparable<R>> KeyNodes<R> create(
 			Key<R> key) {
 		return new KeyNodes<R>(Optional.of(key),
 				Lists.<NodeRef<R>> newLinkedList());

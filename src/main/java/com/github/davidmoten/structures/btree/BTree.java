@@ -283,15 +283,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	}
 
 	/**
-	 * Returns the degree (the max number of keys in a node plus one).
-	 * 
-	 * @return
-	 */
-	public int getDegree() {
-		return degree;
-	}
-
-	/**
 	 * Adds one or more elements to the b-tree. May replace root.
 	 * 
 	 * @param t

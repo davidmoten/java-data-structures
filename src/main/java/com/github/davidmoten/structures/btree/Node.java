@@ -413,18 +413,6 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 		return Util.keys(first);
 	}
 
-	public String keysAsString() {
-		StringBuilder s = new StringBuilder();
-		Optional<Key<T>> key = first;
-		while (key.isPresent()) {
-			if (s.length() > 0)
-				s.append(",");
-			s.append(key.get().value());
-			key = key.get().next();
-		}
-		return s.toString();
-	}
-
 	public String toString(String space) {
 		StringBuilder builder = new StringBuilder();
 
@@ -506,10 +494,6 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			s.append("]");
 		}
 		return s.toString();
-	}
-
-	public void unload() {
-		throw new RuntimeException("not expected here");
 	}
 
 }
