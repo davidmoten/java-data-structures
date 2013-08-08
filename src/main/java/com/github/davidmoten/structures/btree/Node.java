@@ -3,6 +3,7 @@ package com.github.davidmoten.structures.btree;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -456,6 +457,7 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			CountingInputStream cis = new CountingInputStream(is);
 			@SuppressWarnings("resource")
 			ObjectInputStream ois = new ObjectInputStream(cis);
+			long lengthBytes = ois.readLong();
 			isRoot = ois.readBoolean();
 			// used for can delete for space recovery by LSS
 			ois.readBoolean();
@@ -500,7 +502,11 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 	void save(OutputStream os) {
 
 		try {
-			ObjectOutputStream oos = new ObjectOutputStream(os);
+			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(bytes);
+			oos.writeLong(0L);
+			// flush needed so can overwrite above value
+			oos.flush();
 			oos.writeBoolean(isRoot);
 			oos.writeBoolean(false);
 			oos.writeInt(countKeys());
@@ -527,6 +533,22 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 				oos.writeBoolean(key.isDeleted());
 			}
 			oos.close();
+			byte[] b = bytes.toByteArray();
+			overwriteLength(b);
+			os.write(b);
+			os.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private void overwriteLength(byte[] b) {
+		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(bytes);
+			oos.writeLong(b.length);
+			oos.flush();
+			System.arraycopy(bytes.toByteArray(), 0, b, 0, bytes.size());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
