@@ -131,6 +131,14 @@ public class Storage {
 		}
 	}
 
+	public void markObsoleteNodes(File file) {
+		try {
+			RandomAccessFile f = new RandomAccessFile(file, "rw");
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public static void main(String[] args) throws IOException {
 		RandomAccessFile f = new RandomAccessFile("target/temp.txt", "rw");
 		FileChannel fc = f.getChannel();
