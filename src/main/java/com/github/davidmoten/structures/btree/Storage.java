@@ -7,13 +7,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.util.List;
 
 import com.google.common.cache.Cache;
@@ -43,6 +43,7 @@ public class Storage {
 		this.fileNumber = fileNumber;
 		this.file = getFile(fileNumber);
 		fileCache = CacheBuilder.newBuilder().maximumSize(5).build();
+
 	}
 
 	public long getFileNumber() {
@@ -144,19 +145,43 @@ public class Storage {
 		}
 	}
 
-	private void markObsolete(Position position) {
+	public void markForDeletion(Position position) {
+		markForDeletion(getFile(position.getFileNumber()),
+				position.getPosition());
+	}
+
+	static void markForDeletion(File file, long pos) {
 		try {
-			FileOutputStream fos = new FileOutputStream(
-					getFile(position.getFileNumber()));
-			RandomAccessFile f = new RandomAccessFile(
-					getFile(position.getFileNumber()), "w");
-			f.getChannel().map(MapMode.READ_WRITE, position.getPosition(), 20);
+			FileInputStream fis = new FileInputStream(file);
+			fis.skip(pos);
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			long lengthBytes = ois.readLong();
+			boolean canDelete = ois.readBoolean();
+			ois.close();
+
+			if (!canDelete) {
+				ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+				ObjectOutputStream oos = new ObjectOutputStream(bytes);
+				oos.writeLong(lengthBytes);
+				oos.flush();
+				// mark as deleteable
+				oos.writeBoolean(true);
+				oos.close();
+				RandomAccessFile f = new RandomAccessFile(file, "w");
+				f.seek(pos);
+				f.write(bytes.toByteArray());
+				f.close();
+			}
 			// skip 4 bytes, then 8 bytes of long
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+
+	}
+
+	void markObsolete(Position position) {
 
 	}
 
