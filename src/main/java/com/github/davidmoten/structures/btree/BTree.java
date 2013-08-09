@@ -88,7 +88,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		public void load(NodeRef<T> node) {
 			BTree.this.load(node);
 		}
-
 	};
 
 	/**

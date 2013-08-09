@@ -711,7 +711,12 @@ public class BTreeTest {
 
 		File f = new File("target/test8.index");
 		clear(f);
-		Integer[] values = new Integer[100];
+		int n;
+		if (System.getProperty("n") != null)
+			n = Integer.parseInt(System.getProperty("n"));
+		else
+			n = 100000;
+		Integer[] values = new Integer[n];
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
 		long t = System.currentTimeMillis();

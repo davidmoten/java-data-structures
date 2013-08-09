@@ -457,10 +457,11 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			CountingInputStream cis = new CountingInputStream(is);
 			@SuppressWarnings("resource")
 			ObjectInputStream ois = new ObjectInputStream(cis);
-			long lengthBytes = ois.readLong();
-			isRoot = ois.readBoolean();
+			// read length in bytes of this node
+			ois.readLong();
 			// used for can delete for space recovery by LSS
 			ois.readBoolean();
+			isRoot = ois.readBoolean();
 			int count = ois.readInt();
 			Optional<Key<T>> previous = absent();
 			Optional<Key<T>> firstKey = absent();
@@ -506,9 +507,13 @@ class Node<T extends Serializable & Comparable<T>> implements Iterable<T> {
 			ObjectOutputStream oos = new ObjectOutputStream(bytes);
 			oos.writeLong(0L);
 			// flush needed so can overwrite above value
+			// this is so that the oos terminates the existing block_data record
+			// here instead of jamming stuff together into byes efficiently
+			// (normally the next termination of block data would occur on the
+			// next call of writeObject below
 			oos.flush();
-			oos.writeBoolean(isRoot);
 			oos.writeBoolean(false);
+			oos.writeBoolean(isRoot);
 			oos.writeInt(countKeys());
 			for (Key<T> key : keys()) {
 				oos.writeObject(key.value());
