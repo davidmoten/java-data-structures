@@ -245,8 +245,20 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * 
 	 */
 	private static class Metadata {
+
+		/**
+		 * The location of the root node in persistent storage.
+		 */
 		final Position rootPosition;
+		/**
+		 * The degree of the b-tree.
+		 */
 		final int degree;
+		/**
+		 * The maximum file number for storage.
+		 */
+		// TODO should be a url for Storage metadata so that multiple btrees
+		// can share the same Storage.
 		final long fileNumber;
 
 		/**
@@ -306,6 +318,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	/**
+	 * Writes metadata for the b-tree to persistent storage.
+	 * 
+	 * @return
+	 */
 	public BTree<T> flush() {
 		writeMetadata();
 		return this;
