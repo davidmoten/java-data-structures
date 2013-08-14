@@ -599,6 +599,7 @@ public class BTreeTest {
 		clear(f);
 		BTree<Integer> t = builder(Integer.class).degree(3).metadata(f).build();
 		t.add(1);
+		t.flush();
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		assertTrue(t2.find(1).isPresent());
@@ -611,6 +612,7 @@ public class BTreeTest {
 		BTree<Integer> t = builder(Integer.class).degree(3).metadata(f).build();
 		t.add(1);
 		t.add(2);
+		t.flush();
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		assertTrue(t2.find(1).isPresent());
@@ -620,7 +622,8 @@ public class BTreeTest {
 	@Test
 	public void testSaveThreeItemsDepthTwo() {
 		File f = createFile("target/test3.index");
-		builder(Integer.class).degree(3).metadata(f).build().add(1, 2, 3);
+		builder(Integer.class).degree(3).metadata(f).build().add(1, 2, 3)
+				.flush();
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		checkEquals(t2, 1, 2, 3);
@@ -637,7 +640,7 @@ public class BTreeTest {
 		File f = new File("target/test4.index");
 		clear(f);
 		BTree<Integer> t = builder(Integer.class).degree(3).metadata(f).build()
-				.add(1, 2, 3, 4);
+				.add(1, 2, 3, 4).flush();
 		System.out.println(t);
 		t.displayFile();
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
@@ -652,7 +655,7 @@ public class BTreeTest {
 		File f = new File("target/test5.index");
 		clear(f);
 		builder(Integer.class).degree(3).metadata(f).build()
-				.add(1, 2, 3, 4, 5, 6, 7);
+				.add(1, 2, 3, 4, 5, 6, 7).flush();
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		checkEquals(t2, 1, 2, 3, 4, 5, 6, 7);
@@ -666,7 +669,8 @@ public class BTreeTest {
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
 
-		builder(Integer.class).degree(100).metadata(f).build().add(values);
+		builder(Integer.class).degree(100).metadata(f).build().add(values)
+				.flush();
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		System.out.println(Iterators.toString(t2.iterator()));
@@ -685,7 +689,7 @@ public class BTreeTest {
 			valuesReversed[i] = MANY_VALUES - i;
 
 		builder(Integer.class).degree(100).metadata(f).build()
-				.add(valuesReversed);
+				.add(valuesReversed).flush();
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		checkEquals(t2, values);
@@ -700,7 +704,7 @@ public class BTreeTest {
 			values[i] = i + 1;
 
 		builder(Integer.class).degree(100).metadata(f).cacheSize(10).build()
-				.add(values);
+				.add(values).flush();
 		BTree<Integer> t2 = builder(Integer.class).degree(3).metadata(f)
 				.build();
 		checkEquals(t2, values);

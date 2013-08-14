@@ -306,6 +306,11 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		}
 	}
 
+	public BTree<T> flush() {
+		writeMetadata();
+		return this;
+	}
+
 	/**
 	 * Returns the bytes containing the metadata information for this BTree.
 	 * 
@@ -369,8 +374,15 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 
 		flushSaves(saveQueue);
 		root = node;
-		if (metadataFile.isPresent())
-			writeMetadata();
+		// TODO decide on flush strategy for metadataFile
+		// if (metadataFile.isPresent())
+		// writeMetadata();
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		super.finalize();
+		flush();
 	}
 
 	/**
