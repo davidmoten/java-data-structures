@@ -157,13 +157,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			if (metadataFile.isPresent())
 				writeMetadata();
 		}
-		// add shutdown hook
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				flush();
-			}
-		});
 	}
 
 	/**
@@ -314,18 +307,21 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	 * root node.
 	 */
 	private void writeMetadata() {
-		synchronized (metadataMonitor) {
-			try {
-				if (!metadataFile.get().exists())
-					metadataFile.get().createNewFile();
-				FileOutputStream fos = new FileOutputStream(metadataFile.get());
-				byte[] bytes = composeMetadata();
-				fos.write(bytes);
-				fos.close();
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException(e);
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+		if (metadataFile.isPresent()) {
+			synchronized (metadataMonitor) {
+				try {
+					if (!metadataFile.get().exists())
+						metadataFile.get().createNewFile();
+					FileOutputStream fos = new FileOutputStream(
+							metadataFile.get());
+					byte[] bytes = composeMetadata();
+					fos.write(bytes);
+					fos.close();
+				} catch (FileNotFoundException e) {
+					throw new RuntimeException(e);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}
@@ -407,12 +403,6 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		// TODO decide on flush strategy for metadataFile
 		// if (metadataFile.isPresent())
 		// writeMetadata();
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		flush();
 	}
 
 	/**
