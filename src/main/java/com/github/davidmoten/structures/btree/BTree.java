@@ -129,9 +129,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 						degree, true);
 
 				if (!builder.storage.isPresent())
-					this.storage = of(new Storage(metadataFile.get()
-							.getParentFile(), metadataFile.get().getName()
-							+ ".storage"));
+					this.storage = of(new Storage(new File(
+							metadata.storageDirectory), metadata.storageName));
 				else {
 					this.storage = builder.storage;
 				}
@@ -142,7 +141,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				if (!builder.storage.isPresent())
 					this.storage = of(new Storage(metadataFile.get()
 							.getParentFile(), metadataFile.get().getName()
-							+ ".storage", 0));
+							+ ".storage"));
 				else {
 					this.storage = builder.storage;
 				}

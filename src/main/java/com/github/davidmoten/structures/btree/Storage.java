@@ -17,9 +17,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 public class Storage {
 
 	private static final long maxFileSize = 5000000L;
@@ -34,19 +31,16 @@ public class Storage {
 
 	private final String name;
 
-	private final Cache<Long, MappedByteBuffer> fileCache;
+	public Storage(File directory, String name) {
+		this(directory, name, getLatestFileNumber(directory, name));
+	}
 
-	public Storage(File directory, String name, long fileNumber) {
+	private Storage(File directory, String name, long fileNumber) {
 		this.directory = directory;
 		this.name = name;
 		this.fileNumber = fileNumber;
 		this.file = getFile(fileNumber);
-		fileCache = CacheBuilder.newBuilder().maximumSize(5).build();
-
-	}
-
-	public Storage(File directory, String name) {
-		this(directory, name, getLatestFileNumber(directory, name));
+		// fileCache = CacheBuilder.newBuilder().maximumSize(5).build();
 	}
 
 	private static long getLatestFileNumber(File directory, final String name) {
@@ -125,7 +119,6 @@ public class Storage {
 		try {
 			FileInputStream fis = new FileInputStream(getFile(node
 					.getPosition().get().getFileNumber()));
-			// TODO use position.fileNumber
 			fis.skip(node.getPosition().get().getPosition());
 			BufferedInputStream bis = new BufferedInputStream(fis, 1024);
 			System.out.println("loading node from " + node.getPosition().get());
