@@ -1,6 +1,7 @@
 package com.github.davidmoten.structures.btree;
 
 import static com.github.davidmoten.structures.btree.BTree.builder;
+import static java.lang.Runtime.getRuntime;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -724,12 +725,15 @@ public class BTreeTest {
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
 		long t = System.currentTimeMillis();
-		builder(Integer.class).degree(100).metadata(f).build().add(values);
+		builder(Integer.class).degree(100).metadata(f).build().add(values)
+				.flush();
 		System.out
 				.println("addsPerSecond="
 						+ (values.length
 								/ (double) (System.currentTimeMillis() - t) * 1000)
 						+ " adds/s");
+		System.out.println("totalMemory=" + getRuntime().totalMemory()
+				+ ",maxMemory=" + getRuntime().maxMemory());
 	}
 
 	private static void clear(File f) {

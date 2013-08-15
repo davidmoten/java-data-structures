@@ -2,6 +2,7 @@ package com.github.davidmoten.structures.btree;
 
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Optional.of;
+import static java.lang.Runtime.getRuntime;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -156,6 +157,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			if (metadataFile.isPresent())
 				writeMetadata();
 		}
+		System.out.println("totalMemory=" + getRuntime().totalMemory()
+				+ ",maxMemory=" + getRuntime().maxMemory());
+
 	}
 
 	/**
