@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -22,8 +23,6 @@ import com.google.common.cache.CacheBuilder;
 public class Storage {
 
 	private static final long maxFileSize = 5000000L;
-
-	private static final long BUFFER_SIZE = 0;
 
 	private File file;
 	/**
@@ -44,6 +43,30 @@ public class Storage {
 		this.file = getFile(fileNumber);
 		fileCache = CacheBuilder.newBuilder().maximumSize(5).build();
 
+	}
+
+	public Storage(File directory, String name) {
+		this(directory, name, getLatestFileNumber(directory, name));
+	}
+
+	private static long getLatestFileNumber(File directory, final String name) {
+		File[] files = directory.listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String nm) {
+				return nm.startsWith(name) && nm.matches("\\.\\d+$");
+			}
+		});
+		Long max = null;
+		for (File file : files) {
+			int i = file.getName().lastIndexOf(".");
+			String numberPart = file.getName().substring(i + 1);
+			long number = Long.parseLong(numberPart);
+			if (max == null || number > max)
+				max = number;
+		}
+		if (max == null)
+			max = 0L;
+		return max;
 	}
 
 	public long getFileNumber() {
@@ -196,5 +219,13 @@ public class Storage {
 
 		}
 		f.close();
+	}
+
+	public File getDirectory() {
+		return directory;
+	}
+
+	public String getName() {
+		return name;
 	}
 }

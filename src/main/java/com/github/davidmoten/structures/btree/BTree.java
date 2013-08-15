@@ -131,7 +131,7 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 				if (!builder.storage.isPresent())
 					this.storage = of(new Storage(metadataFile.get()
 							.getParentFile(), metadataFile.get().getName()
-							+ ".storage", metadata.fileNumber));
+							+ ".storage"));
 				else {
 					this.storage = builder.storage;
 				}
@@ -157,6 +157,13 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 			if (metadataFile.isPresent())
 				writeMetadata();
 		}
+		// add shutdown hook
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				flush();
+			}
+		});
 	}
 
 	/**
@@ -257,9 +264,9 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		/**
 		 * The maximum file number for storage.
 		 */
-		// TODO should be a url for Storage metadata so that multiple btrees
-		// can share the same Storage.
-		final long fileNumber;
+		final String storageDirectory;
+
+		final String storageName;
 
 		/**
 		 * Constructor.
@@ -267,11 +274,13 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		 * @param rootPosition
 		 * @param degree
 		 */
-		public Metadata(Position rootPosition, int degree, long fileNumber) {
+		public Metadata(Position rootPosition, int degree,
+				String storageDirectory, String storageName) {
 			super();
 			this.rootPosition = rootPosition;
 			this.degree = degree;
-			this.fileNumber = fileNumber;
+			this.storageDirectory = storageDirectory;
+			this.storageName = storageName;
 		}
 	}
 
@@ -283,16 +292,19 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 		try {
 			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
 					metadataFile.get()));
-			long fileNumber = ois.readLong();
+			String storageDirectory = (String) ois.readObject();
+			String storageName = (String) ois.readObject();
 			long rootFileNumber = ois.readLong();
 			long rootPosition = ois.readLong();
 			int degree = ois.readInt();
 			ois.close();
 			return new Metadata(new Position(rootFileNumber, rootPosition),
-					degree, fileNumber);
+					degree, storageDirectory, storageName);
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -337,7 +349,8 @@ public class BTree<T extends Serializable & Comparable<T>> implements
 	private byte[] composeMetadata() throws IOException {
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(bytes);
-		oos.writeLong(storage.get().getFileNumber());
+		oos.writeObject(storage.get().getDirectory().getAbsolutePath());
+		oos.writeObject(storage.get().getName());
 		oos.writeLong(root.getPosition().get().getFileNumber());
 		oos.writeLong(root.getPosition().get().getPosition());
 		oos.writeInt(degree);
