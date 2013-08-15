@@ -1,7 +1,5 @@
 package com.github.davidmoten.structures.btree;
 
-import static com.google.common.base.Optional.of;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,6 +15,8 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
 
+import com.google.common.base.Optional;
+
 public class Storage {
 
 	private static final long maxFileSize = 5000000L;
@@ -31,6 +31,8 @@ public class Storage {
 
 	private final String name;
 
+	private final static Object writeMonitor = new Object();
+
 	public Storage(File directory, String name) {
 		this(directory, name, getLatestFileNumber(directory, name));
 	}
@@ -44,23 +46,25 @@ public class Storage {
 	}
 
 	private static long getLatestFileNumber(File directory, final String name) {
-		File[] files = directory.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String nm) {
-				return nm.startsWith(name) && nm.matches("\\.\\d+$");
+		synchronized (writeMonitor) {
+			File[] files = directory.listFiles(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String nm) {
+					return nm.startsWith(name) && nm.matches("\\.\\d+$");
+				}
+			});
+			Long max = null;
+			for (File file : files) {
+				int i = file.getName().lastIndexOf(".");
+				String numberPart = file.getName().substring(i + 1);
+				long number = Long.parseLong(numberPart);
+				if (max == null || number > max)
+					max = number;
 			}
-		});
-		Long max = null;
-		for (File file : files) {
-			int i = file.getName().lastIndexOf(".");
-			String numberPart = file.getName().substring(i + 1);
-			long number = Long.parseLong(numberPart);
-			if (max == null || number > max)
-				max = number;
+			if (max == null)
+				max = 0L;
+			return max;
 		}
-		if (max == null)
-			max = 0L;
-		return max;
 	}
 
 	public long getFileNumber() {
@@ -76,33 +80,37 @@ public class Storage {
 	}
 
 	private Position nextPosition() {
-		try {
-			if (!file.exists())
-				file.createNewFile();
-			if (file.length() >= maxFileSize) {
-				fileNumber++;
-				file = getFile(fileNumber);
-				if (file.exists())
-					file.delete();
-				file.createNewFile();
+		synchronized (writeMonitor) {
+			try {
+				if (!file.exists())
+					file.createNewFile();
+				if (file.length() >= maxFileSize) {
+					fileNumber++;
+					file = getFile(fileNumber);
+					if (file.exists())
+						file.delete();
+					file.createNewFile();
+				}
+				return new Position(fileNumber, file.length());
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
-			return new Position(fileNumber, file.length());
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
 	public synchronized <T extends Serializable & Comparable<T>> void save(
 			List<NodeRef<T>> saveQueue) {
+
 		ByteArrayOutputStream allBytes = new ByteArrayOutputStream();
 		Position startPos = nextPosition();
 		long pos = startPos.getPosition();
 		for (NodeRef<T> node : saveQueue) {
 			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 			node.save(bytes);
-			node.setPosition(of(new Position(startPos.getFileNumber(), pos)));
+			node.setPosition(Optional.of(new Position(startPos.getFileNumber(),
+					pos)));
 
 			try {
 				allBytes.write(bytes.toByteArray());
@@ -113,6 +121,7 @@ public class Storage {
 			pos += bytes.size();
 		}
 		saveToFile(allBytes.toByteArray(), startPos);
+
 	}
 
 	public <T extends Serializable & Comparable<T>> void load(NodeRef<T> node) {

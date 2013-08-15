@@ -719,7 +719,7 @@ public class BTreeTest {
 		if (System.getProperty("n") != null)
 			n = Integer.parseInt(System.getProperty("n"));
 		else
-			n = 100000;
+			n = 1000;
 		Integer[] values = new Integer[n];
 		for (int i = 0; i < values.length; i++)
 			values[i] = i + 1;
